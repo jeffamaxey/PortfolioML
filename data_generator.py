@@ -5,8 +5,6 @@ from bs4 import BeautifulSoup
 import pandas_datareader as web
 import logging 
 import argparse
-
-logging.basicConfig(level=logging.DEBUG)
                     
 def get_ticker():
     """
@@ -57,7 +55,7 @@ def data_generator(start, end, data_source = 'yahoo', export_csv = True):
         
     tickers = get_ticker()
     data_list = {}
-    for ticks in tickers:
+    for ticks in tickers[:3]:
         try:
             data_list[ticks] = web.DataReader(ticks, data_source = data_source, start = start, end = end).Close
             logging.info(f'Downloading data of {ticks}')
@@ -73,8 +71,15 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Generator of historical price data') # questo prende l'input da terminale
     parser.add_argument('start', type=str, help="Start time")
     parser.add_argument('end', type=str, help="End time")
+    parser.add_argument("-l", "--log", default="info", help=("Provide logging level. Example --log debug', default='info"))
     args = parser.parse_args()
+    levels = {'critical': logging.CRITICAL,
+              'error': logging.ERROR,
+              'warning': logging.WARNING,
+              'info': logging.INFO,
+              'debug': logging.DEBUG}
     
+    logging.basicConfig(level= levels[args.log])
     data = data_generator(args.start, args.end)
    
     
