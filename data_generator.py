@@ -57,7 +57,7 @@ def data_generator(start, end, data_source = 'yahoo', export_csv = True):
         
     tickers = get_ticker()
     data_list = {}
-    for ticks in tickers[:3]:
+    for ticks in tickers:
         try:
             data_list[ticks] = web.DataReader(ticks, data_source = data_source, start = start, end = end).Close
             logging.info(f'Downloading data of {ticks}')
