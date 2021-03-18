@@ -19,13 +19,23 @@ def get_ticker():
     website_url = requests.get('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies#S&P_500_component_stocks').text
     soup = BeautifulSoup(website_url,'lxml')
 
-
-    My_table = soup.find('table',{'class':'wikitable sortable', 'id':"constituents"})
-    df = pd.read_html(str(My_table))
-    df = pd.DataFrame(df[0])
+    idd_list = ['constituents', 'changes']
+    df_list =list()
+    for idd in idd_list:
+        My_table = soup.find('table',{'class':'wikitable sortable', 'id':idd})
+        df = pd.read_html(str(My_table))
+        df = pd.DataFrame(df[0])
+        df_list.append(df)
     
-    ticker = list(df.Symbol)
+    df_list[1].columns = ['_'.join(col).strip() for col in df_list[1].columns.values]
+    df_list[1] = df_list[1].dropna()
 
+    constituents = list(df_list[0].Symbol)
+    added = list(df_list[1].Added_Ticker)
+    removed = list(df_list[1].Removed_Ticker)
+
+    ticker = list(set(constituents + added + removed))
+    
     return ticker
 
 def data_generator(start, end, data_source = 'yahoo', export_csv = True):
