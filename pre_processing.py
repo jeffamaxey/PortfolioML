@@ -27,8 +27,6 @@ def read_filepath(file_path):
     logging.info(f'DATA QUALITY, missing values: {total_missing/total_data:.2%}')
 
     return df
-
-def check_missing_values(dataframe,step=250):
     '''Print some info about missing values in a dataframe. 
     
     Parameters
@@ -49,7 +47,7 @@ def check_missing_values(dataframe,step=250):
         print(f'{i}) %: {percentage*100} \n Symbols: {len(tickers)} \n Residuals: {len(dataframe)-i}, Date: {dataframe.Date[i]} \n')
 
 
-def ritorni(dataframe, export_csv = False):
+def get_returns(dataframe, m, export_csv = False):
     """
     Get the day-by-day returns value of a company. The dataframe has got companies as attributes
     and days as rows, the values are close prices of each days
@@ -61,22 +59,28 @@ def ritorni(dataframe, export_csv = False):
 
     col: string
         Name of company, for possible values check dataframe.columns
+    
+    m: int
+        m-period return
 
     Returns
     -------
+    df: pandas dataframe
+        Dataframe with m-returns
     """
+    df = pd.DataFrame()
     for col in dataframe.columns[1:]:
-        today = df[col]
-        tomorrow = today[1:]
-        tomorrow[-1] = 0  
-        dataframe[col] = (np.array(tomorrow)/np.array(today))-1  
+        today = dataframe[col]
+        tomorrow = today[m:] 
+        df[col] = (np.array(tomorrow)/np.array(today)[:-m])-1
 
-    if export_csv: dataframe.to_csv('PriceData.csv')
-    return dataframe
+    if export_csv: df.to_csv('ReturnsData.csv')
+    return df
         
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Preprocessing dataframe')
     parser.add_argument('input_file', type=str, help='Path to the input file')
+    parser.add_argument('m_period_return', type=int, help='m period return')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
@@ -91,9 +95,6 @@ if __name__ == '__main__':
     logging.basicConfig(level= levels[args.log])
     
     df = read_filepath(args.input_file)
-    a = ritorni(df)
+    dataframe_ritorni = get_returns(df,args.m_period_return)
 
-    print(a)
-    # for col in dataframe.columns[1:]:
-    #     dataframe[col] = ritorni(dataframe,col)
 
