@@ -1,5 +1,6 @@
 """ Generate csv file """
 import pandas as pd 
+import numpy as np
 import requests 
 from bs4 import BeautifulSoup 
 import pandas_datareader as web
@@ -72,15 +73,15 @@ def data_generator(start, end, data_source = 'yahoo', export_csv = True):
         except:
             logging.info(f"There's no data for {ticks}" )
     data = pd.DataFrame(data_list)
-    if export_csv: data.to_csv('PriceData.csv')
-    
+
+    if export_csv: data.to_csv('PriceData1.csv')
     
     return data
 
 if __name__=='__main__':
-    parser = argparse.ArgumentParser(description='Generator of historical price data') # questo prende l'input da terminale
-    parser.add_argument('start', type=str, help="Start time")
-    parser.add_argument('end', type=str, help="End time")
+    parser = argparse.ArgumentParser(description='Generator of historical price data') 
+    parser.add_argument('-start', type=str, default="1995-01-01", help="Start time")
+    parser.add_argument('-end', type=str, default="2020-12-31", help="End time")
     parser.add_argument("-l", "--log", default="info", help=("Provide logging level. Example --log debug', default='info"))
     args = parser.parse_args()
     levels = {'critical': logging.CRITICAL,
@@ -91,13 +92,3 @@ if __name__=='__main__':
     
     logging.basicConfig(level= levels[args.log])
     data = data_generator(args.start, args.end)
-   
-    
-  
-        
-        
-    
-
-    
-
-
