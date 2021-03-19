@@ -1,5 +1,6 @@
 """ Generate csv file """
 import pandas as pd 
+import numpy as np
 import requests 
 from bs4 import BeautifulSoup 
 import pandas_datareader as web
@@ -72,15 +73,43 @@ def data_generator(start, end, data_source = 'yahoo', export_csv = True):
         except:
             logging.info(f"There's no data for {ticks}" )
     data = pd.DataFrame(data_list)
-    if export_csv: data.to_csv('PriceData.csv')
-    
+
+    if export_csv: data.to_csv('PriceData1.csv')
     
     return data
 
+def get_return(dataframe, export_csv = True):
+    """
+    Get the day-by-day returns values of total companies. The dataframe has got companies as attributes
+    and days as rows, the values are close prices of each days
+
+    Parameters
+    ----------
+    dataframe: pandas dataframe
+        Input data frame
+
+    export_csv: bool(optional)
+        Choose whether to export to csv. Default = True
+
+    Returns
+    -------
+    dataframe: pandas dataframe
+        Pandas data frame of returns valuse
+    """
+    for col in dataframe.columns[1:]:
+        today = dataframe[col]
+        tomorrow = today[1:]
+        tomorrow[-1] = 0  
+        dataframe[col] = (np.array(tomorrow)/np.array(today))-1  
+
+    if export_csv: dataframe.to_csv('ReturnsData1.csv')
+
+    return dataframe
+
 if __name__=='__main__':
-    parser = argparse.ArgumentParser(description='Generator of historical price data') # questo prende l'input da terminale
-    parser.add_argument('start', type=str, help="Start time")
-    parser.add_argument('end', type=str, help="End time")
+    parser = argparse.ArgumentParser(description='Generator of historical price data') 
+    parser.add_argument('-start', type=str, default="1995-01-01", help="Start time")
+    parser.add_argument('-end', type=str, default="2020-12-31", help="End time")
     parser.add_argument("-l", "--log", default="info", help=("Provide logging level. Example --log debug', default='info"))
     args = parser.parse_args()
     levels = {'critical': logging.CRITICAL,
@@ -91,13 +120,3 @@ if __name__=='__main__':
     
     logging.basicConfig(level= levels[args.log])
     data = data_generator(args.start, args.end)
-   
-    
-  
-        
-        
-    
-
-    
-
-
