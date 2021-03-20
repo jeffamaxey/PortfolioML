@@ -50,6 +50,13 @@ def get_returns(dataframe, m, export_csv = False):
     df: pandas dataframe
         Dataframe with m-returns
     """
+    try:    
+        if m < 0: raise ValueError("Ops! Invalid input, you can't go backward in time. m must be positive.")
+    except ValueError as ve:
+        print(ve)
+        # logging.error("Ops! Invalid input, you can't go backward in time. m must be positive.")
+        # quit()
+
     df = pd.DataFrame()
     for col in dataframe.columns[1:]:
         today = dataframe[col]
@@ -77,6 +84,6 @@ if __name__ == '__main__':
     logging.basicConfig(level= levels[args.log])
     
     df = read_filepath(args.input_file)
+    print((df.ALL[1]/df.ALL[0])-1)
     dataframe_ritorni = get_returns(df,args.m_period_return)
-
-
+    print(dataframe_ritorni.ALL[0])
