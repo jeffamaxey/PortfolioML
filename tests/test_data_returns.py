@@ -10,7 +10,7 @@ class TestDataRaturns(unittest.TestCase):
     """Class test for data_returns.py"""
 
     def test_m(self):
-        """test correst result m"""
+        """test correst result with some value m"""
         m_list = range(1,10)
         for m in m_list:
             self.assertAlmostEqual(data_returns.get_returns(dataframe,m).ALL[0],(dataframe.ALL[m]/dataframe.ALL[0])-1)
