@@ -18,7 +18,7 @@ class TestDataReturns(unittest.TestCase):
         """
         m_list = range(1,10)
         for m in m_list:
-            self.assertAlmostEqual(get_returns(dataframe,m).ALL[0],(dataframe.ALL[m]/dataframe.ALL[0])-1)
+            self.assertAlmostEqual(get_returns(dataframe,m,export_csv=False).ALL[0],(dataframe.ALL[m]/dataframe.ALL[0])-1)
 
     def test_binary_targets(self):
         """
