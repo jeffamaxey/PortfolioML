@@ -2,7 +2,7 @@
 import unittest
 import sys 
 import pandas as pd
-# from portfolioML.data_returns import get_returns
+from portfolioML.data_returns import get_returns
 
 dataframe = pd.read_csv('PriceData.csv')
 class TestDataRaturns(unittest.TestCase):
