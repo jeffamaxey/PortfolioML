@@ -41,7 +41,7 @@ def read_filepath(file_path):
     return df
 
 
-def get_returns(dataframe, m, export_csv=False, no_missing=True):
+def get_returns(dataframe, m, export_csv, no_missing=True):
     """
     Get the day-by-day returns value of a company. The dataframe has got companies as attributes
     and days as rows, the values are close prices of each days
@@ -82,7 +82,8 @@ def get_returns(dataframe, m, export_csv=False, no_missing=True):
 
     if no_missing: df = df.dropna(axis=1)
 
-    if export_csv: df.to_csv('ReturnsData.csv')
+    if export_csv: 
+        df.to_csv('ReturnsData.csv')
 
     return df
 
@@ -90,6 +91,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process price data and get the dataframe of m period return')
     parser.add_argument('input_file', type=str, help='Path to the input file')
     parser.add_argument('m_period_return', type=int, help='m period return')
+    parser.add_argument("-export_csv", default= False, help='export_csv_file')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
@@ -104,5 +106,5 @@ if __name__ == '__main__':
     logging.basicConfig(level= levels[args.log])
 
     df = read_filepath(args.input_file)
-    dataframe_ritorni = get_returns(df,args.m_period_return)
+    dataframe_ritorni = get_returns(df,args.m_period_return, args.export_csv)
     print(dataframe_ritorni.isnull().sum())
