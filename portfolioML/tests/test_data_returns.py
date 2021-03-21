@@ -3,7 +3,7 @@ import os
 import unittest
 import sys
 import pandas as pd
-from portfolioML.data_returns import get_returns
+from portfolioML.data.data_returns import get_returns
 
 def _full_path(file_name):
     return os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
