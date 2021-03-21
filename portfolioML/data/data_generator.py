@@ -1,17 +1,17 @@
 """ Generate csv file """
-import pandas as pd 
+import pandas as pd
 import numpy as np
-import requests 
-from bs4 import BeautifulSoup 
+import requests
+from bs4 import BeautifulSoup
 import pandas_datareader as web
-import logging 
+import logging
 import argparse
-                    
+
 def get_ticker():
     """
     Get tickers of companies in S&P500 over all time from Wikipedia page
     url = https://en.wikipedia.org/wiki/List_of_S%26P_500_companies#S&P_500_component_stocks
-    
+
     Return
     ------
     ticker: list
@@ -27,7 +27,7 @@ def get_ticker():
         df = pd.read_html(str(My_table))
         df = pd.DataFrame(df[0])
         df_list.append(df)
-    
+
     df_list[1].columns = ['_'.join(col).strip() for col in df_list[1].columns.values]
     df_list[1] = df_list[1].dropna()
 
@@ -36,34 +36,34 @@ def get_ticker():
     removed = list(df_list[1].Removed_Ticker)
 
     ticker = list(set(constituents + added + removed))
-    
+
     return ticker
 
 def data_generator(start, end, data_source = 'yahoo', export_csv = True):
     '''
     Generate a pandas dataframe of historical close daily price.
-    
+
     Parameters
     ----------
     start: str
         Start time. Its format must be yyyy-mm-dd
-    
+
     end: str
         End time. Its format must be yyyy-mm-dd
-        
+
     data_source: str(optional)
         The data source ("iex", "fred", "ff"). Default = 'yahoo'
-        
+
     export_csv: bool(optional)
         Choose whether to export to csv. Default = True
-        
-    
+
+
     Returns
     -------
     data: pandas dataframe
         Pandas dataframe of historical close daily price
     '''
-        
+
     tickers = get_ticker()
     data_list = {}
     for ticks in tickers:
@@ -74,12 +74,12 @@ def data_generator(start, end, data_source = 'yahoo', export_csv = True):
             logging.info(f"There's no data for {ticks}" )
     data = pd.DataFrame(data_list)
 
-    if export_csv: data.to_csv('PriceData1.csv')
-    
+    if export_csv: data.to_csv('PriceData.csv')
+
     return data
 
 if __name__=='__main__':
-    parser = argparse.ArgumentParser(description='Generator of historical price data') 
+    parser = argparse.ArgumentParser(description='Generator of historical price data')
     parser.add_argument('-start', type=str, default="1995-01-01", help="Start time")
     parser.add_argument('-end', type=str, default="2020-12-31", help="End time")
     parser.add_argument("-l", "--log", default="info", help=("Provide logging level. Example --log debug', default='info"))
@@ -89,6 +89,6 @@ if __name__=='__main__':
               'warning': logging.WARNING,
               'info': logging.INFO,
               'debug': logging.DEBUG}
-    
+
     logging.basicConfig(level= levels[args.log])
     data = data_generator(args.start, args.end)

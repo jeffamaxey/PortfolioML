@@ -8,13 +8,25 @@ def read_filepath(file_path):
     """
     Read and compute basic informations about a data set in csv.
 
-    Return name and extention file in a tuple.
+    Parameters
+    ----------
+    file_path: str
+        Path to the csv file
+
+    Returns
+    -------
+    df: pandas dataframe
+        Pandas Dataframe of the read file
     """
     name_file = file_path.split('/')[-1]
     extention = name_file.split('.')[-1]
 
-    if extention != 'csv':
-        logging.error('The input file is not a csv file')
+    try:
+        if extention != 'csv':
+            raise NameError('The file is not a csv one')
+    except NameError as ne:
+        logging.error(ne)
+        exit()
 
     df = pd.read_csv(file_path, encoding='latin-1')
 
@@ -27,7 +39,7 @@ def read_filepath(file_path):
     logging.info(f'DATA QUALITY, missing values: {total_missing/total_data:.2%}')
 
     return df
-  
+
 
 def get_returns(dataframe, m, export_csv = False):
     """
@@ -41,7 +53,7 @@ def get_returns(dataframe, m, export_csv = False):
 
     col: string
         Name of company, for possible values check dataframe.columns
-    
+
     m: int
         m-period return
 
@@ -50,22 +62,21 @@ def get_returns(dataframe, m, export_csv = False):
     df: pandas dataframe
         Dataframe with m-returns
     """
-    try:    
+    try:
         if m < 0: raise ValueError("Ops! Invalid input, you can't go backward in time. m must be positive.")
     except ValueError as ve:
         print(ve)
-        # logging.error("Ops! Invalid input, you can't go backward in time. m must be positive.")
-        # quit()
+        exit()
 
     df = pd.DataFrame()
     for col in dataframe.columns[1:]:
         today = dataframe[col]
-        tomorrow = today[m:] 
+        tomorrow = today[m:]
         df[col] = (np.array(tomorrow)/np.array(today)[:-m])-1
 
     if export_csv: df.to_csv('ReturnsData.csv')
     return df
-        
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Preprocessing dataframe')
     parser.add_argument('input_file', type=str, help='Path to the input file')
@@ -82,7 +93,7 @@ if __name__ == '__main__':
               'debug': logging.DEBUG}
 
     logging.basicConfig(level= levels[args.log])
-    
+
     df = read_filepath(args.input_file)
     print((df.ALL[1]/df.ALL[0])-1)
     dataframe_ritorni = get_returns(df,args.m_period_return)
