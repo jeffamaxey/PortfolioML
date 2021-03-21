@@ -1,10 +1,14 @@
 """Unit test data_returns"""
+import os
 import unittest
 import sys 
 import pandas as pd
 from portfolioML.data_returns import get_returns
 
-dataframe = pd.read_csv('PriceData.csv')
+def _full_path(file_name):
+    return os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
+
+dataframe = pd.read_csv(_full_path('PriceData.csv'))
 class TestDataRaturns(unittest.TestCase):
     """Class test for data_returns.py"""
 
