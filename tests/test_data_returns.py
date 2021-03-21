@@ -2,10 +2,9 @@
 import unittest
 import sys 
 import pandas as pd
-sys.path.append('../PortfolioML/Data')
-import data_returns
+from portfolioML import data_returns
 
-dataframe = pd.read_csv('../PortfolioML/Data/PriceData.csv')
+dataframe = pd.read_csv('../portfolioML/data/PriceData.csv')
 class TestDataRaturns(unittest.TestCase):
     """Class test for data_returns.py"""
 
