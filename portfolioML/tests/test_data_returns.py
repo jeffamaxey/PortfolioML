@@ -14,7 +14,7 @@ class TestDataReturns(unittest.TestCase):
 
     def test_m(self):
         """
-        Test correst result with some value m
+        Test correct result with some value m
         """
         m_list = range(1,10)
         for m in m_list:
