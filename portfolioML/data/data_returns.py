@@ -56,7 +56,7 @@ def get_returns(dataframe, m, export_csv, no_missing=True):
 
     m: int
         m-period return
-    
+
     export_csv: bool(optional)
         Export dataframe in csv. default=False
 
@@ -82,10 +82,23 @@ def get_returns(dataframe, m, export_csv, no_missing=True):
 
     if no_missing: df = df.dropna(axis=1)
 
-    if export_csv: 
+    if export_csv:
         df.to_csv('ReturnsData.csv')
 
     return df
+
+def binary_targets(dataframe,time_idx):
+    df = pd.read_csv(dataframe)
+    print(dataframe.columns)
+    compare_list = list(df.iloc[time_idx].values)
+    compare_list_sorted = compare_list.sort()
+    compare_value = compare_list_sorted[len(compare_list_sorted)/2]
+    for stock in df.columns[1:]:
+        return_value = df.iloc[stock][time_idx]
+        if return_value < compare_value:
+            print("minore")
+        else:
+            print("maggiore o uguale")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process price data and get the dataframe of m period return')
@@ -108,3 +121,4 @@ if __name__ == '__main__':
     df = read_filepath(args.input_file)
     dataframe_ritorni = get_returns(df,args.m_period_return, args.export_csv)
     print(dataframe_ritorni.isnull().sum())
+
