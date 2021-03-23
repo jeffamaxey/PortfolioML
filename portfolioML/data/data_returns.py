@@ -88,6 +88,29 @@ def get_returns(dataframe, m, export_returns_csv, no_missing=True):
     return df
 
 def binary_targets(dataframe, export_binary_csv):
+    """
+    Returns binary value of returns for classification task, binary values are 0 and 1.
+    To define the two classes, we order all m-period returns of all stocks 's'
+    in period t + m in ascending order and cut them into two equally sized classes.
+    Class 0 is realized if the m-period return of stock is smaller than the cross-sectional median return
+    of all stocks in period t + 1 .
+    Similarly, class 1 is realized if the m-period return of 's' is larger than or equal to the cross-sectional
+    median.
+    For more details see: https://doi.org/10.1016/j.ejor.2017.11.054
+
+    Parameters
+    ----------
+    dataframe: pandas dataframe
+        Inpunt dataframe of returns
+
+    export_binary_csv: bool
+        Export dataframe in csv. default=False
+
+    Returns
+    -------
+    df: pandas dataframe
+        Output dataframe of binary returns
+    """
     df = dataframe
     for time_idx in range(dataframe.shape[0]):
         compare_list = list(dataframe.iloc[time_idx].values)
