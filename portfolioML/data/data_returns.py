@@ -121,7 +121,6 @@ if __name__ == '__main__':
 
     df = read_filepath(args.input_file)
     dataframe_ritorni = get_returns(df,args.m_period_return, args.export_returns_csv)
-    print(dataframe_ritorni.isnull().sum())
 
     dataframe_binary = binary_targets(dataframe_ritorni, args.export_binary_csv)
 
