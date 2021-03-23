@@ -105,7 +105,7 @@ if __name__ == '__main__':
     parser.add_argument('input_file', type=str, help='Path to the input file')
     parser.add_argument('m_period_return', type=int, help='m period return')
     parser.add_argument("-export_returns_csv", default= False, help='Export to csv the dataframe of m-period price returns')
-    parser.add_argument("-export_binary_csv", default= True, help='Export to csv the dataframe for the classification task')
+    parser.add_argument("-export_binary_csv", default= False, help='Export to csv the dataframe for the classification task')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
