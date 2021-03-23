@@ -41,7 +41,7 @@ def read_filepath(file_path):
     return df
 
 
-def get_returns(dataframe, m, export_csv, no_missing=True):
+def get_returns(dataframe, m, export_returns_csv, no_missing=True):
     """
     Get the day-by-day returns value of a company. The dataframe has got companies as attributes
     and days as rows, the values are close prices of each days
@@ -82,28 +82,30 @@ def get_returns(dataframe, m, export_csv, no_missing=True):
 
     if no_missing: df = df.dropna(axis=1)
 
-    if export_csv:
+    if export_returns_csv:
         df.to_csv('ReturnsData.csv')
 
     return df
 
-def binary_targets(dataframe):
+def binary_targets(dataframe, export_binary_csv):
     df = dataframe
     for time_idx in range(dataframe.shape[0]):
         compare_list = list(dataframe.iloc[time_idx].values)
         compare_list.sort()
-        print(compare_list)
         compare_value = compare_list[int(len(compare_list)/2)]
 
         df.iloc[time_idx] = dataframe.iloc[time_idx].apply(lambda x:  0 if x<=compare_value else 1)
+
+    if export_binary_csv: df.to_csv('ReturnsBinary.csv')
     return df
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Process price data and get the dataframe of m period return')
+    parser = argparse.ArgumentParser(description='Process price data and get the dataframe of m period returns')
     parser.add_argument('input_file', type=str, help='Path to the input file')
     parser.add_argument('m_period_return', type=int, help='m period return')
-    parser.add_argument("-export_csv", default= False, help='export_csv_file')
+    parser.add_argument("-export_returns_csv", default= False, help='Export to csv the dataframe of m-period price returns')
+    parser.add_argument("-export_binary_csv", default= True, help='Export to csv the dataframe for the classification task')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
@@ -118,8 +120,8 @@ if __name__ == '__main__':
     logging.basicConfig(level= levels[args.log])
 
     df = read_filepath(args.input_file)
-    dataframe_ritorni = get_returns(df,args.m_period_return, args.export_csv)
+    dataframe_ritorni = get_returns(df,args.m_period_return, args.export_returns_csv)
     print(dataframe_ritorni.isnull().sum())
 
-    dataframe_prova = binary_targets(dataframe_ritorni)
+    dataframe_binary = binary_targets(dataframe_ritorni, args.export_binary_csv)
 
