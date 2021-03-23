@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import argparse
 import logging
+from statistics import median
 
 def read_filepath(file_path):
     """
@@ -115,7 +116,7 @@ def binary_targets(dataframe, export_binary_csv):
     for time_idx in range(dataframe.shape[0]):
         compare_list = list(dataframe.iloc[time_idx].values)
         compare_list.sort()
-        compare_value = compare_list[int(len(compare_list)/2)]
+        compare_value = median(compare_list)
 
         df.iloc[time_idx] = dataframe.iloc[time_idx].apply(lambda x:  0 if x<=compare_value else 1)
 
@@ -128,7 +129,7 @@ if __name__ == '__main__':
     parser.add_argument('input_file', type=str, help='Path to the input file')
     parser.add_argument('m_period_return', type=int, help='m period return')
     parser.add_argument("-export_returns_csv", default= False, help='Export to csv the dataframe of m-period price returns')
-    parser.add_argument("-export_binary_csv", default= False, help='Export to csv the dataframe for the classification task')
+    parser.add_argument("-export_binary_csv", default= True, help='Export to csv the dataframe for the classification task')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
