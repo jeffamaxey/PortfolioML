@@ -41,7 +41,7 @@ def split_sequences(returns, targets, n_steps=240):
     X = [returns[i:i+n_steps] for i in range(len(returns)-n_steps)]
     y = [targets[i+n_steps] for i in range(len(targets)-n_steps)]
 
-    return X, y
+    return np.array(X), np.array(y)
 
 
 if __name__ == "__main__":
