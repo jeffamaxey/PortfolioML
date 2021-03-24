@@ -3,9 +3,6 @@ import logging
 import argparse
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from keras.layers import Input, Dense 
-from keras.models import Model
 
 
 def split_sequences(returns, targets, n_steps=240):
@@ -27,12 +24,12 @@ def split_sequences(returns, targets, n_steps=240):
     Results
     -------
     X: numpy array
-        Arrey of the input set, its shape is (len(sequences)-n_steps, n_steps) 
+        Arrey of the input set, its shape is (len(sequences)-n_steps, n_steps)
 
     y: numpy array
         Arrey of the input target, its shape is (len(sequences)-n_steps, 1)
     """
-    try: 
+    try:
         returns = returns.to_numpy()
         targets = targets.to_numpy()
     except AttributeError:
@@ -60,7 +57,7 @@ if __name__ == "__main__":
               'debug': logging.DEBUG}
 
     logging.basicConfig(level= levels[args.log])
-    
+
     df_returns = pd.read_csv(args.returns_file)
     df_binary = pd.read_csv(args.binary_file)
 
@@ -71,4 +68,3 @@ if __name__ == "__main__":
     #     print(i,j)
 
     print(len(X_train))
-    
