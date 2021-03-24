@@ -8,7 +8,7 @@ from keras.layers import Input, Dense
 from keras.models import Model
 
 
-def split_sequences(returns, targets, n_steps=100):
+def split_sequences(returns, targets, n_steps=240):
     """
     Returns the input sequences and target label for classification task.
 
@@ -65,8 +65,10 @@ if __name__ == "__main__":
     df_binary = pd.read_csv(args.binary_file)
 
     data = np.linspace(10,900,90)
-    X_train, y_train = split_sequences(df_returns.AEP, df_binary.AEP, n_steps=5)
+    X_train, y_train = split_sequences(df_returns.AEP, df_binary.AEP)
 
-    for i,j in zip(X_train, y_train):
-        print(i,j)
+    # for i,j in zip(X_train, y_train):
+    #     print(i,j)
+
+    print(len(X_train))
     
