@@ -5,6 +5,37 @@ import numpy as np
 import pandas as pd
 import tqdm
 
+def split_Tperiod(df_returns, df_binary, len_period=1308, len_test=327):
+    """
+    Split the entire dataframe in study period T, each of them having len_period
+    elements of which len_test account for the trading set. To generate all the
+    periods, a rolling window of len_period lenght is moved along the entire
+    dataset in len_test steps.
+
+
+    Parameters
+    ----------
+    df_returns: pandas dataframe
+        Pandas dataframe of returns.
+
+    df_binary: pandas dataframe
+        Pandas dataframe of binary targets.
+
+    len_period: integer(optional)
+        Lenght of the study period
+
+    len_test: integer(optional)
+        Lenght of the trading set.
+    Results
+    -------
+    periods: list of pandas dataframe
+        List of pandas dataframe of all periods of lenght len_period.
+    """
+    periods = []
+    for i in range(0,len(df_returns)+1-len_period,len_test):
+        periods.append((df_returns[i:len_period+i]))
+    return periods
+
 
 def split_sequences(returns, targets, n_steps=240):
     """
@@ -17,7 +48,7 @@ def split_sequences(returns, targets, n_steps=240):
         time-series data of returns to split.
 
     targets: list, numpy array
-        time-series data of target to split. It musta have the same length of returns
+        time-series data of target to split. It must have the same length of returns
 
     n_steps: integer(optional)
         number of time steps for each istance. Default = 100
@@ -25,10 +56,10 @@ def split_sequences(returns, targets, n_steps=240):
     Results
     -------
     X: list
-        Arrey of the input set, its shape is (len(sequences)-n_steps, n_steps)
+        Array of the input set, its shape is (len(sequences)-n_steps, n_steps)
 
     y: list
-        Arrey of the input target, its shape is (len(sequences)-n_steps, 1)
+        Array of the input target, its shape is (len(sequences)-n_steps, 1)
     """
     try:
         returns = returns.to_numpy()
@@ -103,19 +134,8 @@ if __name__ == "__main__":
     df_binary = pd.read_csv(args.binary_file)
 
     data = np.linspace(10,900,90)
-    X_train, y_train = split_sequences(df_returns.AEP, df_binary.AEP)
-
-    # for i,j in zip(X_train, y_train):
-    #     print(i,j)
-
-    list_totX, list_toty = list(), list()
-    for comp in df_returns.columns[1:6]:
-        X_train, y_train = split_sequences(df_returns[comp], df_binary[comp])
-        list_totX.append(X_train)
-        list_toty.append(y_train)
-
-    list_toty = np.array(list_toty)
-    print(list_toty.shape)
+    X_train, y_train = split_sequences(df_returns, df_binary)
+    periods = split_Tperiod(df_returns, df_binary)
 
     # utile per fare il test della funzione get_train_set
     # a = list((list_tot[i] for i in range(list_tot.shape[0])))
