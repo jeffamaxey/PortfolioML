@@ -44,8 +44,8 @@ def split_sequences(returns, targets, n_steps=240):
 
 def get_train_set(df_returns, df_binary):
     """
-    Return the train set for LSTM. 
-    The argumets are the returns dataframe and the binary data frame for copute respectvely
+    Return the train set for LSTM.
+    The argumets are the returns dataframe and the binary data frame for compute respectively
     the X_train and the y_train for classification task
 
     Parameters
@@ -58,11 +58,11 @@ def get_train_set(df_returns, df_binary):
 
     Returns
     -------
-    list_tot_X: numpy arrey
-        Arrey of input data for LSTM
+    list_tot_X: numpy array
+        Array of input data for LSTM
 
-    list_tot_y: numpy arrey
-        Arrey of input target class for LSTM
+    list_tot_y: numpy array
+        Array of input target class for LSTM
     """
 
     list_tot_X = []
@@ -116,14 +116,13 @@ if __name__ == "__main__":
 
     list_toty = np.array(list_toty)
     print(list_toty.shape)
-    
+
     # utile per fare il test della funzione get_train_set
     # a = list((list_tot[i] for i in range(list_tot.shape[0])))
     # a_list = np.vstack(a)
     # print(a_list.shape)
-    
+
     # print(list_toty.shape)
     # list_tot = np.reshape(list_toty,(list_toty.shape[0]*list_toty.shape[1]))
     # print(list_tot.shape)
     # print(a_list == list_tot)
-    
