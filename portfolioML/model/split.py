@@ -31,6 +31,7 @@ def split_Tperiod(df_returns, df_binary, len_period=1308, len_test=327):
     periods: list of pandas dataframe
         List of pandas dataframe of all periods of lenght len_period.
     """
+
     len_total_leave = len(df_returns)-len_period #ho solo chiamato come unica variabile quella cosa che c'era nel for, il nome è da rivedere
     periods_ret = [(df_returns[i:len_period+i]) for i in range(0, len_total_leave+1, len_test)]
     periods_bin = [(df_binary[i:len_period+i]) for i in range(0, len_total_leave+1, len_test)] # questa mancava
@@ -135,8 +136,3 @@ if __name__ == "__main__":
     df_binary = pd.read_csv(args.binary_file)
 
     X_train, y_train = split_sequences(df_returns, df_binary)
-    per_ret, per_bin = split_Tperiod(df_returns, df_binary)
-    print(type(per_ret[0]))
-    for i,j in zip(per_ret, per_bin):
-        print(len(i))
-        print(len(j))
