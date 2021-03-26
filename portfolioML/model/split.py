@@ -31,10 +31,15 @@ def split_Tperiod(df_returns, df_binary, len_period=1308, len_test=327):
     periods: list of pandas dataframe
         List of pandas dataframe of all periods of lenght len_period.
     """
-    periods = []
+    periods_returns = []
+    periods_binary = []
     for i in range(0,len(df_returns)+1-len_period,len_test):
-        periods.append((df_returns[i:len_period+i]))
-    return periods
+        periods_returns.append((df_returns[i:len_period+i]))
+
+    for i in range(0,len(df_binary)+1-len_period,len_test):
+        periods_binary.append((df_binary[i:len_period+i]))
+
+    return periods_returns, periods_binary
 
 
 def split_sequences(returns, targets, n_steps=240):
@@ -135,7 +140,7 @@ if __name__ == "__main__":
 
     data = np.linspace(10,900,90)
     X_train, y_train = split_sequences(df_returns, df_binary)
-    periods = split_Tperiod(df_returns, df_binary)
+    periods_returns, periods_binary = split_Tperiod(df_returns, df_binary)
 
     # utile per fare il test della funzione get_train_set
     # a = list((list_tot[i] for i in range(list_tot.shape[0])))
