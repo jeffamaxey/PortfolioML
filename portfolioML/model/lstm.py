@@ -9,10 +9,45 @@ from keras.models import load_model
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath("..")))
-from split import split_sequences, split_Tperiod, get_train_set
+from split import split_Tperiod, get_train_set
 from portfolioML.data.data_returns import read_filepath
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
+
+def all_data_LSTM(df_returns, df_binary, period, len_train=981, len_test=327):
+    scaler = StandardScaler()
+
+    periods_returns, periods_binary = split_Tperiod(df_returns, df_binary)
+
+    T1_input = periods_returns[period]
+    T1_target = periods_binary[period]
+
+    T1_input[:len_train] = scaler.fit_transform(T1_input[:len_train])
+
+    X_input_train, y_input_train = T1_input[:len_train], T1_target[:len_train]
+
+    T1_input[len_test:] = scaler.fit_transform(T1_input[len_test:])
+    X_test, y_test = T1_input[len_test:], T1_target[len_test:]
+
+    X_train, y_train = get_train_set(X_input_train, y_input_train)
+    X_train, y_train = np.array(X_train), np.array(y_train)
+
+    X_test, y_test = get_train_set(X_test, y_test)
+    X_test, y_test = np.array(X_test), np.array(y_test)
+
+    X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
+
+    return X_train, y_train, X_test, y_test
+
+def LSTM_model():
+    inputs = Input(shape= (240, 1))
+    hidden = LSTM(25)(inputs)
+    drop = Dropout(0.1)(hidden)
+    outputs = Dense(2, activation='softmax')(drop)
+
+    model = Model(inputs=inputs, outputs=outputs)
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    return model
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Creation of input and output data for lstm classification problem')
@@ -34,40 +69,6 @@ if __name__ == "__main__":
     #Read the data
     df_returns = read_filepath(args.returns_file)
     df_binary = read_filepath(args.binary_file)
-
-    def all_data_LSTM(df_returns, df_binary, period, len_train=981, len_test=327):
-        scaler = StandardScaler()
-        periods_returns, periods_binary = split_Tperiod(df_returns, df_binary)
-        T1_input = periods_returns[period]
-        T1_target = periods_binary[period]
-        
-        X_input_train, y_input_train = T1_input[:len_train], T1_target[:len_train]
-        X_in = X_input_train[[col for col in X_input_train.columns[1:]]]
-        X_in[X_in.columns] = scaler.fit_transform(X_in[X_in.columns])
-
-        X_test, y_test = T1_input[len_test:], T1_target[len_test:]
-        X_tes = X_test[[col for col in X_test.columns[1:]]]
-        X_tes[X_tes.columns] = scaler.fit_transform(X_tes[X_tes.columns])
-        
-        X_train, y_train = get_train_set(X_in, y_input_train)
-        X_train, y_train = np.array(X_train), np.array(y_train)
-
-        X_test, y_test = get_train_set(X_tes, y_test)
-        X_test, y_test = np.array(X_test), np.array(y_test)
-
-        X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1]))
-        
-        return X_train, y_train, X_test, y_test
-
-    def LSTM_model():
-        inputs = Input(shape= (240, 1))
-        hidden = LSTM(25)(inputs)
-        drop = Dropout(0.1)(hidden)
-        outputs = Dense(2, activation='softmax')(drop)
-
-        model = Model(inputs=inputs, outputs=outputs)
-        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-        return model
 
     model = LSTM_model()
     print(model.summary())
