@@ -3,7 +3,7 @@ import logging
 import argparse
 import numpy as np
 import pandas as pd
-import tqdm
+from portfolioML.data.data_returns import read_filepath
 
 def split_Tperiod(df_returns, df_binary, len_period=1308, len_test=327):
     """
@@ -106,7 +106,7 @@ def get_train_set(df_returns, df_binary):
     if (str(type(df_binary)) != "pandas.core.frame.DataFrame"):
         df_binary = pd.DataFrame(df_binary)
 
-    for comp in df_returns.columns[1:]:
+    for comp in df_returns.columns:
         X_train, y_train = split_sequences(df_returns[comp], df_binary[comp])
         list_tot_X.append(X_train)
         list_tot_y.append(y_train)
@@ -138,7 +138,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level= levels[args.log])
 
-    df_returns = pd.read_csv(args.returns_file)
-    df_binary = pd.read_csv(args.binary_file)
+    df_returns = read_filepath(args.returns_file)
+    df_binary = read_filepath(args.binary_file)
 
     X_train, y_train = split_sequences(df_returns, df_binary)
