@@ -37,27 +37,26 @@ if __name__ == "__main__":
 
     def all_data_LSTM(df_returns, df_binary, period, len_train=981, len_test=327):
         scaler = StandardScaler()
-
         periods_returns, periods_binary = split_Tperiod(df_returns, df_binary)
-
         T1_input = periods_returns[period]
         T1_target = periods_binary[period]
-
-        T1_input[:len_train] = scaler.fit_transform(T1_input[:len_train])
-
+        
         X_input_train, y_input_train = T1_input[:len_train], T1_target[:len_train]
+        X_in = X_input_train[[col for col in X_input_train.columns[1:]]]
+        X_in[X_in.columns] = scaler.fit_transform(X_in[X_in.columns])
 
-        T1_input[len_test:] = scaler.fit_transform(T1_input[len_test:])
         X_test, y_test = T1_input[len_test:], T1_target[len_test:]
-
-        X_train, y_train = get_train_set(X_input_train, y_input_train)
+        X_tes = X_test[[col for col in X_test.columns[1:]]]
+        X_tes[X_tes.columns] = scaler.fit_transform(X_tes[X_tes.columns])
+        
+        X_train, y_train = get_train_set(X_in, y_input_train)
         X_train, y_train = np.array(X_train), np.array(y_train)
 
-        X_test, y_test = get_train_set(X_test, y_test)
+        X_test, y_test = get_train_set(X_tes, y_test)
         X_test, y_test = np.array(X_test), np.array(y_test)
 
-        X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
-
+        X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1]))
+        
         return X_train, y_train, X_test, y_test
 
     def LSTM_model():
