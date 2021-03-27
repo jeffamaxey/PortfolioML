@@ -35,7 +35,7 @@ def split_Tperiod(df_returns, df_binary, len_period=1308, len_test=327):
     len_total_leave = len(df_returns)-len_period #ho solo chiamato come unica variabile quella cosa che c'era nel for, il nome è da rivedere
     periods_ret = [(df_returns[i:len_period+i]) for i in range(0, len_total_leave+1, len_test)]
     periods_bin = [(df_binary[i:len_period+i]) for i in range(0, len_total_leave+1, len_test)] # questa mancava
-   
+
     return periods_ret, periods_bin
 
 
@@ -100,6 +100,12 @@ def get_train_set(df_returns, df_binary):
 
     list_tot_X = []
     list_tot_y = []
+
+    if (str(type(df_returns)) != "pandas.core.frame.DataFrame"):
+        df_returns = pd.DataFrame(df_returns)
+    if (str(type(df_binary)) != "pandas.core.frame.DataFrame"):
+        df_binary = pd.DataFrame(df_binary)
+
     for comp in df_returns.columns[1:]:
         X_train, y_train = split_sequences(df_returns[comp], df_binary[comp])
         list_tot_X.append(X_train)
