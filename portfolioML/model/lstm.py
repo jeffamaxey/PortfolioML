@@ -15,6 +15,34 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 
 def all_data_LSTM(df_returns, df_binary, period, len_train=981, len_test=327):
+    """
+    Function that create the right input for the LSTM algorithm.
+    X_train and X_test are normalized. X_train is reshaped.
+
+    Parameters
+    ----------
+    df_returns : pandas dataframe
+        Pandas dataframe of returns.
+    df_binary : pandas dataframe
+        Pandas dataframe of returns..
+    period : int
+        Period over which you wanto to create the input for the LSTM.
+    len_train : int, optional
+        Lenght of the training set. The default is 981.
+    len_test : int, optional
+        Lenght of the trading set. The default is 327.
+
+    Returns
+    -------
+    X_train : numpy array
+
+    y_train : numpy array
+
+    X_test : numpy array
+
+    y_test : numpy array
+
+    """
     scaler = StandardScaler()
 
     periods_returns, periods_binary = split_Tperiod(df_returns, df_binary)

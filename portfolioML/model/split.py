@@ -39,18 +39,19 @@ def split_Tperiod(df_returns, df_binary, len_period=1308, len_test=327):
     return periods_ret, periods_bin
 
 
-def split_sequences(returns, targets, n_steps=240):
+def get_sequences(returns, targets, n_steps=240):
     """
-    Returns the input sequences and target label for classification task.
+    Returns the  sequences of inputs and targets for classification task (not already
+    ready for the LSTM).
 
 
     Parameters
     ----------
-    returns: list, numpy array
-        time-series data of returns to split.
+    returns: pandas dataframe
+        pandas dataframe of time-series data of returns to split.
 
-    targets: list, numpy array
-        time-series data of target to split. It must have the same length of returns
+    targets: pandas dataframe
+        pandas dataframe of time-series data of target to split. It must have the same length of returns
 
     n_steps: integer(optional)
         number of time steps for each istance. Default = 100
@@ -77,16 +78,17 @@ def split_sequences(returns, targets, n_steps=240):
 
 def get_train_set(df_returns, df_binary):
     """
-    Return the train set for LSTM.
-    The argumets are the returns dataframe and the binary data frame for compute respectively
-    the X_train and the y_train for classification task
+    Return the train set for the LSTM.
+    The argumets are the returns dataframe and the binary dataframe. The function compute respectively
+    the X_train and the y_train for classification task, stacking sequences of different companies
+    one over another.
 
     Parameters
     ----------
-    df_returns: pandas dataframe
+    df_returns: pandas dataframe, numpy array
         Dataframe of returns
 
-    df_binary:
+    df_binary: pandas dataframe, numpy array
         Datframe of binary target associated to data returns. It has the same shape of df_returns
 
     Returns
@@ -107,7 +109,7 @@ def get_train_set(df_returns, df_binary):
         df_binary = pd.DataFrame(df_binary)
 
     for comp in df_returns.columns:
-        X_train, y_train = split_sequences(df_returns[comp], df_binary[comp])
+        X_train, y_train = get_sequences(df_returns[comp], df_binary[comp])
         list_tot_X.append(X_train)
         list_tot_y.append(y_train)
 
@@ -141,4 +143,4 @@ if __name__ == "__main__":
     df_returns = read_filepath(args.returns_file)
     df_binary = read_filepath(args.binary_file)
 
-    X_train, y_train = split_sequences(df_returns, df_binary)
+    X_train, y_train = get_sequences(df_returns, df_binary)
