@@ -30,6 +30,7 @@ def read_filepath(file_path):
         exit()
 
     df = pd.read_csv(file_path, encoding='latin-1')
+    df = df.drop(['Days'], axis=1)
 
     logging.info('DATA INFO, attributes: %s', df.columns)
     logging.info('DATA INFO, shape: %s', df.shape)
