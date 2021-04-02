@@ -32,13 +32,13 @@ def read_filepath(file_path):
     df = pd.read_csv(file_path, encoding='latin-1')
     df = df.drop(['Days'], axis=1)
 
-    logging.info('DATA INFO, attributes: %s', df.columns)
-    logging.info('DATA INFO, shape: %s', df.shape)
+    # logging.info('DATA INFO, attributes: %s', df.columns)
+    # logging.info('DATA INFO, shape: %s', df.shape)
 
     total_data = df.shape[0]*df.shape[1]
     total_missing = pd.DataFrame.isnull(df).sum().sum()
 
-    logging.info(f'DATA QUALITY, missing values: {total_missing/total_data:.2%}')
+    # logging.info(f'DATA QUALITY, missing values: {total_missing/total_data:.2%}')
 
     return df
 
