@@ -1,26 +1,15 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""LSTM model suited for running easily on Colab"""
+""" Prediction with LSTM model """
 import numpy as np
 import pandas as pd
 import logging
 import argparse
-import tensorflow as tf
-from keras.layers import Input, Dense, LSTM, Dropout
-from keras.models import Model, Sequential
-from keras.models import load_model
-from keras.callbacks import EarlyStopping, ModelCheckpoint
-from keras.optimizers import RMSprop, Adam
+import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, auc, roc_auc_score
+from keras.models import load_model
+from sklearn.preprocessing import StandardScaler
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.abspath("..")))
-from sklearn.preprocessing import StandardScaler
-import matplotlib.pyplot as plt
 
-from keras.models import Sequential
-from keras.layers import Flatten, Dense, LSTM, RepeatVector, TimeDistributed
-from keras.layers.convolutional import Conv1D, MaxPooling1D
 def read_filepath(file_path):
     """
     Read and compute basic informations about a data set in csv.
@@ -85,7 +74,7 @@ def split_Tperiod(df_returns, df_binary, len_period=1308, len_test=327):
         List of pandas dataframe of all periods of lenght len_period.
     """
 
-    len_total_leave = len(df_returns)-len_period #ho solo chiamato come unica variabile quella cosa che c'era nel for, il nome è da rivedere
+    len_total_leave = len(df_returns)-len_period #ho solo chiamato come unica variabile quella cosa che c'era nel for, il nome ÃƒÂ¨ da rivedere
     periods_ret = [(df_returns[i:len_period+i]) for i in range(0, len_total_leave+1, len_test)]
     periods_bin = [(df_binary[i:len_period+i]) for i in range(0, len_total_leave+1, len_test)] # questa mancava
 
@@ -225,30 +214,12 @@ def all_data_LSTM(df_returns, df_binary, period, len_train=981):
 
     return X_train, y_train, X_test, y_test
 
-def LSTM_model(num_units=25, drop_out=0.1):
-    inputs = Input(shape= (240, 1))
-    drop = Dropout(drop_out)(inputs)
-    hidden = LSTM(num_units, return_sequences=False)(drop)
-    drop = Dropout(drop_out)(hidden)
-    outputs = Dense(1, activation='sigmoid')(drop)
-
-    model = Model(inputs=inputs, outputs=outputs)
-    rms_prop = RMSprop(learning_rate=0.005, momentum=0.5, clipvalue=0.5)
-    adam = Adam(learning_rate=0.005)
-    model.compile(loss='binary_crossentropy', optimizer=rms_prop, metrics=['accuracy'])
-    return model
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Creation of input and output data for lstm classification problem')
+    parser = argparse.ArgumentParser(description='Make DNN for classification task to predicti class label 0 or 1')
     parser.add_argument('returns_file', type=str, help='Path to the returns input data')
     parser.add_argument('binary_file', type=str, help='Path to the binary target data')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
-    parser.add_argument('num_units', type=int, help='Number of units in the LSTM layer')
-    parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
-    parser.add_argument('num_epochs', type=int, help='Number of epochs you want to train')
-    parser.add_argument('batch_size', type=int, help='Batch_size')
-    parser.add_argument('drop_out', type=float, help='Value of the dropout')
 
     args = parser.parse_args()
 
@@ -259,57 +230,63 @@ if __name__ == "__main__":
               'debug': logging.DEBUG}
 
     logging.basicConfig(level= levels[args.log])
-    # tf.get_logger().setLevel('CRITICAL')
-    pd.options.mode.chained_assignment = None # Mute some warnings of Pandas
 
     #Read the data
     df_returns = read_filepath(args.returns_file)
     df_binary = read_filepath(args.binary_file)
-    # Pass or not the wheights from one period to another
-    recursive = False
 
+    tpr_list = []
+    fpr_list = []
+    aucs_list = []
+    model_list = [1,3,6]
+    model_runs = [1,2,3,4,5]
+    interp_fpr = np.linspace(0, 1, 10000)
+    for i in range(0,10):
+        for mod in model_list:
+            plt.figure()
+            for run in model_runs:
+                #Splitting data set for each period
+                X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, i)
 
-    for i in range(args.num_periods):
-        logging.info(f'============ Period {i}th ===========')
-        if (i!=0) and (recursive):
-            logging.info('LOADING PREVIOUS MODEL')
-            model = load_model(f"LSTM_{i-1}_period.h5")
-        else:
-            logging.info('CREATING NEW MODEL')
-            model = LSTM_model(args.num_units, args.drop_out)
-        logging.info(model.summary())
-        X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, i)
-        es = EarlyStopping(monitor='val_loss', patience=30, restore_best_weights=True)
-        mc = ModelCheckpoint(f'LSTM_{i}_period.h5', monitor='val_loss', mode='min', verbose=0)
-        history = model.fit(X_train, y_train, epochs=args.num_epochs, batch_size=args.batch_size,
-                            callbacks=[es,mc], validation_split=0.2, shuffle=False, verbose=1)
+                model = load_model(f'portfolioML/model/LSTM/trained_models/Modello{mod}/{run}/LSTM_{i}_period.h5')
 
-        plt.figure(f'Period {i} Losses')
-        plt.plot(history.history['loss'], label='loss')
-        plt.plot(history.history['val_loss'], label='val_loss')
-        plt.xlabel('Epochs')
-        plt.legend()
-        plt.grid(True)
-        plt.savefig(f'losses_{i}.png')
+                #ROC curve
+                probas = model.predict(X_test)
 
-        plt.figure(f'Period {i} Accuracies')
-        plt.plot(history.history['accuracy'], label='accuracy')
-        plt.plot(history.history['val_accuracy'], label='val_accuracy')
-        plt.xlabel('Epochs')
-        plt.legend()
-        plt.grid(True)
-        plt.savefig(f'accuracies_{i}.png')
+                fpr, tpr, thresholds = roc_curve(y_test, probas[:,0])
 
-        y_pred = model.predict(X_test)
-        y_pred_companies = [y_pred[i:87+i] for i in range(0,len(y_pred)-87+1,87)]
-        dict_comp = {df_returns.columns[i]: y_pred_companies[i] for i in range(0,365)}
-        df_predictions = pd.DataFrame()
-        for tick in df_returns.columns:
-            df_predictions[tick] = dict_comp[tick][:,0]
-        df_predictions.to_csv(f'Predictions_{i}th_Period.csv')
+                interp_tpr = np.interp(interp_fpr, fpr, tpr)
+                tpr_list.append(interp_tpr)
 
+                roc_auc = roc_auc_score(y_test, probas[:,0], average=None)
+                aucs_list.append(roc_auc)
 
-        logging.info(f'============ End Period {i}th ===========')
+                #plt.figure('ROC CURVES')
+                #plt.plot(fpr, tpr, label=f'hid3-per{i} (area = %0.4f)' % (roc_auc))
+                #plt.plot([0, 1], [0, 1], 'k--')
 
+                #plt.xlabel('False Positive Rate',)
+                #plt.ylabel('True Positive Rate')
+                #plt.title('ROC CURVE')
+                #plt.legend(loc="lower right", fontsize=12, frameon=False)
 
+            auc_mean = np.mean(np.array(aucs_list))
+            auc_std = np.std(np.array(aucs_list))
 
+            tpr_mean = np.mean(tpr_list, axis=0)
+
+            plt.plot(interp_fpr, tpr_mean, color='b',
+                  label=f'Mean ROC (AUC = {auc_mean:.4f} $\pm$ {auc_std:.4f})',
+                  lw=1, alpha=.8)
+
+            tpr_std = np.std(tpr_list, axis=0)
+            tprs_upper = np.minimum(tpr_mean + tpr_std, 1)
+            tprs_lower = np.maximum(tpr_mean - tpr_std, 0)
+            plt.fill_between(interp_fpr, tprs_lower, tprs_upper, color='blue', alpha=.2,
+                          label=r'$\pm$ 1 std. dev.')
+            plt.xlabel('False Positive Rate',)
+            plt.ylabel('True Positive Rate')
+            plt.legend(loc="lower right", fontsize=12, frameon=False)
+            plt.title(f'ROC_Curve_Model{mod} period {i}')
+            plt.savefig(f'ROC_Curve_Model{mod}_period_{i}.png')
+            plt.show()

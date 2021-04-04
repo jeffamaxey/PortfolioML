@@ -233,9 +233,12 @@ def LSTM_model(num_units=25, drop_out=0.1):
     outputs = Dense(1, activation='sigmoid')(drop)
 
     model = Model(inputs=inputs, outputs=outputs)
+
+    # Two optimiziers used during training
     rms_prop = RMSprop(learning_rate=0.005, momentum=0.5, clipvalue=0.5)
     adam = Adam(learning_rate=0.005)
-    model.compile(loss='binary_crossentropy', optimizer=adam, metrics=['accuracy'])
+
+    model.compile(loss='binary_crossentropy', optimizer=rms_prop, metrics=['accuracy'])
     return model
 
 if __name__ == "__main__":
