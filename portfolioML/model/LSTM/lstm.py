@@ -71,18 +71,19 @@ def all_data_LSTM(df_returns, df_binary, period, len_train=981):
 
     return X_train, y_train, X_test, y_test
 
-def LSTM_model(num_units=25):
+def LSTM_model(num_units=25, drop_out=0.1):
     inputs = Input(shape= (240, 1))
-    drop = Dropout(0.2)(inputs)
+    drop = Dropout(drop_out)(inputs)
     hidden = LSTM(num_units, return_sequences=False)(drop)
-    drop = Dropout(0.2)(hidden)
+    drop = Dropout(drop_out)(hidden)
     outputs = Dense(1, activation='sigmoid')(drop)
 
     model = Model(inputs=inputs, outputs=outputs)
-    # RMSprop is an adaptive learning rate algorithm
+
+    # Two optimiziers used during training
     rms_prop = RMSprop(learning_rate=0.005, momentum=0.5, clipvalue=0.5)
-    # Adam derives from "adaptive momentum". It can be seen as a variant of RMSprop
     adam = Adam(learning_rate=0.005)
+
     model.compile(loss='binary_crossentropy', optimizer=rms_prop, metrics=['accuracy'])
     return model
 
@@ -96,6 +97,8 @@ if __name__ == "__main__":
     parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
     parser.add_argument('num_epochs', type=int, help='Number of epochs you want to train')
     parser.add_argument('batch_size', type=int, help='Batch_size')
+    parser.add_argument('drop_out', type=float, help='Value of the dropout')
+
     args = parser.parse_args()
 
     levels = {'critical': logging.CRITICAL,
@@ -111,23 +114,24 @@ if __name__ == "__main__":
     #Read the data
     df_returns = read_filepath(args.returns_file)
     df_binary = read_filepath(args.binary_file)
+    # Pass or not the weights from one period to another
     recursive = True
 
 
-
-    for i in range(0,args.num_periods):
+    for i in range(args.num_periods):
         logging.info(f'============ Start Period {i}th ===========')
-        if (i!=0) and recursive:
+        if (i!=0) and (recursive):
+            logging.info('LOADING PREVIOUS MODEL')
             model = load_model(f"LSTM_{i-1}_period.h5")
         else:
-            model = LSTM_model(args.num_units)
+            logging.info('CREATING NEW MODEL')
+            model = LSTM_model(args.num_units, args.drop_out)
         logging.info(model.summary())
         X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, i)
         es = EarlyStopping(monitor='val_loss', patience=30, restore_best_weights=True)
         mc = ModelCheckpoint(f'LSTM_{i}_period.h5', monitor='val_loss', mode='min', verbose=0)
         history = model.fit(X_train, y_train, epochs=args.num_epochs, batch_size=args.batch_size,
                             callbacks=[es,mc], validation_split=0.2, shuffle=False, verbose=1)
-        # model.save(f"LSTM_{i}_period.h5")
 
         plt.figure(f'Period {i} Losses')
         plt.plot(history.history['loss'], label='loss')
@@ -152,6 +156,7 @@ if __name__ == "__main__":
         for tick in df_returns.columns:
             df_predictions[tick] = dict_comp[tick][:,0]
         df_predictions.to_csv(f'Predictions_{i}th_Period.csv')
+
 
         logging.info(f'============ End Period {i}th ===========')
 
