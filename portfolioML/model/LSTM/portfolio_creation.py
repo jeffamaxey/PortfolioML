@@ -4,6 +4,7 @@ import logging
 import argparse
 import sys
 import os
+import shutil
 # sys.path.append(os.path.dirname(os.path.abspath("..")))
 # from split import split_Tperiod
 
@@ -44,16 +45,12 @@ def get_trading_values(df_price, predictions_folder, len_period=1308, len_train 
     # Select then only days in test sets of which forecasts are made
     trading_values = [tests[i][240:] for i in range(len(tests))]
 
-    try:
-        path = os.getcwd() + '/Predictions'
-        if os.path.exists(path):
-            raise OSError(f'Path {path} already exists')
-    except OSError as ose:
-        logging.error(ose)
-        sys.exit()
-    else:
-        os.mkdir(path)
-        logging.info(f'Successfully created the directory {path} \n')
+    path = os.getcwd() + '/Predictions'
+    if os.path.exists(path):
+        logging.info(f"Path '{path}' already exists, it will be overwrited")
+        shutil.rmtree(path)
+    os.mkdir(path)
+    logging.info(f"Successfully created the directory '{path}' \n")
 
     # Insert the Date column in the forecasts made by lstm.py
     for i in range(10):
