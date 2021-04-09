@@ -87,25 +87,19 @@ def all_data_DNN(df_returns, df_binary, period, len_train=981, len_test=327):
 
     return X_train, y_train, X_test, y_test
 
-def DNN_model(hidden, activation='tanh', loss='binary_crossentropy', optimizer='adam'):
+def DNN_model(*nodes_args, hidden=None , activation='tanh', loss='binary_crossentropy', optimizer='adam'):
     """
-    DNN model with 2+i hidden layer for classification task.
+    DNN model with selected number of hidden layer for classification task.
     For more details about the model see the reference
     The model is maded by:
 
     - Input: shape = (feature), features are the numer of values taken from the past,
     follow the leterature the default is 31.
 
-    - First Hidden: Dense(feature, activation='tanh'), number of nodes is equal to 
-    the number of input shape
-
-    - Inner Hiddens: Dense(feature - c*i, activation='tanh'), this is the depp part of the model
-    composed by i hidden layers whose number of nodes descresing until reach the numerbs of 
-    last hidden layer. The costant c modulates the discending number for nodes, actually the number of nodes
-    is determin by an array of type np.linspace(feature,5,hidden).
-
-    - Last hidden: Dense(5, activation='tanh'), numer of nodes are setting to 5
-
+    - Hidden Layers: Dense(feature, activation=activation), sequential hidden layers full-connected 
+    with different nodes. If hiddin is an integer the number of nodes for each layer follow a descrescent
+    way from 31 to 5, note that the actual values of the nodes is determine by np.linspace(feature,5,hidden).
+    
     - Output: Dense(1, activation='sigmoid'), the output is interpretated as the probability that 
     the input is grater than the cross-section median
 
@@ -113,21 +107,30 @@ def DNN_model(hidden, activation='tanh', loss='binary_crossentropy', optimizer='
 
     Parameters
     ----------
-    hidden: integer
-        Number of hidden layers, the actual values of the nodes are fixed 
+
+    *nodes_args: integer 
+        Number of nodes for each layers.    
+
+    hidden: integer(optional), default = None
+        Number of hidden layers, the actual values of the nodes are fixed in descrescent way 
+        from 3 to 5 through the np.linspace function (np.linspace(31,5,hidden)). 
+        Follow some useful example:
         - 3: [31,18,5]
         - 4: [31,22,13,5]
         - 5: [31,24,18,11,5]
         - 6: [31,25,20,15,10,5]
 
     activation: string(optional)
-        Activation faction of hidden nodes, default='tanh'
+        Activation function to use of hidden layers, default='tanh'
+        Reference: https://keras.io/api/layers/core_layers/dense/
 
-    loss: string(optional)
+    loss: String (name of objective function), objective function or tf.keras.losses.Loss instance. See tf.keras.losses.
         Loss fuction, it must be a loss compatible with classification problem, defaul=binary_crossentropy'
+        Reference: https://www.tensorflow.org/api_docs/python/tf/keras/Model
 
     optimater: string(optional)
-        Optimazer of the model, default='adam'
+        String (name of optimizer) or optimizer instance. See tf.keras.optimizers., default='adam'
+        Reference: https://www.tensorflow.org/api_docs/python/tf/keras/Model
 
 
     Returns
@@ -141,7 +144,12 @@ def DNN_model(hidden, activation='tanh', loss='binary_crossentropy', optimizer='
     model.add(Input(shape=(31)))
     model.add(Dropout(0.1))
 
-    nodes = [int(i) for i in np.linspace(31,5,hidden)]
+    if hidden is not None:
+        logging.info("Nember of layers is determined by 'hidden',numebrs of neurons descrescent from 31 to 5")
+        nodes = [int(i) for i in np.linspace(31,5,hidden)]
+    else:
+        nodes = nodes_args
+
     for nod in nodes:
         model.add(Dense(nod, activation=activation))
         model.add(Dropout(0.5))
@@ -149,12 +157,76 @@ def DNN_model(hidden, activation='tanh', loss='binary_crossentropy', optimizer='
     model.add(Dense(1, activation='sigmoid'))
 
     model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
-    print(model.summary()) 
+    logging.info(model.summary()) 
     return model
+
+def training(model, model_feature, periods=10, validation_split=0.2, batch_size=1024, epochs=400):
+    """
+    Training of a selected model over several study period. Plot for each periods
+    loss trand and accuracy trand.
+    Models are saved in format "h5" for future development
+
+    Paremeters
+    ----------
+    model: tensorflow.python.keras.engine
+        Tensorflow model to training
+
+    model_feature: bool
+         
+
+    periods: integer(optional)
+        Study periods over wich the model are traning. Default = 10
+
+    validation_split: float between 0 and 1
+        Part of training set dedicated for validation part. Default = 0.2
+
+    batch_size: Integer or None
+        Number of samples per gradient update.
+        Do not specify the batch_size if your data is in the form of datasets,
+        generators, or keras.utils.Sequence instances (since they generate batches). Default = 1024.
+        References: https://www.tensorflow.org/api_docs/python/tf/keras/Model
+
+    epochs: Integer
+        Number of epochs to train the model. An epoch is an iteration over the entire x and y data provided.
+        Note that in conjunction with initial_epoch, epochs is to be understood as "final epoch". 
+        The model is not trained for a number of iterations given by epochs, but merely until the epoch of index epochs is reached.
+        References: https://www.tensorflow.org/api_docs/python/tf/keras/Model
+    """
+    for per in range(0,periods):
+        #Splitting data for each period
+        if model_feature:
+            X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, per)
+        else:
+            X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, per)
+        
+        es = EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=True)
+        mc = ModelCheckpoint(f'DNN_mymod3_adadelta_period{per}.h5', monitor='val_loss', mode='min', verbose=0)
+        history = model.fit(X_train ,y_train, callbacks=[es,mc],
+                            validation_split=validation_split, batch_size=batch_size, epochs=epochs, verbose=1)
+
+        #Elbow curve
+        plt.figure(f'Loss and Accuracy period {per}')
+        plt.subplot(1,2,1)
+        plt.plot(history.history['loss'], label='train_loss') 
+        plt.plot(history.history['val_loss'], label='val_loss')
+        plt.xlabel('Epochs')
+        plt.title('Training and Validation Loss vs Epochs')
+        plt.grid()
+        plt.legend()
+
+        plt.subplot(1,2,2)
+        plt.plot(history.history['accuracy'], label='accuracy')
+        plt.plot(history.history['val_accuracy'], label='val_accuracy')
+        plt.xlabel('Epochs')
+        plt.title('Training and Validation Accuracy vs Epochs')
+        plt.grid()
+        plt.legend()
+
+    plt.show()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Apply DNN for classification problem')
+    parser = argparse.ArgumentParser(description='Make DNN for classification task to predicti class label 0 or 1')
     parser.add_argument('returns_file', type=str, help='Path to the returns input data')
     parser.add_argument('binary_file', type=str, help='Path to the binary target data')
     parser.add_argument("-log", "--log", default="info",
@@ -174,51 +246,36 @@ if __name__ == "__main__":
     df_returns = read_filepath(args.returns_file)
     df_binary = read_filepath(args.binary_file)
 
-    for hid in [3,4,5,6]:
-        #DNN model
-        model = DNN_model(hidden=hid, optimizer='adam')
+    for per in range(5,10):
+        model = DNN_model(150,80,15,5, optimizer='adam')
+        #Splitting data for each period
+        X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, per)
+        #Trainng
+        es = EarlyStopping(monitor='val_loss', patience=40, restore_best_weights=True)
+        mc = ModelCheckpoint(f'DNN_mymod4_period{per}.h5', monitor='val_loss', mode='min', verbose=0)
+        history = model.fit(X_train ,y_train, callbacks=[es,mc],validation_split=0.2, batch_size=256, epochs=400, verbose=1)
 
-        for per in range(0,10):
-            #Splitting data for each period
-            X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, per)
-            #Trainng
-            es = EarlyStopping(monitor='val_loss', patience=35, restore_best_weights=True)
-            mc = ModelCheckpoint(f'DNN_hidden{hid}_adam_period{per}y.h5', monitor='val_loss', mode='min', verbose=0)
-            history = model.fit(X_train ,y_train, callbacks=[es,mc],validation_split=0.2, batch_size=256, epochs=200, verbose=1)
-            # model.save(f'DNN_hidden3_adadelta_period{per}.h5')
+        #Elbow curve
+        plt.figure(f'Loss and Accuracy period {per}')
+        plt.subplot(1,2,1)
+        plt.plot(history.history['loss'], label='train_loss') 
+        plt.plot(history.history['val_loss'], label='val_loss')
+        plt.xlabel('Epochs')
+        plt.title('Training and Validation Loss vs Epochs')
+        plt.grid()
+        plt.legend()
 
-    #Prediction
-    y_pred = model.predict(X_test)
-    for i,j in zip(y_test[:365], y_pred[:365]):
-        print(i,j)
+        plt.subplot(1,2,2)
+        plt.plot(history.history['accuracy'], label='accuracy')
+        plt.plot(history.history['val_accuracy'], label='val_accuracy')
+        plt.xlabel('Epochs')
+        plt.title('Training and Validation Accuracy vs Epochs')
+        plt.grid()
+        plt.legend()
 
-    #Elbow curve
-    plt.figure()
-    plt.plot(history.history['loss'], label='train_loss') 
-    plt.plot(history.history['val_loss'], label='val_loss')
-    plt.grid()
-    plt.legend()
+    plt.show()
 
-    #ROC curve
-    # model1 = load_model("DNN_second_period0.h5")
-    # model2 = load_model("DNN_second_period1.h5")
     
-    # probas_1 = model1.predict(X_test)
-    # probas_2 = model2.predict(X_test)
+    plt.show()
 
-    # fpr1, tpr1, thresholds = roc_curve(y_test, probas_1[:, 0])
-    # fpr2, tpr2, thresholds2 = roc_curve(y_test, probas_2[:, 0])
-
-    # roc_auc1 = roc_auc_score(y_test, probas_1[:,0], average=None)
-    # roc_auc2 = roc_auc_score(y_test, probas_2[:,0], average=None)
-
-    # plt.figure('ROC CURVE')
-    # plt.plot(fpr1, tpr1, label='Model 1 (area = %0.4f)' % (roc_auc1))
-    # plt.plot(fpr2, tpr2, label='Model 2 (area = %0.4f)' % (roc_auc2))
-    # plt.plot([0, 1], [0, 1], 'k--')
-
-    # plt.xlabel('False Positive Rate',)
-    # plt.ylabel('True Positive Rate')
-    # plt.legend(loc="lower right", fontsize=12, frameon=False)
-
-    # plt.show()
+    
