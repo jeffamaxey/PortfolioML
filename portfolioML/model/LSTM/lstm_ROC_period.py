@@ -238,7 +238,7 @@ if __name__ == "__main__":
     tpr_list = []
     fpr_list = []
     aucs_list = []
-    model_list = [1,3,6]
+    model_list = [1,2,3]
     model_runs = [1,2,3,4,5]
     interp_fpr = np.linspace(0, 1, 10000)
     for i in range(0,10):

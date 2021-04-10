@@ -16,13 +16,13 @@ def plot_roc(model, periods):
     """
     Plot roc curve with mean and standard deviation of the area under the curve (auc) of a
     trained model.
-    Each model is trained over several study period so its name contain this information, 
+    Each model is trained over several study period so its name contain this information,
     for semplicity put this information in this way: '..._periond#' (for istance '_period0').
     Nember of period running over several argumenti setting in 'periods' argument.
-    So before running thi function carefully checking of the folder is suggest to avoid 
+    So before running thi function carefully checking of the folder is suggest to avoid
     problems.
 
-    Tecnical aspects: because of each model has got different tpr and fps, an interpoletion 
+    Tecnical aspects: because of each model has got different tpr and fps, an interpoletion
     of this values is used in ordet to have the same leght for each model.
 
     Parameters
@@ -31,7 +31,7 @@ def plot_roc(model, periods):
         File path of the model, it must have in the name 'periond#' (for istance 'period0') to
         take in mind the numer of perion over wich the model is trained
 
-    periods: integer 
+    periods: integer
         Numer of model that are taken in order to compute plot and final values
 
     """
@@ -41,10 +41,10 @@ def plot_roc(model, periods):
     for per in range(0,periods):
         #Splitting data set for each period
         X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, per)
-        
+
         model = load_model(f'../model/DNN_bestia_adam_period{per}y.h5')
 
-        #ROC curve  
+        #ROC curve
         probas = model.predict(X_test)
 
         fpr, tpr, thresholds = roc_curve(y_test, probas[:,0])
@@ -68,7 +68,7 @@ def plot_roc(model, periods):
     auc_std = np.std(np.array(aucs_list))
 
     tpr_mean = np.mean(tpr_list, axis=0)
-    
+
     plt.figure('ROC CURVE - mean pm std')
     plt.plot(interp_fpr, tpr_mean, color='b',
           label=f'Mean ROC (AUC = {auc_mean:.4f} $\pm$ {auc_std:.4f})',
@@ -83,6 +83,19 @@ def plot_roc(model, periods):
     plt.ylabel('True Positive Rate')
     plt.legend(loc="lower right", fontsize=12, frameon=False)
     plt.show()
+
+def predictions_csv(num_period=10):
+        path = os.getcwd()
+        for i in range(num_period):
+            model = load_model(path + f"/CNN_dense+/CNN_dense+_period{i}.h5")
+            X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, i)
+            y_pred = model.predict(X_test)
+            y_pred_companies = [y_pred[i:87+i] for i in range(0,len(y_pred)-87+1,87)]
+            dict_comp = {df_returns.columns[i]: y_pred_companies[i] for i in range(0,365)}
+            df_predictions = pd.DataFrame()
+            for tick in df_returns.columns:
+                df_predictions[tick] = dict_comp[tick][:,0]
+                df_predictions.to_csv(f'Predictions_{i}th_Period.csv')
 
 
 
@@ -106,7 +119,9 @@ if __name__ == "__main__":
     #Read the data
     df_returns = read_filepath(args.returns_file)
     df_binary = read_filepath(args.binary_file)
-    
+
+    predictions_csv()
+
     plt.figure()
     plt.plot(df_returns.XRX)
 
@@ -118,10 +133,10 @@ if __name__ == "__main__":
     for per in range(0,10):
         #Splitting data set for each period
         X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, per)
-        
+
         model = load_model(f'../model/CNN_dense3_period{per}.h5')
 
-        #ROC curve  
+        #ROC curve
         probas = model.predict(X_test)
 
         fpr, tpr, thresholds = roc_curve(y_test, probas[:,0])
@@ -145,7 +160,7 @@ if __name__ == "__main__":
     auc_std = np.std(np.array(aucs_list))
 
     tpr_mean = np.mean(tpr_list, axis=0)
-    
+
     plt.figure('ROC CURVE - mean pm std')
     plt.plot(interp_fpr, tpr_mean, color='b',
           label=f'Mean ROC (AUC = {auc_mean:.4f} $\pm$ {auc_std:.4f})',
