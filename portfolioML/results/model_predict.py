@@ -13,6 +13,7 @@ import time
 sys.path.append(os.path.dirname(os.path.abspath("..")))
 from portfolioML.model.split import all_data_DNN, all_data_LSTM
 from portfolioML.data.data_returns import read_filepath
+from portfolioML.makedir import smart_makedir, go_up
 
 
 def plot_roc(algorithm, name_model, periods=10):
@@ -38,18 +39,17 @@ def plot_roc(algorithm, name_model, periods=10):
         Numer of model that are taken in order to compute plot and final values
 
     """
+
+    logging.info('----- I am creating ROC curve png files -----')
+
     parent_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     tpr_list = []
     aucs_list = []
     interp_fpr = np.linspace(0, 1, 10000)
 
+    smart_makedir(f'/ROC/{algorithm}/{name_model}/')
+
     path = os.getcwd() + f'/ROC/{algorithm}/{name_model}/'
-    if os.path.exists(path):
-        logging.debug(f"Path '{path}' already exists, it will be overwrited \n")
-        # Remove all the files in case they already exist
-        shutil.rmtree(path)
-    os.makedirs(path)
-    logging.debug(f"Successfully created the directory '{path}' \n")
 
     plt.figure()
     for per in range(0,periods):
@@ -119,15 +119,12 @@ def predictions_csv(algorithm, model_name, num_period=10):
 
     '''
 
+    logging.info('----- I am creating predictions csv file -----')
+
+    smart_makedir(f'/predictions/{algorithm}/{model_name}/')
+
     path = os.getcwd() + f'/predictions/{algorithm}/{model_name}/'
     parent_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
-
-    if os.path.exists(path):
-        logging.debug(f"Path '{path}' already exists, it will be overwrited \n")
-        # Remove all the files in case they already exist
-        shutil.rmtree(path)
-    os.makedirs(path)
-    logging.debug(f"Successfully created the directory '{path}' \n")
 
     for i in range(num_period):
         model = load_model(parent_path + f'/model/{algorithm}/{model_name}/{model_name}_period{i}.h5')
@@ -165,17 +162,14 @@ if __name__ == "__main__":
     logging.basicConfig(level= levels[args.log])
     pd.options.mode.chained_assignment = None
 
+    #Read the data
     path = os.getcwd()
     parent_path = os.path.abspath(os.path.join(path, os.pardir))
     df_binary = parent_path + "/data/ReturnsBinary.csv"
     df_returns = parent_path + "/data/ReturnsData.csv"
-
-    #Read the data
     df_returns = read_filepath(df_returns)
     df_binary = read_filepath(df_binary)
 
-    plt.figure()
-    plt.plot(df_returns.XRX)
 
     plot_roc(args.algorithm, args.model_name)
     predictions_csv(args.algorithm, args.model_name)
