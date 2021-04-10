@@ -9,6 +9,7 @@ from keras.models import load_model
 import sys
 import os
 import shutil
+import time
 sys.path.append(os.path.dirname(os.path.abspath("..")))
 from portfolioML.model.split import all_data_DNN, all_data_LSTM
 from portfolioML.data.data_returns import read_filepath
@@ -30,7 +31,7 @@ def plot_roc(algorithm, name_model, periods=10):
     Parameters
     ----------
     model: string
-        File path of the model, it must have in the name 'periond#' (for istance 'period0') to
+        File path of the model, it must have in the name 'periond' (for istance 'period0') to
         take in mind the numer of perion over wich the model is trained
 
     periods: integer
@@ -47,10 +48,10 @@ def plot_roc(algorithm, name_model, periods=10):
         logging.debug(f"Path '{path}' already exists, it will be overwrited \n")
         # Remove all the files in case they already exist
         shutil.rmtree(path)
-    os.mkdir(path)
+    os.makedirs(path)
     logging.debug(f"Successfully created the directory '{path}' \n")
 
-    plt.figure(f'ROC CURVES {name_model}')
+    plt.figure()
     for per in range(0,periods):
         logging.info(f'Creating ROC for period {per}')
         if (algorithm == 'LSTM') or (algorithm == 'CNN'):
@@ -76,18 +77,18 @@ def plot_roc(algorithm, name_model, periods=10):
         plt.plot(fpr, tpr, label=f'per{per} (area = %0.4f)' % (roc_auc))
         plt.plot([0, 1], [0, 1], 'k--')
 
-        plt.xlabel('False Positive Rate',)
-        plt.ylabel('True Positive Rate')
-        plt.legend(loc="lower right", fontsize=12, frameon=False)
+    plt.xlabel('False Positive Rate',)
+    plt.ylabel('True Positive Rate')
+    plt.legend(loc="lower right", fontsize=12, frameon=False)
     plt.title(f'ROC CURVE {name_model}')
-    plt.savefig(path)
+    plt.savefig(path + f'ROC CURVE {name_model}.png')
 
     auc_mean = np.mean(np.array(aucs_list))
     auc_std = np.std(np.array(aucs_list))
 
     tpr_mean = np.mean(tpr_list, axis=0)
 
-    plt.figure(f'ROC CURVE {name_model} - mean $\pm$ std')
+    plt.figure()
     plt.plot(interp_fpr, tpr_mean, color='b',
           label=f'Mean ROC (AUC = {auc_mean:.4f} $\pm$ {auc_std:.4f})',
           lw=1, alpha=.8)
@@ -100,7 +101,8 @@ def plot_roc(algorithm, name_model, periods=10):
     plt.xlabel('False Positive Rate',)
     plt.ylabel('True Positive Rate')
     plt.legend(loc="lower right", fontsize=12, frameon=False)
-    plt.savefig(path)
+    plt.title(f'ROC Curve {name_model} - mean +|- std')
+    plt.savefig(path + f'ROC Curve {name_model} - mean +|- std.png')
 
 def predictions_csv(num_period=10):
         path = os.getcwd()
@@ -119,8 +121,8 @@ def predictions_csv(num_period=10):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prediction and compare traned model')
-    parser.add_argument('returns_file', type=str, help='Path to the returns input data')
-    parser.add_argument('binary_file', type=str, help='Path to the binary target data')
+    # parser.add_argument('returns_file', type=str, help='Path to the returns input data')
+    # parser.add_argument('binary_file', type=str, help='Path to the binary target data')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
@@ -135,9 +137,14 @@ if __name__ == "__main__":
     logging.basicConfig(level= levels[args.log])
     pd.options.mode.chained_assignment = None
 
+    path = os.getcwd()
+    parent_path = os.path.abspath(os.path.join(path, os.pardir))
+    df_binary = parent_path + "/data/ReturnsBinary.csv"
+    df_returns = parent_path + "/data/ReturnsData.csv"
+
     #Read the data
-    df_returns = read_filepath(args.returns_file)
-    df_binary = read_filepath(args.binary_file)
+    df_returns = read_filepath(df_returns)
+    df_binary = read_filepath(df_binary)
 
     # predictions_csv()
 
