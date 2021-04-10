@@ -15,6 +15,7 @@ from split import split_Tperiod, get_train_set
 from portfolioML.data.data_returns import read_filepath
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
+from portfolioML.makedir import smart_makedir, gp_up
 
 
 def all_data_LSTM(df_returns, df_binary, period, len_train=981):
@@ -98,6 +99,7 @@ if __name__ == "__main__":
     parser.add_argument('num_epochs', type=int, help='Number of epochs you want to train')
     parser.add_argument('batch_size', type=int, help='Batch_size')
     parser.add_argument('drop_out', type=float, help='Value of the dropout')
+    parser.add_argument('model_name', type=str, help='Choose the name of the model')
 
     args = parser.parse_args()
 
@@ -117,19 +119,20 @@ if __name__ == "__main__":
     # Pass or not the weights from one period to another
     recursive = True
 
+    os.mkdir(args.model_name)
 
     for i in range(args.num_periods):
         logging.info(f'============ Start Period {i}th ===========')
         if (i!=0) and (recursive):
             logging.info('LOADING PREVIOUS MODEL')
-            model = load_model(f"LSTM_{i-1}_period.h5")
+            model = load_model(f"/{args.model_name}/{args.model_name}_period{i-1}.h5")
         else:
             logging.info('CREATING NEW MODEL')
             model = LSTM_model(args.num_units, args.drop_out)
         logging.info(model.summary())
         X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, i)
         es = EarlyStopping(monitor='val_loss', patience=30, restore_best_weights=True)
-        mc = ModelCheckpoint(f'LSTM_{i}_period.h5', monitor='val_loss', mode='min', verbose=0)
+        mc = ModelCheckpoint(f'/{args.model_name}/{args.model_name}_period{i}.h5', monitor='val_loss', mode='min', verbose=0)
         history = model.fit(X_train, y_train, epochs=args.num_epochs, batch_size=args.batch_size,
                             callbacks=[es,mc], validation_split=0.2, shuffle=False, verbose=1)
 
@@ -139,7 +142,7 @@ if __name__ == "__main__":
         plt.xlabel('Epochs')
         plt.legend()
         plt.grid(True)
-        plt.savefig(f'losses_{i}.png')
+        plt.savefig(f'losses_{i}.png') # AGGIUSTARE QUI
 
         plt.figure(f'Period {i} Accuracies')
         plt.plot(history.history['accuracy'], label='accuracy')
@@ -147,7 +150,7 @@ if __name__ == "__main__":
         plt.xlabel('Epochs')
         plt.legend()
         plt.grid(True)
-        plt.savefig(f'accuracies_{i}.png')
+        plt.savefig(f'accuracies_{i}.png') # AGGIUSTARE QUI
 
         y_pred = model.predict(X_test)
         y_pred_companies = [y_pred[i:87+i] for i in range(0,len(y_pred)-87+1,87)]
@@ -155,7 +158,7 @@ if __name__ == "__main__":
         df_predictions = pd.DataFrame()
         for tick in df_returns.columns:
             df_predictions[tick] = dict_comp[tick][:,0]
-        df_predictions.to_csv(f'Predictions_{i}th_Period.csv')
+        df_predictions.to_csv(f'Predictions_{i}th_Period.csv') # AGGIUSTARE QUI
 
 
         logging.info(f'============ End Period {i}th ===========')
