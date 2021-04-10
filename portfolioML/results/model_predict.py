@@ -104,25 +104,53 @@ def plot_roc(algorithm, name_model, periods=10):
     plt.title(f'ROC Curve {name_model} - mean +|- std')
     plt.savefig(path + f'ROC Curve {name_model} - mean +|- std.png')
 
-def predictions_csv(num_period=10):
-        path = os.getcwd()
-        for i in range(num_period):
-            model = load_model(path + f"/CNN_dense+/CNN_dense+_period{i}.h5")
+def predictions_csv(algorithm, model_name, num_period=10):
+    '''
+
+
+    Parameters
+    ----------
+    num_period : TYPE, optional
+        DESCRIPTION. The default is 10.
+
+    Returns
+    -------
+    None.
+
+    '''
+
+    path = os.getcwd() + f'/predictions/{algorithm}/{model_name}/'
+    parent_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+
+    if os.path.exists(path):
+        logging.debug(f"Path '{path}' already exists, it will be overwrited \n")
+        # Remove all the files in case they already exist
+        shutil.rmtree(path)
+    os.makedirs(path)
+    logging.debug(f"Successfully created the directory '{path}' \n")
+
+    for i in range(num_period):
+        model = load_model(parent_path + f'/model/{algorithm}/{model_name}/{model_name}_period{i}.h5')
+        if (algorithm == 'LSTM') or (algorithm == 'CNN'):
+            #Splitting data set for each period
             X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, i)
-            y_pred = model.predict(X_test)
-            y_pred_companies = [y_pred[i:87+i] for i in range(0,len(y_pred)-87+1,87)]
-            dict_comp = {df_returns.columns[i]: y_pred_companies[i] for i in range(0,365)}
-            df_predictions = pd.DataFrame()
-            for tick in df_returns.columns:
-                df_predictions[tick] = dict_comp[tick][:,0]
-                df_predictions.to_csv(f'Predictions_{i}th_Period.csv')
+        else:
+            X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, i)
+
+        y_pred = model.predict(X_test)
+        y_pred_companies = [y_pred[i:87+i] for i in range(0,len(y_pred)-87+1,87)]
+        dict_comp = {df_returns.columns[i]: y_pred_companies[i] for i in range(0,365)}
+        df_predictions = pd.DataFrame()
+        for tick in df_returns.columns:
+            df_predictions[tick] = dict_comp[tick][:,0]
+            df_predictions.to_csv(path + f'{model_name}_Predictions_{i}th_Period.csv')
 
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prediction and compare traned model')
-    # parser.add_argument('returns_file', type=str, help='Path to the returns input data')
-    # parser.add_argument('binary_file', type=str, help='Path to the binary target data')
+    parser.add_argument('algorithm', type=str, help='CNN. LSTM or RAF')
+    parser.add_argument('model_name', type=str, help='Select the particular model trained')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
@@ -146,9 +174,8 @@ if __name__ == "__main__":
     df_returns = read_filepath(df_returns)
     df_binary = read_filepath(df_binary)
 
-    # predictions_csv()
-
     plt.figure()
     plt.plot(df_returns.XRX)
 
-    plot_roc('CNN', 'CNN_dense')
+    plot_roc(args.algorithm, args.model_name)
+    predictions_csv(args.algorithm, args.model_name)
