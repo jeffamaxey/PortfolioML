@@ -8,11 +8,13 @@ from sklearn.metrics import roc_curve, auc, roc_auc_score
 from keras.models import load_model
 import sys
 import os
+import shutil
 sys.path.append(os.path.dirname(os.path.abspath("..")))
-from dnn import all_data_DNN, all_data_LSTM
+from portfolioML.model.split import all_data_DNN, all_data_LSTM
 from portfolioML.data.data_returns import read_filepath
 
-def plot_roc(model, periods):
+
+def plot_roc(algorithm, name_model, periods=10):
     """
     Plot roc curve with mean and standard deviation of the area under the curve (auc) of a
     trained model.
@@ -35,14 +37,29 @@ def plot_roc(model, periods):
         Numer of model that are taken in order to compute plot and final values
 
     """
+    parent_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     tpr_list = []
     aucs_list = []
     interp_fpr = np.linspace(0, 1, 10000)
-    for per in range(0,periods):
-        #Splitting data set for each period
-        X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, per)
 
-        model = load_model(f'../model/DNN_bestia_adam_period{per}y.h5')
+    path = os.getcwd() + f'/ROC/{algorithm}/{name_model}/'
+    if os.path.exists(path):
+        logging.debug(f"Path '{path}' already exists, it will be overwrited \n")
+        # Remove all the files in case they already exist
+        shutil.rmtree(path)
+    os.mkdir(path)
+    logging.debug(f"Successfully created the directory '{path}' \n")
+
+    plt.figure(f'ROC CURVES {name_model}')
+    for per in range(0,periods):
+        logging.info(f'Creating ROC for period {per}')
+        if (algorithm == 'LSTM') or (algorithm == 'CNN'):
+            #Splitting data set for each period
+            X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, per)
+        else:
+            X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, per)
+
+        model = load_model(parent_path + f'/model/{algorithm}/{name_model}/{name_model}_period{per}.h5')
 
         #ROC curve
         probas = model.predict(X_test)
@@ -55,21 +72,22 @@ def plot_roc(model, periods):
         roc_auc = roc_auc_score(y_test, probas[:,0], average=None)
         aucs_list.append(roc_auc)
 
-        plt.figure('ROC CURVES')
+
         plt.plot(fpr, tpr, label=f'per{per} (area = %0.4f)' % (roc_auc))
         plt.plot([0, 1], [0, 1], 'k--')
 
         plt.xlabel('False Positive Rate',)
         plt.ylabel('True Positive Rate')
-        plt.title('ROC CURVE')
         plt.legend(loc="lower right", fontsize=12, frameon=False)
+    plt.title(f'ROC CURVE {name_model}')
+    plt.savefig(path)
 
     auc_mean = np.mean(np.array(aucs_list))
     auc_std = np.std(np.array(aucs_list))
 
     tpr_mean = np.mean(tpr_list, axis=0)
 
-    plt.figure('ROC CURVE - mean pm std')
+    plt.figure(f'ROC CURVE {name_model} - mean $\pm$ std')
     plt.plot(interp_fpr, tpr_mean, color='b',
           label=f'Mean ROC (AUC = {auc_mean:.4f} $\pm$ {auc_std:.4f})',
           lw=1, alpha=.8)
@@ -82,7 +100,7 @@ def plot_roc(model, periods):
     plt.xlabel('False Positive Rate',)
     plt.ylabel('True Positive Rate')
     plt.legend(loc="lower right", fontsize=12, frameon=False)
-    plt.show()
+    plt.savefig(path)
 
 def predictions_csv(num_period=10):
         path = os.getcwd()
@@ -115,63 +133,15 @@ if __name__ == "__main__":
               'debug': logging.DEBUG}
 
     logging.basicConfig(level= levels[args.log])
+    pd.options.mode.chained_assignment = None
 
     #Read the data
     df_returns = read_filepath(args.returns_file)
     df_binary = read_filepath(args.binary_file)
 
-    predictions_csv()
+    # predictions_csv()
 
     plt.figure()
     plt.plot(df_returns.XRX)
 
-    tpr_list = []
-    fpr_list = []
-    aucs_list = []
-
-    interp_fpr = np.linspace(0, 1, 10000)
-    for per in range(0,10):
-        #Splitting data set for each period
-        X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, per)
-
-        model = load_model(f'../model/CNN_dense3_period{per}.h5')
-
-        #ROC curve
-        probas = model.predict(X_test)
-
-        fpr, tpr, thresholds = roc_curve(y_test, probas[:,0])
-
-        interp_tpr = np.interp(interp_fpr, fpr, tpr)
-        tpr_list.append(interp_tpr)
-
-        roc_auc = roc_auc_score(y_test, probas[:,0], average=None)
-        aucs_list.append(roc_auc)
-
-        plt.figure('ROC CURVES')
-        plt.plot(fpr, tpr, label=f'per{per} (area = %0.4f)' % (roc_auc))
-        plt.plot([0, 1], [0, 1], 'k--')
-
-        plt.xlabel('False Positive Rate',)
-        plt.ylabel('True Positive Rate')
-        plt.title('ROC CURVE')
-        plt.legend(loc="lower right", fontsize=12, frameon=False)
-
-    auc_mean = np.mean(np.array(aucs_list))
-    auc_std = np.std(np.array(aucs_list))
-
-    tpr_mean = np.mean(tpr_list, axis=0)
-
-    plt.figure('ROC CURVE - mean pm std')
-    plt.plot(interp_fpr, tpr_mean, color='b',
-          label=f'Mean ROC (AUC = {auc_mean:.4f} $\pm$ {auc_std:.4f})',
-          lw=1, alpha=.8)
-
-    tpr_std = np.std(tpr_list, axis=0)
-    tprs_upper = np.minimum(tpr_mean + tpr_std, 1)
-    tprs_lower = np.maximum(tpr_mean - tpr_std, 0)
-    plt.fill_between(interp_fpr, tprs_lower, tprs_upper, color='blue', alpha=.2,
-                  label=r'$\pm$ 1 std. dev.')
-    plt.xlabel('False Positive Rate',)
-    plt.ylabel('True Positive Rate')
-    plt.legend(loc="lower right", fontsize=12, frameon=False)
-    plt.show()
+    plot_roc('CNN', 'CNN_dense')

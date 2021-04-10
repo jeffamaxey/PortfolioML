@@ -4,6 +4,7 @@ import argparse
 import numpy as np
 import pandas as pd
 from portfolioML.data.data_returns import read_filepath
+from sklearn.preprocessing import StandardScaler
 
 def split_Tperiod(df_returns, df_binary, len_period=1308, len_test=327):
     """
@@ -120,6 +121,75 @@ def get_train_set(df_returns, df_binary):
     list_tot_y = np.reshape(list_tot_y,(list_tot_y.shape[0]*list_tot_y.shape[1]))
 
     return list_tot_X, list_tot_y
+
+def all_data_LSTM(df_returns, df_binary, period, len_train=981):
+    """
+    Function that create the right input for the LSTM algorithm.
+    X_train and X_test are normalized. X_train is reshaped.
+
+    Parameters
+    ----------
+    df_returns : pandas dataframe
+        Pandas dataframe of returns.
+    df_binary : pandas dataframe
+        Pandas dataframe of returns..
+    period : int
+        Period over which you wanto to create the input for the LSTM.
+    len_train : int, optional
+        Lenght of the training set. The default is 981.
+    len_test : int, optional
+        Lenght of the trading set. The default is 327.
+
+    Returns
+    -------
+    X_train : numpy array
+
+    y_train : numpy array
+
+    X_test : numpy array
+
+    y_test : numpy array
+
+    """
+    scaler = StandardScaler()
+
+    periods_returns, periods_binary = split_Tperiod(df_returns, df_binary)
+
+    T1_input = periods_returns[period]
+    T1_target = periods_binary[period]
+
+    T1_input[:len_train] = scaler.fit_transform(T1_input[:len_train])
+
+    X_input_train, y_input_train = T1_input[:len_train], T1_target[:len_train]
+
+    T1_input[len_train:] = scaler.fit_transform(T1_input[len_train:])
+
+    X_test, y_test = T1_input[len_train:], T1_target[len_train:]
+
+    X_train, y_train = get_train_set(X_input_train, y_input_train)
+    X_train, y_train = np.array(X_train), np.array(y_train)
+
+    X_test, y_test = get_train_set(X_test, y_test)
+    X_test, y_test = np.array(X_test), np.array(y_test)
+
+    X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
+
+    return X_train, y_train, X_test, y_test
+
+def all_data_DNN(df_returns, df_binary, period, len_train=981, len_test=327):
+    """
+    Create a right input data for DNN starting from the right data of LSTM.
+    Indeed the parameters are the same of the all_data_LSTM, these are changed select
+    anly m values (features) exctrated from the 240 values in the LSTM input data.
+    """
+    X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, period)
+
+    m = list(range(0,240,20))+list(range(221,240))
+    X_train = X_train[:,m,:]
+    X_train = np.reshape(X_train, (X_train.shape[0], 31))
+
+    X_test = X_test[:,m,:]
+    X_test = np.reshape(X_test, (X_test.shape[0], 31))
 
 
 
