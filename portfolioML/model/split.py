@@ -192,7 +192,7 @@ def all_data_DNN(df_returns, df_binary, period, len_train=981, len_test=327):
     X_test = X_test[:,m,:]
     X_test = np.reshape(X_test, (X_test.shape[0], 31))
 
-
+    return X_train, y_train, X_test, y_test
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Creation of input and output data for lstm classification problem')
