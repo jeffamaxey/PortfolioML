@@ -5,15 +5,14 @@ import logging
 import argparse
 from keras.layers import Input, Dense, Dropout
 from keras.models import Model, Sequential
-from keras.models import load_model
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import roc_curve, auc, roc_auc_score
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath("..")))
-from split import split_Tperiod, get_train_set
-from portfolioML.data.data_returns import read_filepath
+from model.split import split_Tperiod, get_train_set
+from data.data_returns import read_filepath
 
 import matplotlib.pyplot as plt
 
@@ -87,7 +86,7 @@ def all_data_DNN(df_returns, df_binary, period, len_train=981, len_test=327):
 
     return X_train, y_train, X_test, y_test
 
-def DNN_model(*nodes_args, hidden=None , activation='tanh', loss='binary_crossentropy', optimizer='adam'):
+def DNN_model(nodes_args, hidden=None , activation='tanh', loss='binary_crossentropy', optimizer='adam'):
     """
     DNN model with selected number of hidden layer for classification task.
     For more details about the model see the reference
@@ -160,75 +159,9 @@ def DNN_model(*nodes_args, hidden=None , activation='tanh', loss='binary_crossen
     logging.info(model.summary()) 
     return model
 
-def training(model, model_feature, periods=10, validation_split=0.2, batch_size=1024, epochs=400):
-    """
-    Training of a selected model over several study period. Plot for each periods
-    loss trand and accuracy trand.
-    Models are saved in format "h5" for future development
-
-    Paremeters
-    ----------
-    model: tensorflow.python.keras.engine
-        Tensorflow model to training
-
-    model_feature: bool
-         
-
-    periods: integer(optional)
-        Study periods over wich the model are traning. Default = 10
-
-    validation_split: float between 0 and 1
-        Part of training set dedicated for validation part. Default = 0.2
-
-    batch_size: Integer or None
-        Number of samples per gradient update.
-        Do not specify the batch_size if your data is in the form of datasets,
-        generators, or keras.utils.Sequence instances (since they generate batches). Default = 1024.
-        References: https://www.tensorflow.org/api_docs/python/tf/keras/Model
-
-    epochs: Integer
-        Number of epochs to train the model. An epoch is an iteration over the entire x and y data provided.
-        Note that in conjunction with initial_epoch, epochs is to be understood as "final epoch". 
-        The model is not trained for a number of iterations given by epochs, but merely until the epoch of index epochs is reached.
-        References: https://www.tensorflow.org/api_docs/python/tf/keras/Model
-    """
-    for per in range(0,periods):
-        #Splitting data for each period
-        if model_feature:
-            X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, per)
-        else:
-            X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, per)
-        
-        es = EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=True)
-        mc = ModelCheckpoint(f'DNN_mymod3_adadelta_period{per}.h5', monitor='val_loss', mode='min', verbose=0)
-        history = model.fit(X_train ,y_train, callbacks=[es,mc],
-                            validation_split=validation_split, batch_size=batch_size, epochs=epochs, verbose=1)
-
-        #Elbow curve
-        plt.figure(f'Loss and Accuracy period {per}')
-        plt.subplot(1,2,1)
-        plt.plot(history.history['loss'], label='train_loss') 
-        plt.plot(history.history['val_loss'], label='val_loss')
-        plt.xlabel('Epochs')
-        plt.title('Training and Validation Loss vs Epochs')
-        plt.grid()
-        plt.legend()
-
-        plt.subplot(1,2,2)
-        plt.plot(history.history['accuracy'], label='accuracy')
-        plt.plot(history.history['val_accuracy'], label='val_accuracy')
-        plt.xlabel('Epochs')
-        plt.title('Training and Validation Accuracy vs Epochs')
-        plt.grid()
-        plt.legend()
-
-    plt.show()
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Make DNN for classification task to predicti class label 0 or 1')
-    parser.add_argument('returns_file', type=str, help='Path to the returns input data')
-    parser.add_argument('binary_file', type=str, help='Path to the binary target data')
+    parser.add_argument("nodes", type=int, nargs='+', help='Numerb of nodes in esch layers of DNN')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
@@ -243,16 +176,20 @@ if __name__ == "__main__":
     logging.basicConfig(level= levels[args.log])
 
     #Read the data
-    df_returns = read_filepath(args.returns_file)
-    df_binary = read_filepath(args.binary_file)
+    path = os.getcwd()
+    parent_path = os.path.abspath(os.path.join(path, os.pardir))
+    df_binary = parent_path + "/data/ReturnsBinary.csv"
+    df_returns = parent_path + "/data/ReturnsData.csv"
+    df_returns = read_filepath(df_returns)
+    df_binary = read_filepath(df_binary)
 
     for per in range(5,10):
-        model = DNN_model(150,80,15,5, optimizer='adam')
+        model = DNN_model(args.nodes, optimizer='adam')
         #Splitting data for each period
         X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, per)
         #Trainng
         es = EarlyStopping(monitor='val_loss', patience=40, restore_best_weights=True)
-        mc = ModelCheckpoint(f'DNN_mymod4_period{per}.h5', monitor='val_loss', mode='min', verbose=0)
+        mc = ModelCheckpoint(f'DNN_test_period{per}.h5', monitor='val_loss', mode='min', verbose=0)
         history = model.fit(X_train ,y_train, callbacks=[es,mc],validation_split=0.2, batch_size=256, epochs=400, verbose=1)
 
         #Elbow curve
