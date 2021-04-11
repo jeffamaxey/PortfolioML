@@ -173,6 +173,7 @@ def all_data_LSTM(df_returns, df_binary, period, len_train=981):
     X_test, y_test = np.array(X_test), np.array(y_test)
 
     X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
+    X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
 
     return X_train, y_train, X_test, y_test
 
