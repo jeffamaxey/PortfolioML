@@ -11,11 +11,11 @@ from keras.optimizers import RMSprop, Adam
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath("..")))
-from split import split_Tperiod, get_train_set
-from portfolioML.data.data_returns import read_filepath
+from model.split import split_Tperiod, get_train_set
+from data.data_returns import read_filepath
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
-from portfolioML.makedir import smart_makedir, gp_up
+from makedir import smart_makedir, go_up
 
 
 def all_data_LSTM(df_returns, df_binary, period, len_train=981):
@@ -72,7 +72,7 @@ def all_data_LSTM(df_returns, df_binary, period, len_train=981):
 
     return X_train, y_train, X_test, y_test
 
-def LSTM_model(num_units=25, drop_out=0.1):
+def LSTM_model(num_units=1, drop_out=0.2):
     inputs = Input(shape= (240, 1))
     drop = Dropout(drop_out)(inputs)
     hidden = LSTM(num_units, return_sequences=False)(drop)
@@ -90,15 +90,9 @@ def LSTM_model(num_units=25, drop_out=0.1):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Creation of input and output data for lstm classification problem')
-    parser.add_argument('returns_file', type=str, help='Path to the returns input data')
-    parser.add_argument('binary_file', type=str, help='Path to the binary target data')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
-    parser.add_argument('num_units', type=int, help='Number of units in the LSTM layer')
     parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
-    parser.add_argument('num_epochs', type=int, help='Number of epochs you want to train')
-    parser.add_argument('batch_size', type=int, help='Batch_size')
-    parser.add_argument('drop_out', type=float, help='Value of the dropout')
     parser.add_argument('model_name', type=str, help='Choose the name of the model')
 
     args = parser.parse_args()
@@ -114,26 +108,30 @@ if __name__ == "__main__":
     pd.options.mode.chained_assignment = None # Mute some warnings of Pandas
 
     #Read the data
-    df_returns = read_filepath(args.returns_file)
-    df_binary = read_filepath(args.binary_file)
+    df_returns_path = go_up(2) + "/data/ReturnsData.csv"
+    df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
+    df_returns = read_filepath(df_returns_path)
+    df_binary = read_filepath(df_binary_path)
     # Pass or not the weights from one period to another
     recursive = True
 
-    os.mkdir(args.model_name)
+    smart_makedir(args.model_name)
+    losses = smart_makedir(args.model_name + "/losses")
+    accuracies = smart_makedir(args.model_name + "/accuracies")
 
     for i in range(args.num_periods):
         logging.info(f'============ Start Period {i}th ===========')
         if (i!=0) and (recursive):
             logging.info('LOADING PREVIOUS MODEL')
-            model = load_model(f"/{args.model_name}/{args.model_name}_period{i-1}.h5")
+            model = load_model(f"{args.model_name}/{args.model_name}_period{i-1}.h5")
         else:
             logging.info('CREATING NEW MODEL')
-            model = LSTM_model(args.num_units, args.drop_out)
+            model = LSTM_model()
         logging.info(model.summary())
         X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, i)
         es = EarlyStopping(monitor='val_loss', patience=30, restore_best_weights=True)
-        mc = ModelCheckpoint(f'/{args.model_name}/{args.model_name}_period{i}.h5', monitor='val_loss', mode='min', verbose=0)
-        history = model.fit(X_train, y_train, epochs=args.num_epochs, batch_size=args.batch_size,
+        mc = ModelCheckpoint(f'{args.model_name}/{args.model_name}_period{i}.h5', monitor='val_loss', mode='min', verbose=0)
+        history = model.fit(X_train, y_train, epochs=1, batch_size=896,
                             callbacks=[es,mc], validation_split=0.2, shuffle=False, verbose=1)
 
         plt.figure(f'Period {i} Losses')
@@ -142,7 +140,7 @@ if __name__ == "__main__":
         plt.xlabel('Epochs')
         plt.legend()
         plt.grid(True)
-        plt.savefig(f'losses_{i}.png') # AGGIUSTARE QUI
+        plt.savefig(os.getcwd() + f'/{args.model_name}/losses/losses_{i}.png')
 
         plt.figure(f'Period {i} Accuracies')
         plt.plot(history.history['accuracy'], label='accuracy')
@@ -150,15 +148,7 @@ if __name__ == "__main__":
         plt.xlabel('Epochs')
         plt.legend()
         plt.grid(True)
-        plt.savefig(f'accuracies_{i}.png') # AGGIUSTARE QUI
-
-        y_pred = model.predict(X_test)
-        y_pred_companies = [y_pred[i:87+i] for i in range(0,len(y_pred)-87+1,87)]
-        dict_comp = {df_returns.columns[i]: y_pred_companies[i] for i in range(0,365)}
-        df_predictions = pd.DataFrame()
-        for tick in df_returns.columns:
-            df_predictions[tick] = dict_comp[tick][:,0]
-        df_predictions.to_csv(f'Predictions_{i}th_Period.csv') # AGGIUSTARE QUI
+        plt.savefig(os.getcwd() + f'/{args.model_name}/accuracies/accuracies_{i}.png')
 
 
         logging.info(f'============ End Period {i}th ===========')
