@@ -4,7 +4,7 @@ import pandas as pd
 import logging
 import argparse
 from keras.layers import Input, Dense, LSTM, Dropout
-from keras.models import Model
+from keras.models import Sequential
 from keras.models import load_model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.optimizers import RMSprop, Adam
@@ -17,21 +17,30 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 from makedir import smart_makedir, go_up
 
+def LSTM_model(nodes,optimizer, drop_out=0.2):
+  
+    model = Sequential()
+    model.add(Input(shape= (240, 1)))
+    model.add(Dropout(drop_out))
 
-def LSTM_model(num_units=1, drop_out=0.2):
-    inputs = Input(shape= (240, 1))
-    drop = Dropout(drop_out)(inputs)
-    hidden = LSTM(num_units, return_sequences=False)(drop)
-    drop = Dropout(drop_out)(hidden)
-    outputs = Dense(1, activation='sigmoid')(drop)
+    if len(nodes) > 1:
+        ret_seq = True
+    else:
+        ret_seq = False
 
-    model = Model(inputs=inputs, outputs=outputs)
+    for nod in nodes:
+        model.add(LSTM(nod, return_sequences=ret_seq))
+        model.add(Dropout(drop_out))
+
+    model.add(Dense(1, activation='sigmoid'))
 
     # Two optimiziers used during training
-    rms_prop = RMSprop(learning_rate=0.005, momentum=0.5, clipvalue=0.5)
-    adam = Adam(learning_rate=0.005)
+    if optimizer == 'RMS_prop':
+        opt = RMSprop(learning_rate=0.005, momentum=0.5, clipvalue=0.5)
+    if optimizer == 'Adam':
+        opt = Adam(learning_rate=0.005)
 
-    model.compile(loss='binary_crossentropy', optimizer=rms_prop, metrics=['accuracy'])
+    model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
     return model
 
 if __name__ == "__main__":
@@ -40,6 +49,9 @@ if __name__ == "__main__":
                         help=("Provide logging level. Example --log debug', default='info"))
     parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
     parser.add_argument('model_name', type=str, help='Choose the name of the model')
+    parser.add_argument('nodes',type=int, nargs='+', help='Choose the number of LSTM+Dropout layers')
+    parser.add_argument('-optimizier', type=str, default='RMS_prop', help='Choose RMS_prop or Adam')
+
 
     args = parser.parse_args()
 
@@ -50,7 +62,6 @@ if __name__ == "__main__":
               'debug': logging.DEBUG}
 
     logging.basicConfig(level= levels[args.log])
-    # tf.get_logger().setLevel('CRITICAL')
     pd.options.mode.chained_assignment = None # Mute some warnings of Pandas
 
     #Read the data
@@ -72,7 +83,7 @@ if __name__ == "__main__":
             model = load_model(f"{args.model_name}/{args.model_name}_period{i-1}.h5")
         else:
             logging.info('CREATING NEW MODEL')
-            model = LSTM_model()
+            model = LSTM_model(args.nodes, args.optimizier)
         logging.info(model.summary())
         X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, i)
         es = EarlyStopping(monitor='val_loss', patience=30, restore_best_weights=True)
