@@ -13,67 +13,16 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath("..")))
 from model.split import split_Tperiod, get_train_set
 from data.data_returns import read_filepath
+from makedir import smart_makedir, go_up
+from model.LSTM.lstm import all_data_LSTM
 
 import matplotlib.pyplot as plt
-
-def all_data_LSTM(df_returns, df_binary, period, len_train=981, len_test=327):
-    """
-    Function that create the right input for the LSTM algorithm.
-    X_train and X_test are normalized. X_train is reshaped.
-
-    Parameters
-    ----------
-    df_returns : pandas dataframe
-        Pandas dataframe of returns.
-    df_binary : pandas dataframe
-        Pandas dataframe of returns..
-    period : int
-        Period over which you wanto to create the input for the LSTM.
-    len_train : int, optional
-        Lenght of the training set. The default is 981.
-    len_test : int, optional
-        Lenght of the trading set. The default is 327.
-
-    Returns
-    -------
-    X_train : numpy array
-
-    y_train : numpy array
-
-    X_test : numpy array
-
-    y_test : numpy array
-
-    """
-    scaler = StandardScaler()
-
-    periods_returns, periods_binary = split_Tperiod(df_returns, df_binary)
-
-    T1_input = periods_returns[period]
-    T1_target = periods_binary[period]
-
-    T1_input[:len_train] = scaler.fit_transform(T1_input[:len_train])
-
-    X_input_train, y_input_train = T1_input[:len_train], T1_target[:len_train]
-
-    T1_input[len_train:] = scaler.fit_transform(T1_input[len_train:])
-    X_test, y_test = T1_input[len_train:], T1_target[len_train:]
-
-    X_train, y_train = get_train_set(X_input_train, y_input_train)
-    X_train, y_train = np.array(X_train), np.array(y_train)
-
-    X_test, y_test = get_train_set(X_test, y_test)
-    X_test, y_test = np.array(X_test), np.array(y_test)
-
-    X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
-    X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
-    return X_train, y_train, X_test, y_test
 
 def all_data_DNN(df_returns, df_binary, period, len_train=981, len_test=327):
     """
     Create a right input data for DNN starting from the right data of LSTM.
     Indeed the parameters are the same of the all_data_LSTM, these are changed select
-    anly m values (features) exctrated from the 240 values in the LSTM input data.
+    only m values (features) exctrated from the 240 values in the LSTM input data.
     """
     X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, period)
 
@@ -100,14 +49,18 @@ def DNN_model(nodes_args, hidden=None , activation='tanh', loss='binary_crossent
     way from 31 to 5, note that the actual values of the nodes is determine by np.linspace(feature,5,hidden).
     
     - Output: Dense(1, activation='sigmoid'), the output is interpretated as the probability that 
-    the input is grater than the cross-section median
+    the input is grater than the cross-section median.
+
+    Note that a suitable Dropout layers fill between the layers described above. Parameters of this 
+    layers has been choosen following a "try and error" way to minimaze the shape of loss fuction
+    (future version of this code will have the possibility to set this parameters).
 
     Reference: "doi:10.1016/j.ejor.2016.10.031"
 
     Parameters
     ----------
 
-    *nodes_args: integer 
+    nodes_args: list of integer
         Number of nodes for each layers.    
 
     hidden: integer(optional), default = None
@@ -176,10 +129,8 @@ if __name__ == "__main__":
     logging.basicConfig(level= levels[args.log])
 
     #Read the data
-    path = os.getcwd()
-    parent_path = os.path.abspath(os.path.join(path, os.pardir))
-    df_binary = parent_path + "/data/ReturnsBinary.csv"
-    df_returns = parent_path + "/data/ReturnsData.csv"
+    df_binary = go_up(2) + "/data/ReturnsBinary.csv"
+    df_returns = go_up(2) + "/data/ReturnsData.csv"
     df_returns = read_filepath(df_returns)
     df_binary = read_filepath(df_binary)
 
