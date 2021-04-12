@@ -5,76 +5,24 @@ import logging
 import argparse
 from keras.layers import Input, Dense, Dropout
 from keras.models import Model, Sequential
-from keras.models import load_model
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import roc_curve, auc, roc_auc_score
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath("..")))
-from split import split_Tperiod, get_train_set
-from portfolioML.data.data_returns import read_filepath
+from model.split import split_Tperiod, get_train_set
+from data.data_returns import read_filepath
+from makedir import smart_makedir, go_up
+from model.LSTM.lstm import all_data_LSTM
 
 import matplotlib.pyplot as plt
-
-def all_data_LSTM(df_returns, df_binary, period, len_train=981, len_test=327):
-    """
-    Function that create the right input for the LSTM algorithm.
-    X_train and X_test are normalized. X_train is reshaped.
-
-    Parameters
-    ----------
-    df_returns : pandas dataframe
-        Pandas dataframe of returns.
-    df_binary : pandas dataframe
-        Pandas dataframe of returns..
-    period : int
-        Period over which you wanto to create the input for the LSTM.
-    len_train : int, optional
-        Lenght of the training set. The default is 981.
-    len_test : int, optional
-        Lenght of the trading set. The default is 327.
-
-    Returns
-    -------
-    X_train : numpy array
-
-    y_train : numpy array
-
-    X_test : numpy array
-
-    y_test : numpy array
-
-    """
-    scaler = StandardScaler()
-
-    periods_returns, periods_binary = split_Tperiod(df_returns, df_binary)
-
-    T1_input = periods_returns[period]
-    T1_target = periods_binary[period]
-
-    T1_input[:len_train] = scaler.fit_transform(T1_input[:len_train])
-
-    X_input_train, y_input_train = T1_input[:len_train], T1_target[:len_train]
-
-    T1_input[len_train:] = scaler.fit_transform(T1_input[len_train:])
-    X_test, y_test = T1_input[len_train:], T1_target[len_train:]
-
-    X_train, y_train = get_train_set(X_input_train, y_input_train)
-    X_train, y_train = np.array(X_train), np.array(y_train)
-
-    X_test, y_test = get_train_set(X_test, y_test)
-    X_test, y_test = np.array(X_test), np.array(y_test)
-
-    X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
-    X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
-    return X_train, y_train, X_test, y_test
 
 def all_data_DNN(df_returns, df_binary, period, len_train=981, len_test=327):
     """
     Create a right input data for DNN starting from the right data of LSTM.
     Indeed the parameters are the same of the all_data_LSTM, these are changed select
-    anly m values (features) exctrated from the 240 values in the LSTM input data.
+    only m values (features) exctrated from the 240 values in the LSTM input data.
     """
     X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, period)
 
@@ -87,7 +35,7 @@ def all_data_DNN(df_returns, df_binary, period, len_train=981, len_test=327):
 
     return X_train, y_train, X_test, y_test
 
-def DNN_model(*nodes_args, hidden=None , activation='tanh', loss='binary_crossentropy', optimizer='adam'):
+def DNN_model(nodes_args, hidden=None , activation='tanh', loss='binary_crossentropy', optimizer='adam'):
     """
     DNN model with selected number of hidden layer for classification task.
     For more details about the model see the reference
@@ -101,14 +49,18 @@ def DNN_model(*nodes_args, hidden=None , activation='tanh', loss='binary_crossen
     way from 31 to 5, note that the actual values of the nodes is determine by np.linspace(feature,5,hidden).
     
     - Output: Dense(1, activation='sigmoid'), the output is interpretated as the probability that 
-    the input is grater than the cross-section median
+    the input is grater than the cross-section median.
+
+    Note that a suitable Dropout layers fill between the layers described above. Parameters of this 
+    layers has been choosen following a "try and error" way to minimaze the shape of loss fuction
+    (future version of this code will have the possibility to set this parameters).
 
     Reference: "doi:10.1016/j.ejor.2016.10.031"
 
     Parameters
     ----------
 
-    *nodes_args: integer 
+    nodes_args: list of integer
         Number of nodes for each layers.    
 
     hidden: integer(optional), default = None
@@ -160,75 +112,9 @@ def DNN_model(*nodes_args, hidden=None , activation='tanh', loss='binary_crossen
     logging.info(model.summary()) 
     return model
 
-def training(model, model_feature, periods=10, validation_split=0.2, batch_size=1024, epochs=400):
-    """
-    Training of a selected model over several study period. Plot for each periods
-    loss trand and accuracy trand.
-    Models are saved in format "h5" for future development
-
-    Paremeters
-    ----------
-    model: tensorflow.python.keras.engine
-        Tensorflow model to training
-
-    model_feature: bool
-         
-
-    periods: integer(optional)
-        Study periods over wich the model are traning. Default = 10
-
-    validation_split: float between 0 and 1
-        Part of training set dedicated for validation part. Default = 0.2
-
-    batch_size: Integer or None
-        Number of samples per gradient update.
-        Do not specify the batch_size if your data is in the form of datasets,
-        generators, or keras.utils.Sequence instances (since they generate batches). Default = 1024.
-        References: https://www.tensorflow.org/api_docs/python/tf/keras/Model
-
-    epochs: Integer
-        Number of epochs to train the model. An epoch is an iteration over the entire x and y data provided.
-        Note that in conjunction with initial_epoch, epochs is to be understood as "final epoch". 
-        The model is not trained for a number of iterations given by epochs, but merely until the epoch of index epochs is reached.
-        References: https://www.tensorflow.org/api_docs/python/tf/keras/Model
-    """
-    for per in range(0,periods):
-        #Splitting data for each period
-        if model_feature:
-            X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, per)
-        else:
-            X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, per)
-        
-        es = EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=True)
-        mc = ModelCheckpoint(f'DNN_mymod3_adadelta_period{per}.h5', monitor='val_loss', mode='min', verbose=0)
-        history = model.fit(X_train ,y_train, callbacks=[es,mc],
-                            validation_split=validation_split, batch_size=batch_size, epochs=epochs, verbose=1)
-
-        #Elbow curve
-        plt.figure(f'Loss and Accuracy period {per}')
-        plt.subplot(1,2,1)
-        plt.plot(history.history['loss'], label='train_loss') 
-        plt.plot(history.history['val_loss'], label='val_loss')
-        plt.xlabel('Epochs')
-        plt.title('Training and Validation Loss vs Epochs')
-        plt.grid()
-        plt.legend()
-
-        plt.subplot(1,2,2)
-        plt.plot(history.history['accuracy'], label='accuracy')
-        plt.plot(history.history['val_accuracy'], label='val_accuracy')
-        plt.xlabel('Epochs')
-        plt.title('Training and Validation Accuracy vs Epochs')
-        plt.grid()
-        plt.legend()
-
-    plt.show()
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Make DNN for classification task to predicti class label 0 or 1')
-    parser.add_argument('returns_file', type=str, help='Path to the returns input data')
-    parser.add_argument('binary_file', type=str, help='Path to the binary target data')
+    parser.add_argument("nodes", type=int, nargs='+', help='Numerb of nodes in esch layers of DNN')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
@@ -243,16 +129,18 @@ if __name__ == "__main__":
     logging.basicConfig(level= levels[args.log])
 
     #Read the data
-    df_returns = read_filepath(args.returns_file)
-    df_binary = read_filepath(args.binary_file)
+    df_binary = go_up(2) + "/data/ReturnsBinary.csv"
+    df_returns = go_up(2) + "/data/ReturnsData.csv"
+    df_returns = read_filepath(df_returns)
+    df_binary = read_filepath(df_binary)
 
     for per in range(5,10):
-        model = DNN_model(150,80,15,5, optimizer='adam')
+        model = DNN_model(args.nodes, optimizer='adam')
         #Splitting data for each period
         X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, per)
         #Trainng
         es = EarlyStopping(monitor='val_loss', patience=40, restore_best_weights=True)
-        mc = ModelCheckpoint(f'DNN_mymod4_period{per}.h5', monitor='val_loss', mode='min', verbose=0)
+        mc = ModelCheckpoint(f'DNN_test_period{per}.h5', monitor='val_loss', mode='min', verbose=0)
         history = model.fit(X_train ,y_train, callbacks=[es,mc],validation_split=0.2, batch_size=256, epochs=400, verbose=1)
 
         #Elbow curve
