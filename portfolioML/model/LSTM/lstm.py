@@ -11,66 +11,12 @@ from keras.optimizers import RMSprop, Adam
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath("..")))
-from model.split import split_Tperiod, get_train_set
+from model.split import split_Tperiod, get_train_set, all_data_LSTM
 from data.data_returns import read_filepath
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 from makedir import smart_makedir, go_up
 
-
-def all_data_LSTM(df_returns, df_binary, period, len_train=981):
-    """
-    Function that create the right input for the LSTM algorithm.
-    X_train and X_test are normalized. X_train is reshaped.
-
-    Parameters
-    ----------
-    df_returns : pandas dataframe
-        Pandas dataframe of returns.
-    df_binary : pandas dataframe
-        Pandas dataframe of returns..
-    period : int
-        Period over which you wanto to create the input for the LSTM.
-    len_train : int, optional
-        Lenght of the training set. The default is 981.
-    len_test : int, optional
-        Lenght of the trading set. The default is 327.
-
-    Returns
-    -------
-    X_train : numpy array
-
-    y_train : numpy array
-
-    X_test : numpy array
-
-    y_test : numpy array
-
-    """
-    scaler = StandardScaler()
-
-    periods_returns, periods_binary = split_Tperiod(df_returns, df_binary)
-
-    T1_input = periods_returns[period]
-    T1_target = periods_binary[period]
-
-    T1_input[:len_train] = scaler.fit_transform(T1_input[:len_train])
-
-    X_input_train, y_input_train = T1_input[:len_train], T1_target[:len_train]
-
-    T1_input[len_train:] = scaler.fit_transform(T1_input[len_train:])
-
-    X_test, y_test = T1_input[len_train:], T1_target[len_train:]
-
-    X_train, y_train = get_train_set(X_input_train, y_input_train)
-    X_train, y_train = np.array(X_train), np.array(y_train)
-
-    X_test, y_test = get_train_set(X_test, y_test)
-    X_test, y_test = np.array(X_test), np.array(y_test)
-
-    X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
-
-    return X_train, y_train, X_test, y_test
 
 def LSTM_model(num_units=1, drop_out=0.2):
     inputs = Input(shape= (240, 1))
