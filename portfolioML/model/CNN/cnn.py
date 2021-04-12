@@ -1,19 +1,17 @@
 """ CNN model """
-import numpy as np
-import pandas as pd
 import logging
 import argparse
-import matplotlib.pyplot as plt
-from keras.layers import Input, Dense, Dropout, Conv1D, MaxPooling1D, Flatten, Concatenate
-from keras.models import Model, Sequential
-from keras.callbacks import EarlyStopping, ModelCheckpoint
-from keras.utils.vis_utils import plot_model
 import sys
 import os
+import matplotlib.pyplot as plt
+from keras.layers import Input, Dense, Dropout, Conv1D, MaxPooling1D, Flatten, Concatenate
+from keras.models import Model
+from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.utils.vis_utils import plot_model
 sys.path.append(os.path.dirname(os.path.abspath("..")))
-from model.split import split_Tperiod, get_train_set, all_data_LSTM
+from model.split import all_data_LSTM
 from data.data_returns import read_filepath
-from makedir import smart_makedir, go_up
+from makedir import go_up
 
 class MinPooling1D(MaxPooling1D):
     """
@@ -43,7 +41,7 @@ def CNN_model(filters, kernel_size=(20), strides=5, activation='tanh', min_pooli
     - Dropout: drop(0.1)
 
     - Convolution: Conv1D(filters, kernel_size=kernel_size, strides=strides, activation='tanh')(drop)
-    The choise of parameters follows the "nature" of the task, the kernel_size is about one mouth 
+    The choise of parameters follows the "nature" of the task, the kernel_size is about one mouth
     of trading days (20) and the strides is one week (5).
 
     - Pooling Layers:
@@ -62,13 +60,13 @@ def CNN_model(filters, kernel_size=(20), strides=5, activation='tanh', min_pooli
     - Dense: Dense(25, activation= 'tanh')(flatten)
     Compute all the feature and the information of the previous steps
 
-    - Output: Dense(1, activation='sigmoid'), the output is interpretated as the probability that 
+    - Output: Dense(1, activation='sigmoid'), the output is interpretated as the probability that
     the input is grater than the cross-section median.
 
     Parameters
     ----------
     filters: integer
-        The dimensionality of the output space (i.e. the number of output filters in the convolution).
+        The dimensionality of the output space (the number of output filters in the convolution).
         Referances: https://keras.io/api/layers/convolution_layers/convolution1d/
 
     kernel_size: tuple of one integers (optional)
@@ -81,7 +79,8 @@ def CNN_model(filters, kernel_size=(20), strides=5, activation='tanh', min_pooli
         Referances: https://keras.io/api/layers/convolution_layers/convolution1d/
 
     activation: function to use (optional)
-        If you don't specify anything, no activation is applied (see keras.activations). Default = 'tanh'
+        If you don't specify anything, no activation is applied (see keras.activations).
+        Default = 'tanh'
         Referances: https://keras.io/api/layers/convolution_layers/convolution1d/
 
 
@@ -110,7 +109,7 @@ def CNN_model(filters, kernel_size=(20), strides=5, activation='tanh', min_pooli
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     if plt_figure:
-        plot_model(model, to_file=f'CNN:fil{filters}_kernel{kernel_size}_strides{strides}_min{min_pooling}.png', 
+        plot_model(model, to_file=f'CNN:fil{filters}_kernel{kernel_size}_strides{strides}_min{min_pooling}.png',
                     show_shapes=True, show_layer_names=True)
 
     logging.info(model.summary())
@@ -143,8 +142,7 @@ if __name__ == "__main__":
     df_binary = go_up(2) + "/data/ReturnsBinary.csv"
     df_returns = go_up(2) + "/data/ReturnsData.csv"
     df_returns = read_filepath(df_returns)
-    df_binary = read_filepath(df_binary) 
-
+    df_binary = read_filepath(df_binary)
 
     for per in range(0,10):
         model = CNN_model(args.filters, min_pooling=args.min_pooling, plt_figure=args.plt_figure)
@@ -158,7 +156,7 @@ if __name__ == "__main__":
         #Elbow curve
         plt.figure(f'CNN_minpool_Loss and Accuracy period {per}')
         plt.subplot(1,2,1)
-        plt.plot(history.history['loss'], label='train_loss') 
+        plt.plot(history.history['loss'], label='train_loss')
         plt.plot(history.history['val_loss'], label='val_loss')
         plt.xlabel('Epochs')
         plt.title('Training and Validation Loss vs Epochs')
@@ -174,6 +172,3 @@ if __name__ == "__main__":
         plt.legend()
 
     plt.show()
-
-    
-
