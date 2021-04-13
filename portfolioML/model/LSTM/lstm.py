@@ -18,7 +18,25 @@ import matplotlib.pyplot as plt
 from makedir import smart_makedir, go_up
 
 def LSTM_model(nodes,optimizer, drop_out=0.2):
-  
+    '''
+    Architeture for the LSTM algorithm
+
+    Parameters
+    ----------
+    nodes : list
+        List that contains one number of nodes for each layer the user want to use.
+    optimizer : str
+        Optimizier between RMS_prop or Adam.
+    drop_out : float, optional
+        Value of the dropout in all the dropout layers. The default is 0.2.
+
+    Returns
+    -------
+    model : tensorflow.python.keras.engine.sequential.Sequential
+        Model.
+
+    '''
+
     model = Sequential()
     model.add(Input(shape= (240, 1)))
     model.add(Dropout(drop_out))
@@ -49,7 +67,7 @@ if __name__ == "__main__":
                         help=("Provide logging level. Example --log debug', default='info"))
     parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
     parser.add_argument('model_name', type=str, help='Choose the name of the model')
-    parser.add_argument('nodes',type=int, nargs='+', help='Choose the number of LSTM+Dropout layers')
+    parser.add_argument('nodes',type=int, nargs='+', help='Choose the number of nodes in LSTM+Dropout layers')
     parser.add_argument('-optimizier', type=str, default='RMS_prop', help='Choose RMS_prop or Adam')
 
 

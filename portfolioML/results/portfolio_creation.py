@@ -2,11 +2,16 @@ import pandas as pd
 import numpy as np
 import logging
 import argparse
+import shutil
+import random
+import time
 import sys
 import os
-import shutil
+sys.path.append(os.path.dirname(os.path.abspath("..")))
+from makedir import smart_makedir, go_up
 
-def get_trading_values(df_price, predictions_folder, len_period=1308, len_train = 981, len_test=327):
+
+def get_trading_values(df_price, algorithm, model_name, len_period=1308, len_train = 981, len_test=327):
     '''
     Generate a pandas dataframe composed by all the days of which lstm.py forecasts
     the prices. This is due to the fact that lstm.py doesn't track the dates'
@@ -16,8 +21,10 @@ def get_trading_values(df_price, predictions_folder, len_period=1308, len_train 
     ----------
     df_price : str
         Path of the csv file of prices.
-    predictions_folder : str
-        Path of the folder in which the predictions made by lstm.py are.
+    algorithm : str
+        LSTM, DNN or CNN.
+    model_name : str
+        Name of the particular selected model trained. Check the name of folders in predictions.
     len_period : int, optional
         Lenght of each study period. The default is 1308.
     len_train : int, optional
@@ -38,17 +45,12 @@ def get_trading_values(df_price, predictions_folder, len_period=1308, len_train 
     # Select, then, only days in test sets of which forecasts are actually made
     trading_values = [tests[i][240:] for i in range(len(tests))]
 
-    path = os.getcwd() + '/Predictions'
-    if os.path.exists(path):
-        logging.debug(f"Path '{path}' already exists, it will be overwrited \n")
-        # Remove all the files in case they already exist
-        shutil.rmtree(path)
-    os.mkdir(path)
-    logging.debug(f"Successfully created the directory '{path}' \n")
+    smart_makedir(f'predictions_for_portfolio/{algorithm}/{model_name}')
+    path = os.getcwd() + f'/predictions_for_portfolio/{algorithm}/{model_name}'
 
     # Insert the 'Date' column in the forecasts made by lstm.py
     for i in range(10):
-        ith_predictions = pd.read_csv(f"{predictions_folder}/Predictions_{i}th_Period.csv",
+        ith_predictions = pd.read_csv(f"predictions/{algorithm}/{model_name}/{model_name}_Predictions_{i}th_Period.csv",
                                       index_col=0)
         ith_predictions.insert(0,'Date',trading_values[i]['Date'].values)
         # Save the csv file
@@ -92,7 +94,7 @@ def portfolio_creation(forecasts, k=10):
         portfolio.append(df_portfolio)
     return portfolio
 
-def forecast_returns(num_period=10):
+def forecast_returns(df_price, num_period=10, k=10, money=1., monkey=False):
     '''
     The following is aimed to calculate the daily returns. We set a long position for the
     top k companies at each day and a short position for the bottom k ones. So, we
@@ -103,21 +105,31 @@ def forecast_returns(num_period=10):
     ----------
     num_period : int, optional
         Number of period over which forecast returns have to be calculated. The default is 10
+    k : int,  optional
+        Number of top and flop forecasts that will be considered. The default is 10.
+    money : float, optional
+        How much you want to invest
 
     Returns
     -------
     returns : numpy array
         Numpy array of all returns for all periods
-
+    accumulative_returns : numpy array
+        Accumulative returns
     '''
+
     returns = []
     for period in range(num_period):
         for i in range(len(portfolio[0])):
             # Select one trading day
             trading_day = portfolio[period][i].columns[0]
-            # List all companies in that day
-            companies = portfolio[period][i].Company.tolist()
-            # Select the corresponding index in df_price
+            if monkey:
+                rand = random.sample(range(1,len(df_price.columns)),2*k)
+                companies = df_price.columns[rand]
+            else:
+                # List all companies in that day
+                companies = portfolio[period][i].Company.tolist()
+                # Select the corresponding index in df_price
             index = df_price.Date[df_price.Date == trading_day].index.tolist()
             index = index[0]
             # Determine the returns for long and short positions
@@ -127,17 +139,36 @@ def forecast_returns(num_period=10):
                 else:
                     returns.append(df_price[comp][index+1]/df_price[comp][index] - 1)
     returns = np.array(returns)
+    returns_rs = np.reshape(returns, (int(len(returns)/(2*k)),(2*k)))
+
+    #Accumulative returns
+    accumulative_returns = []
+    for day_returns in returns_rs:
+        money = money + ((money/(2*k))*day_returns).sum()
+        accumulative_returns.append(money)
+    accumulative_returns = np.array(accumulative_returns)
+
+    #Mean daily returns
+    returns_dr = np.reshape(returns, (int(returns.shape[0]/(2*k)),(2*k)))
+    mean_daily_returns = [day_ret.mean() for day_ret in returns_dr]
+
     logging.info('Average daily returns %2f', returns.mean())
     logging.info('Standard deviation %2f', returns.std())
 
+    return returns, accumulative_returns
+
+
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Creation of portfolios based on LSTM predictions')
+    parser.add_argument('algorithm', type=str, help='CNN. LSTM or RAF')
+    parser.add_argument('model_name', type=str, help='Select the particular model trained')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
-    # parser.add_argument("df_prices", type=str, help="Path of the csv file of prices")
-    # parser.add_argument("predictions_folder", type=str, help="Path of the folder in which the predictions made by lstm.py are ")
     parser.add_argument("-num_period", default=10, help="Number of period over which returns have to be calculated ")
-    parser.add_argument("-num_models", default=3, help="Number models ")
+    parser.add_argument("-money", default=1, help="How much you want to invest")
+    parser.add_argument("-monkey", default=False, help="Are you a monkey or not?")
     args = parser.parse_args()
 
     levels = {'critical': logging.CRITICAL,
@@ -146,31 +177,28 @@ if __name__ == '__main__':
               'info': logging.INFO,
               'debug': logging.DEBUG}
 
+    start = time.time()
+
     logging.basicConfig(level= levels[args.log])
 
-    path = os.getcwd()
-    parent_path = os.path.abspath(os.path.join(path, os.pardir))
-    parent_path = os.path.abspath(os.path.join(parent_path, os.pardir))
-
-
-    df_price = pd.read_csv(parent_path + "/data/PriceData.csv")
+    df_price = pd.read_csv(go_up(1) + "/data/PriceData.csv")
     df_price = df_price.dropna(axis=1)
 
+    logging.info(f"---------- Model {args.model_name} ----------")
+    path = os.getcwd() + f'/predictions_for_portfolio/{args.algorithm}/{args.model_name}'
+    trading_values = get_trading_values(df_price, args.algorithm, args.model_name)
+    portfolio = [portfolio_creation(f"{path}/Trading_days_period{k}.csv") for k in range(args.num_period)]
+    returns, accumulative_returns = forecast_returns(df_price, num_period=args.num_period, money=args.money, monkey=args.monkey)
 
-    for i in range(1,args.num_models+1):
-        logging.info(f"---------- Model {i} ----------")
-        predictions_folder = path + f"/trained_models/Model{i}/1/Predictions"
-        trading_values = get_trading_values(df_price,predictions_folder)
-        portfolio = [portfolio_creation(path + f"/Predictions/Trading_days_period{k}.csv") for k in range(args.num_period)]
-        returns = forecast_returns(args.num_period)
+    mean_daily_ret=[]
+    for i in range(0,1000):
+        returns, accumulative_returns = forecast_returns(df_price, num_period=args.num_period, money=args.money, monkey=args.monkey)
+        returns_dr = np.reshape(returns, (int(returns.shape[0]/(2*10)),(2*10)))
+        for day_ret in returns_dr:
+            mean_daily_ret.append(day_ret.mean())
 
 
-
-
-    # sum_returns = []
-    # tmp = 0
-    # for i in range(len(returns)-1):
-    # sum_returns.append(returns[i]+tmp)
-    # tmp = sum_returns[i]
+    end = time.time() - start
+    print(end)
 
 
