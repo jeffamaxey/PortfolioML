@@ -8,7 +8,9 @@ import time
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath("..")))
-from makedir import smart_makedir, go_up
+from portfolioML.makedir import smart_makedir, go_up
+import matplotlib.pyplot as plt 
+from scipy import stats
 
 
 def get_trading_values(df_price, algorithm, model_name, len_period=1308, len_train = 981, len_test=327):
@@ -186,19 +188,44 @@ if __name__ == '__main__':
 
     logging.info(f"---------- Model {args.model_name} ----------")
     path = os.getcwd() + f'/predictions_for_portfolio/{args.algorithm}/{args.model_name}'
-    trading_values = get_trading_values(df_price, args.algorithm, args.model_name)
+    # trading_values = get_trading_values(df_price, args.algorithm, args.model_name)
     portfolio = [portfolio_creation(f"{path}/Trading_days_period{k}.csv") for k in range(args.num_period)]
     returns, accumulative_returns = forecast_returns(df_price, num_period=args.num_period, money=args.money, monkey=args.monkey)
 
-    mean_daily_ret=[]
-    for i in range(0,1000):
+    #Monkey
+    returns_dr = []
+    for i in range(0,10):
         returns, accumulative_returns = forecast_returns(df_price, num_period=args.num_period, money=args.money, monkey=args.monkey)
-        returns_dr = np.reshape(returns, (int(returns.shape[0]/(2*10)),(2*10)))
-        for day_ret in returns_dr:
-            mean_daily_ret.append(day_ret.mean())
+        returns = np.reshape(returns, (int(returns.shape[0]/(2*10)),(2*10)))
+        returns_dr.append(returns)
+    returns_dr = np.array(returns_dr)
+    print(returns_dr.shape)
+    returns_dr = np.reshape(returns_dr, (returns_dr.shape[0]*returns_dr.shape[1], returns_dr.shape[2]))
+    print(returns_dr.shape)
 
+    mean_daily_ret=[]
+    for day_ret in returns_dr:
+        mean_daily_ret.append(day_ret.mean())
+    mean_daily_ret=np.array(mean_daily_ret)
+    print(mean_daily_ret.shape)
 
+    a = [mean_daily_ret[i*870:870*(i+1)].mean() for i in range(int(mean_daily_ret.shape[0]/870))]
+    a = np.array(a)
+    print(a.shape)
+
+    #LSTM
+    returns_lstm, accumulative_returns_lstm = forecast_returns(df_price, num_period=args.num_period, money=args.money, monkey=True)
+    returns_lstm = np.reshape(returns_lstm, (int(returns_lstm.shape[0]/(2*10)),(2*10)))
+    
+    mean_return_lstm = np.array([i.mean() for i in returns_lstm])
+
+    t_stat, p_val = stats.ttest_ind(mean_daily_ret, mean_return_lstm, equal_var=False)
+    print(f'p_value: {p_val}')
     end = time.time() - start
     print(end)
 
-
+    plt.figure()
+    plt.hist(mean_daily_ret, bins=150, label=f'Monkey return: {mean_daily_ret.mean():.6f} $\pm${mean_daily_ret.std():.6f}')
+    plt.hist(mean_return_lstm, bins=100, label=f'Return: {mean_return_lstm.mean():.6f} $\pm${mean_return_lstm.std():.6f}', alpha=0.8)
+    plt.legend()
+    plt.show()
