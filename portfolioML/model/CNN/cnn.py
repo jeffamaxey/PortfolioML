@@ -1,19 +1,17 @@
 """ CNN model """
-import numpy as np
-import pandas as pd
 import logging
 import argparse
-import matplotlib.pyplot as plt
-from keras.layers import Input, Dense, Dropout, Conv1D, MaxPooling1D, Flatten, Concatenate
-from keras.models import Model, Sequential
-from keras.callbacks import EarlyStopping, ModelCheckpoint
-from keras.utils.vis_utils import plot_model
 import sys
 import os
+import matplotlib.pyplot as plt
+from keras.layers import Input, Dense, Dropout, Conv1D, MaxPooling1D, Flatten, Concatenate
+from keras.models import Model
+from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.utils.vis_utils import plot_model
 sys.path.append(os.path.dirname(os.path.abspath("..")))
-from model.split import split_Tperiod, get_train_set, all_data_LSTM
+from model.split import all_data_LSTM
 from data.data_returns import read_filepath
-from makedir import smart_makedir, go_up
+from makedir import go_up
 
 class MinPooling1D(MaxPooling1D):
     """
@@ -68,7 +66,7 @@ def CNN_model(filters, kernel_size=(20), strides=5, activation='tanh', min_pooli
     Parameters
     ----------
     filters: integer
-        The dimensionality of the output space (i.e. the number of output filters in the convolution).
+        The dimensionality of the output space (the number of output filters in the convolution).
         Referances: https://keras.io/api/layers/convolution_layers/convolution1d/
 
     kernel_size: tuple of one integers (optional)
@@ -81,7 +79,8 @@ def CNN_model(filters, kernel_size=(20), strides=5, activation='tanh', min_pooli
         Referances: https://keras.io/api/layers/convolution_layers/convolution1d/
 
     activation: function to use (optional)
-        If you don't specify anything, no activation is applied (see keras.activations). Default = 'tanh'
+        If you don't specify anything, no activation is applied (see keras.activations).
+        Default = 'tanh'
         Referances: https://keras.io/api/layers/convolution_layers/convolution1d/
 
 
@@ -183,6 +182,3 @@ if __name__ == "__main__":
     with open(f"{args.model_name}/{args.model_name}_specifics.txt", 'w', encoding='utf-8') as file:
         file.write(f'\n Model Name: {args.model_name} \n Number of periods: {args.num_periods} \n Number of filters in conv layers: {args.filters} \n \n')
         model.summary(print_fn=lambda x: file.write(x + '\n'))
-
-
-

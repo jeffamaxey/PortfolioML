@@ -1,39 +1,17 @@
 """DNN model"""
-import numpy as np
-import pandas as pd
 import logging
 import argparse
-from keras.layers import Input, Dense, Dropout
-from keras.models import Model, Sequential
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import roc_curve, auc, roc_auc_score
-from keras.callbacks import EarlyStopping, ModelCheckpoint
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.abspath("..")))
-from model.split import split_Tperiod, get_train_set
-from data.data_returns import read_filepath
-from makedir import smart_makedir, go_up
-from model.LSTM.lstm import all_data_LSTM
-
+import numpy as np
 import matplotlib.pyplot as plt
-
-def all_data_DNN(df_returns, df_binary, period, len_train=981, len_test=327):
-    """
-    Create a right input data for DNN starting from the right data of LSTM.
-    Indeed the parameters are the same of the all_data_LSTM, these are changed select
-    only m values (features) exctrated from the 240 values in the LSTM input data.
-    """
-    X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, period)
-
-    m = list(range(0,240,20))+list(range(221,240))
-    X_train = X_train[:,m,:]
-    X_train = np.reshape(X_train, (X_train.shape[0], 31))
-
-    X_test = X_test[:,m,:]
-    X_test = np.reshape(X_test, (X_test.shape[0], 31))
-
-    return X_train, y_train, X_test, y_test
+from keras.layers import Input, Dense, Dropout
+from keras.models import Sequential
+from keras.callbacks import EarlyStopping, ModelCheckpoint
+sys.path.append(os.path.dirname(os.path.abspath("..")))
+from model.split import all_data_DNN
+from data.data_returns import read_filepath
+from makedir import go_up
 
 def DNN_model(nodes_args, hidden=None , activation='tanh', loss='binary_crossentropy', optimizer='adam'):
     """
@@ -45,8 +23,9 @@ def DNN_model(nodes_args, hidden=None , activation='tanh', loss='binary_crossent
     follow the leterature the default is 31.
 
     - Hidden Layers: Dense(feature, activation=activation), sequential hidden layers full-connected
-    with different nodes. If hiddin is an integer the number of nodes for each layer follow a descrescent
-    way from 31 to 5, note that the actual values of the nodes is determine by np.linspace(feature,5,hidden).
+    with different nodes. If hiddin is an integer the number of nodes for each layer
+    follow a descrescent way from 31 to 5.
+    Note that the actual values of the nodes is determine by np.linspace(feature,5,hidden).
 
     - Output: Dense(1, activation='sigmoid'), the output is interpretated as the probability that
     the input is grater than the cross-section median.
@@ -76,8 +55,9 @@ def DNN_model(nodes_args, hidden=None , activation='tanh', loss='binary_crossent
         Activation function to use of hidden layers, default='tanh'
         Reference: https://keras.io/api/layers/core_layers/dense/
 
-    loss: String (name of objective function), objective function or tf.keras.losses.Loss instance. See tf.keras.losses.
-        Loss fuction, it must be a loss compatible with classification problem, defaul=binary_crossentropy'
+    loss: string (name of objective function) (optional)
+        objective function or tf.keras.losses.Loss instance. See tf.keras.losses.
+        Loss fuction, defaul=binary_crossentropy'
         Reference: https://www.tensorflow.org/api_docs/python/tf/keras/Model
 
     optimater: string(optional)
@@ -97,7 +77,7 @@ def DNN_model(nodes_args, hidden=None , activation='tanh', loss='binary_crossent
     model.add(Dropout(0.1))
 
     if hidden is not None:
-        logging.info("Nember of layers is determined by 'hidden',numebrs of neurons descrescent from 31 to 5")
+        logging.info("Nember of layers is determined by argument hidden")
         nodes = [int(i) for i in np.linspace(31,5,hidden)]
     else:
         nodes = nodes_args
@@ -115,8 +95,9 @@ def DNN_model(nodes_args, hidden=None , activation='tanh', loss='binary_crossent
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Make DNN for classification task to prediction class label 0 or 1')
     parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
-    parser.add_argument("nodes", type=int, nargs='+', help='Number of nodes in each layers of DNN')
     parser.add_argument('model_name', type=str, help='Choose the name of the model')
+    parser.add_argument("nodes", type=int, nargs='+',
+                        help='Number of nodes in each layers of DNN, see documentation')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
@@ -169,8 +150,7 @@ if __name__ == "__main__":
         plt.savefig(os.getcwd() + f'/{args.model_name}/accuracies_losses/accuracies_{per}.png')
 
     plt.show()
+
     with open(f"{args.model_name}/{args.model_name}_specifics.txt", 'w', encoding='utf-8') as file:
         file.write(f'\n Model Name: {args.model_name} \n Number of periods: {args.num_periods} \n Number of nodes: {args.nodes} \n \n')
         model.summary(print_fn=lambda x: file.write(x + '\n'))
-
-

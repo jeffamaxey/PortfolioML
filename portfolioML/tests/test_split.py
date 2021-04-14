@@ -6,7 +6,7 @@ import numpy as np
 import unittest
 import pandas as pd
 import random
-from model.split import split_sequences, get_train_set, split_Tperiod, all_data_LSTM
+from portfolio.model.split import split_sequences, get_train_set, split_Tperiod, all_data_LSTM
 
 def _full_path(file_name):
     return os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)

@@ -8,14 +8,15 @@ import time
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath("..")))
-from makedir import smart_makedir, go_up
+from portfolioML.makedir import smart_makedir, go_up
+import matplotlib.pyplot as plt 
+from scipy import stats
 
 
 def get_trading_values(df_price, algorithm, model_name, len_period=1308, len_train = 981, len_test=327):
     '''
     Generate a pandas dataframe composed by all the days of which lstm.py forecasts
     the prices. This is due to the fact that lstm.py doesn't track the dates'
-
 
     Parameters
     ----------
@@ -117,6 +118,13 @@ def forecast_returns(df_price, num_period=10, k=10, money=1., monkey=False):
     accumulative_returns : numpy array
         Accumulative returns
     '''
+    global num_period_g
+    global k_g
+    global money_g
+    
+    num_period_g = num_period
+    k_g = k
+    money_g = money
 
     returns = []
     for period in range(num_period):
@@ -142,6 +150,7 @@ def forecast_returns(df_price, num_period=10, k=10, money=1., monkey=False):
     returns_rs = np.reshape(returns, (int(len(returns)/(2*k)),(2*k)))
 
     #Accumulative returns
+
     accumulative_returns = []
     for day_returns in returns_rs:
         money = money + ((money/(2*k))*day_returns).sum()
@@ -157,18 +166,56 @@ def forecast_returns(df_price, num_period=10, k=10, money=1., monkey=False):
 
     return returns, accumulative_returns
 
+def statistical_significance(df_price, monkeys_num):
+    """
+    Compute statistical significance of selected model.
 
+    Compare the average daily return of model with average daily return of several 
+    trading monkey and compute the Z-score test for statistical significance.
+    If p value is grather than 0.05 so the model basically is equal to a monkey.
 
+    Parameters
+    ----------
+    monkeys_nun: integer
+        How many monkeys do you want?
+
+    Results
+    -------
+    
+    """
+    # Monkey statistic
+    returns_dr = []
+    for i in range(0,monkeys_num):
+        returns, acc_returns_m = forecast_returns(df_price, num_period=num_period_g,
+                                                        money=money_g, monkey=True)
+        returns = np.reshape(returns, (int(returns.shape[0]/(2*k_g)),(2*k_g)))
+        returns_dr.append(returns)
+    returns_dr = np.array(returns_dr)
+    returns_dr = np.reshape(returns_dr, (returns_dr.shape[0]*returns_dr.shape[1], returns_dr.shape[2]))
+    mean_daily_ret = np.array([day_ret.mean() for day_ret in returns_dr])
+    
+
+    # Model statistic
+    returns_mod, accumulative_returns_mod = forecast_returns(df_price, num_period=num_period_g, 
+                                                               money=money_g, monkey=False)
+    returns_mod = np.reshape(returns_mod, (int(returns_mod.shape[0]/(2*k_g)),(2*k_g)))
+    mean_return_mod = np.array([day_ret.mean() for day_ret in returns_mod])
+
+    # Z-score test
+    t_stat, p_val = stats.ttest_ind(mean_daily_ret, mean_return_mod, equal_var=False)
+
+    return mean_daily_ret, mean_return_mod, p_val
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Creation of portfolios based on LSTM predictions')
-    parser.add_argument('algorithm', type=str, help='CNN. LSTM or RAF')
-    parser.add_argument('model_name', type=str, help='Select the particular model trained')
+    parser = argparse.ArgumentParser(description='Creation of portfolios based on selected model predictions')
+    parser.add_argument('algorithm', type=str, nargs='+', help='CNN, LSTM and/or RAF')
+    parser.add_argument('model_name', type=str, nargs='+', help='Select the particular model trained')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
-    parser.add_argument("-num_period", default=10, help="Number of period over which returns have to be calculated ")
-    parser.add_argument("-money", default=1, help="How much you want to invest")
-    parser.add_argument("-monkey", default=False, help="Are you a monkey or not?")
+    parser.add_argument("-num_period", type=int, default=10, help="Number of period over which returns have to be calculated ")
+    parser.add_argument("-money", type=int, default=1, help="How much you want to invest")
+    parser.add_argument("-monkey", type=bool, default=False, help="Are you a monkey or not?")
+    parser.add_argument("-monkeys_num", type=int, default=10, help="How many monkeys do you want?")
     args = parser.parse_args()
 
     levels = {'critical': logging.CRITICAL,
@@ -184,21 +231,63 @@ if __name__ == '__main__':
     df_price = pd.read_csv(go_up(1) + "/data/PriceData.csv")
     df_price = df_price.dropna(axis=1)
 
-    logging.info(f"---------- Model {args.model_name} ----------")
-    path = os.getcwd() + f'/predictions_for_portfolio/{args.algorithm}/{args.model_name}'
-    trading_values = get_trading_values(df_price, args.algorithm, args.model_name)
-    portfolio = [portfolio_creation(f"{path}/Trading_days_period{k}.csv") for k in range(args.num_period)]
-    returns, accumulative_returns = forecast_returns(df_price, num_period=args.num_period, money=args.money, monkey=args.monkey)
+    plt.figure("Accumulative returns")
+    for alg, mod in zip(args.algorithm, args.model_name):
+        logging.info(f"---------- Model {mod} ----------")
+        path = os.getcwd() + f'/predictions_for_portfolio/{alg}/{mod}'
 
-    mean_daily_ret=[]
-    for i in range(0,1000):
-        returns, accumulative_returns = forecast_returns(df_price, num_period=args.num_period, money=args.money, monkey=args.monkey)
-        returns_dr = np.reshape(returns, (int(returns.shape[0]/(2*10)),(2*10)))
-        for day_ret in returns_dr:
-            mean_daily_ret.append(day_ret.mean())
+        # Portfolios Generator 
+        # trading_values = get_trading_values(df_price, args.algorithm, args.model_name)
+        portfolio = [portfolio_creation(f"{path}/Trading_days_period{k}.csv") for k in range(args.num_period)]
+
+        # Accumulate Returns
+        returns_monkey, acc_returns_monkey = forecast_returns(df_price, num_period=args.num_period, 
+                                                                    money=args.money, monkey=args.monkey)
+        acc_list = []
+        for i in range(0,10):
+            returns_monkey, acc_returns_monkey = forecast_returns(df_price, num_period=args.num_period, 
+                                                                    money=args.money, monkey=args.monkey)
+            acc_list.append(np.array(acc_returns_monkey))
+        acc_list = np.array(acc_list)
+    
+        acc_monkey_mean = np.mean(acc_list, axis=0)
+
+        acc_monkey_std = np.std(acc_list, axis=0)
+        monckey_std_upper = (acc_monkey_mean + acc_monkey_std)
+        monckey_std_lower = (acc_monkey_mean - acc_monkey_std)
+
+        returns_model, acc_returns_model = forecast_returns(df_price, num_period=args.num_period, money=args.money, monkey=False)
+
+        plt.plot(acc_monkey_mean, color='crimson', label='Monkeys')
+        plt.fill_between(list(range(0,len(acc_monkey_mean))),monckey_std_upper, monckey_std_lower, color='crimson', alpha=0.2,
+                        label=r'$\pm$ 1 std. dev.')
+        plt.plot(acc_returns_model, label=f'{mod}')
+        plt.title("Accumulative Returns over Trading Days")
+        plt.xlabel("Trading days")
+        plt.ylabel("Accumulative Returns")
+        plt.grid()
+        plt.legend()
+        plt.show()
+
+        # Statistic
+        a, b, p_val= statistical_significance(df_price, monkeys_num=args.monkeys_num)
+
+        print(f'p_value: {p_val}')
 
 
-    end = time.time() - start
-    print(end)
+        end = time.time() - start
+        print(end)
 
+        # plt.figure(figsize=[10.0, 10.0])
+        fig, ax1 = plt.subplots(figsize=[8.0, 6.0])
+        ax1.hist(a, bins=150, color='crimson',label=f'Monkey return: {a.mean():.5f} $\pm${a.std():.5f}', alpha = 0.9)
+        ax2 = ax1.twinx()
+        ax2.hist(b, bins=70, color='green', label=f'{mod} Return: {b.mean():.5f} $\pm${b.std():.5f}', alpha=0.5)
+        plt.title(f'{mod} significant statistic w.r.t {args.monkeys_num} monkeys')
+        ax1.set(xlabel='Average daily return')
+        ax1.set(ylabel='Monkeys')
+        ax2.set(ylabel='Model')
+        fig.legend(bbox_to_anchor=(1.0,1.0), bbox_transform=ax1.transAxes)
 
+        plt.figure
+    plt.show()
