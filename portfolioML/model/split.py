@@ -140,8 +140,6 @@ def all_data_LSTM(df_returns, df_binary, period, len_train=981):
         Period over which you wanto to create the input for the LSTM.
     len_train : int, optional
         Lenght of the training set. The default is 981.
-    len_test : int, optional
-        Lenght of the trading set. The default is 327.
 
     Returns
     -------
@@ -180,12 +178,35 @@ def all_data_LSTM(df_returns, df_binary, period, len_train=981):
 
     return X_train, y_train, X_test, y_test
 
-def all_data_DNN(df_returns, df_binary, period, len_train=981, len_test=327):
+def all_data_DNN(df_returns, df_binary, period, len_train=981):
     """
     Create a right input data for DNN starting from the right data of LSTM.
     Indeed the parameters are the same of the all_data_LSTM, these are changed select
     anly m values (features) exctrated from the 240 values in the LSTM input data.
+
+    Parameters
+    ----------
+    df_returns : pandas dataframe
+        Pandas dataframe of returns.
+    df_binary : pandas dataframe
+        Pandas dataframe of returns..
+    period : int
+        Period over which you wanto to create the input for the LSTM.
+    len_train : int, optional
+        Lenght of the training set. The default is 981.
+
+    Returns
+    -------
+    X_train : numpy array
+
+    y_train : numpy array
+
+    X_test : numpy array
+
+    y_test : numpy array
+
     """
+
     X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, period)
 
     m = list(range(0,240,20))+list(range(221,240))
