@@ -1,11 +1,12 @@
 """Unit test split.py"""
 import os
 import sys
+sys.path.append(os.path.dirname(os.path.abspath("..")))
 import numpy as np
 import unittest
 import pandas as pd
 import random
-from portfolioML.model.split import split_sequences, get_train_set, split_Tperiod
+from model.split import split_sequences, get_train_set, split_Tperiod, all_data_LSTM
 
 def _full_path(file_name):
     return os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
@@ -37,7 +38,7 @@ class TestDataReturns(unittest.TestCase):
     def test_get_train_set(self):
         """
         Test of get_train_set fuction.
-        The check is maded compare the result of np.syack and the results 
+        The check is maded compare the result of np.syack and the results
         of get_trai_set when we use the reshape of numpy.
         """
 
@@ -55,6 +56,11 @@ class TestDataReturns(unittest.TestCase):
         list2, y2 = get_train_set(df_return, df_binary)
 
         self.assertTrue((list1 == list2[:9*6300]).all())
+
+    # def test_all_data_LSTM(self):
+    #     '''Test of all_data_LSTM function'''
+    #     X_train, y_train, X_test, y_test = all_data_LSTM(df_return, df_binary, period=10)
+
 
 
 
