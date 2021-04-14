@@ -93,7 +93,9 @@ def DNN_model(nodes_args, hidden=None , activation='tanh', loss='binary_crossent
     return model
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Make DNN for classification task to predict class label 0 or 1')
+    parser = argparse.ArgumentParser(description='Make DNN for classification task to prediction class label 0 or 1')
+    parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
+    parser.add_argument('model_name', type=str, help='Choose the name of the model')
     parser.add_argument("nodes", type=int, nargs='+',
                         help='Number of nodes in each layers of DNN, see documentation')
     parser.add_argument("-log", "--log", default="info",
@@ -115,22 +117,26 @@ if __name__ == "__main__":
     df_returns = read_filepath(df_returns)
     df_binary = read_filepath(df_binary)
 
-    for per in range(5,10):
+    smart_makedir(args.model_name)
+    # losses = smart_makedir(args.model_name + "/losses")
+    accuracies = smart_makedir(args.model_name + "/accuracies_losses")
+
+    for per in range(args.num_periods):
         model = DNN_model(args.nodes, optimizer='adam')
         #Splitting data for each period
         X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, per)
         #Trainng
         es = EarlyStopping(monitor='val_loss', patience=40, restore_best_weights=True)
-        mc = ModelCheckpoint(f'DNN_test_period{per}.h5', monitor='val_loss', mode='min', verbose=0)
-        history = model.fit(X_train ,y_train, callbacks=[es,mc],validation_split=0.2, batch_size=256, epochs=400, verbose=1)
+        mc = ModelCheckpoint(f'{args.model_name}/{args.model_name}_period{per}.h5', monitor='val_loss', mode='min', verbose=0)
+        history = model.fit(X_train ,y_train, callbacks=[es,mc],validation_split=0.2, batch_size=256, epochs=1, verbose=1)
 
         #Elbow curve
-        plt.figure(f'Loss and Accuracy period {per}')
+        plt.figure(f'Loss and Accuracy Period {per}', figsize=[20.0,10.0])
         plt.subplot(1,2,1)
         plt.plot(history.history['loss'], label='train_loss')
         plt.plot(history.history['val_loss'], label='val_loss')
         plt.xlabel('Epochs')
-        plt.title('Training and Validation Loss vs Epochs')
+        plt.title('Training and Validation Losses vs Epochs')
         plt.grid()
         plt.legend()
 
@@ -138,8 +144,13 @@ if __name__ == "__main__":
         plt.plot(history.history['accuracy'], label='accuracy')
         plt.plot(history.history['val_accuracy'], label='val_accuracy')
         plt.xlabel('Epochs')
-        plt.title('Training and Validation Accuracy vs Epochs')
+        plt.title('Training and Validation Accuracies vs Epochs')
         plt.grid()
         plt.legend()
+        plt.savefig(os.getcwd() + f'/{args.model_name}/accuracies_losses/accuracies_{per}.png')
 
     plt.show()
+
+    with open(f"{args.model_name}/{args.model_name}_specifics.txt", 'w', encoding='utf-8') as file:
+        file.write(f'\n Model Name: {args.model_name} \n Number of periods: {args.num_periods} \n Number of nodes: {args.nodes} \n \n')
+        model.summary(print_fn=lambda x: file.write(x + '\n'))
