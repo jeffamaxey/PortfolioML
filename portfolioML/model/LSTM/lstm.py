@@ -66,8 +66,8 @@ if __name__ == "__main__":
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
     parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
-    parser.add_argument('model_name', type=str, help='Choose the name of the model')
     parser.add_argument('nodes',type=int, nargs='+', help='Choose the number of nodes in LSTM+Dropout layers')
+    parser.add_argument('model_name', type=str, help='Choose the name of the model')
     parser.add_argument('-optimizier', type=str, default='RMS_prop', help='Choose RMS_prop or Adam')
 
 
@@ -91,8 +91,7 @@ if __name__ == "__main__":
     recursive = True
 
     smart_makedir(args.model_name)
-    losses = smart_makedir(args.model_name + "/losses")
-    accuracies = smart_makedir(args.model_name + "/accuracies")
+    smart_makedir(args.model_name + "/accuracies_losses")
 
     for i in range(args.num_periods):
         logging.info(f'============ Start Period {i}th ===========')
@@ -109,22 +108,29 @@ if __name__ == "__main__":
         history = model.fit(X_train, y_train, epochs=1, batch_size=896,
                             callbacks=[es,mc], validation_split=0.2, shuffle=False, verbose=1)
 
-        plt.figure(f'Period {i} Losses')
-        plt.plot(history.history['loss'], label='loss')
+
+        plt.figure(f'Loss and Accuracy Period {i}', figsize=[20.0,10.0])
+        plt.subplot(1,2,1)
+        plt.plot(history.history['loss'], label='train_loss')
         plt.plot(history.history['val_loss'], label='val_loss')
         plt.xlabel('Epochs')
+        plt.title('Training and Validation Losses vs Epochs')
+        plt.grid()
         plt.legend()
-        plt.grid(True)
-        plt.savefig(os.getcwd() + f'/{args.model_name}/losses/losses_{i}.png')
 
-        plt.figure(f'Period {i} Accuracies')
+        plt.subplot(1,2,2)
         plt.plot(history.history['accuracy'], label='accuracy')
         plt.plot(history.history['val_accuracy'], label='val_accuracy')
         plt.xlabel('Epochs')
+        plt.title('Training and Validation Accuracies vs Epochs')
+        plt.grid()
         plt.legend()
-        plt.grid(True)
-        plt.savefig(os.getcwd() + f'/{args.model_name}/accuracies/accuracies_{i}.png')
+        plt.savefig(os.getcwd() + f'/{args.model_name}/accuracies_losses/accuracies_{i}.png')
 
+
+        with open(f"{args.model_name}/{args.model_name}_specifics.txt", 'w', encoding='utf-8') as file:
+            file.write(f'\n Model Name: {args.model_name} \n Number of periods: {args.num_periods} \n Number of nodes: {args.nodes} \n Optimizier: {args.optimizier} \n \n')
+            model.summary(print_fn=lambda x: file.write(x + '\n'))
 
         logging.info(f'============ End Period {i}th ===========')
 
