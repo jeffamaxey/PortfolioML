@@ -262,6 +262,14 @@ if __name__ == '__main__':
         # Accumulate Returns
         returns_monkey, acc_returns_monkey = forecast_returns(df_price, num_periods=args.num_periods,
                                                                     money=args.money, monkey=args.monkey)
+        #List of trading day:
+        flat_list = [item for sublist in portfolio for item in sublist]
+        trading_days = [item.columns[0] for item in flat_list]
+        x_label_position = np.arange(0,len(trading_days),50)
+        x_label_day = [trading_days[i] for i in x_label_position]
+
+
+        # Accumulate Returns
         acc_list = []
         for i in range(0,10):
             returns_monkey, acc_returns_monkey = forecast_returns(df_price, num_periods=args.num_periods,
@@ -277,16 +285,18 @@ if __name__ == '__main__':
 
         returns_model, acc_returns_model = forecast_returns(df_price, num_periods=args.num_periods, money=args.money, monkey=False)
 
-        plt.figure("Accumulative returns")
+        plt.figure("Accumulative Returns", figsize=[13.,10.])
         plt.plot(acc_monkey_mean, color='crimson', label='Monkeys')
         plt.fill_between(list(range(0,len(acc_monkey_mean))),monckey_std_upper, monckey_std_lower, color='crimson', alpha=0.2,
                         label=r'$\pm$ 1 std. dev.')
         plt.plot(acc_returns_model, label=f'{mod}')
         plt.title("Accumulative Returns over Trading Days")
+        plt.xticks(x_label_position, x_label_day, rotation=60)
         plt.xlabel("Trading days")
         plt.ylabel("Accumulative Returns")
         plt.grid()
         plt.legend()
+        # plt.savefig("Accumulative returns")
 
         # Statistic
         a, b, p_val= statistical_significance(df_price, monkeys_num=args.monkeys_num, num_periods=args.num_periods, k=args.top_bottom)

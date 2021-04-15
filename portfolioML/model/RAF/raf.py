@@ -86,7 +86,7 @@ def predictions_roc(n_estimators, max_depth, num_period, criterion):
         df_predictions = pd.DataFrame()
         for tick in df_returns.columns:
             df_predictions[tick] = dict_comp[tick][:,0]
-            df_predictions.to_csv(path_p + f'{n_estimators}-trees_{max_depth}-deep_Predictions_{i}th_Period.csv')
+            df_predictions.to_csv(path_p + f'RAF_{args.name_model}_Predictions_{i}th_Period.csv')
 
     auc_mean = np.mean(np.array(aucs_list))
     auc_std = np.std(np.array(aucs_list))
