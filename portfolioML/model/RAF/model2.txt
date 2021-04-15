@@ -1,1 +1,0 @@
-num_period=10, n_estimators=2000, criterion=gini,max_depth=30

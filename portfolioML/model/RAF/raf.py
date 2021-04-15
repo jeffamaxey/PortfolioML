@@ -1,5 +1,5 @@
 '''
-random forest
+Random forest classifier for different study period.
 '''
 import os
 import sys
@@ -14,44 +14,41 @@ sys.path.append(os.path.dirname(os.path.abspath("..")))
 from data.data_returns import read_filepath
 from model.split import all_data_DNN
 from makedir import smart_makedir, go_up
+#To avoid the warning in sklearn.RandomForestClassifier
 if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore")
 
-
 def predictions_roc(n_estimators, max_depth, num_period, criterion):
     '''
     Parameters
-    ----------
-    n_estimators : Int
-        DESCRIPTION. Number of threes in the random forest
-    num_period : TYPE, optional
-        DESCRIPTION. The default is 10.
-    -------
+    ---------------
+    n_estimators : type=Int
+        DESCRIPTION. Number of trees in the random forest.
+    max_depth : type=Int
+        DESCRIPTION. Number of nodes in the single tree.
+    num_period : type=Int
+        DESCRIPTION. Number of periods of training.  
+    criterion : type=Str
+        DESCRIPTION. Criterion for splitting the nodes in the trees of random forest
+    ---------------
+
     Plot roc curve with mean and standard deviation of the area under the curve (auc) of a
     trained model.
     Each model is trained over several study period so its name contain this information,
-    for semplicity put this information in this way: '..._periond#' (for istance '_period0').
-    Nember of period running over several argumenti setting in 'periods' argument.
+    for semplicity put this information in this way.
+    Number of period running over several argumenti setting in 'periods' argument.
     So before running thi function carefully checking of the folder is suggest to avoid
     problems.
 
     Tecnical aspects: because of each model has got different tpr and fps, an interpoletion
     of this values is used in order to have the same leght for each model.
-
-    Parameters
-    ----------
-    model: string
-    File path of the model, it must have in the name 'periond' (for istance 'period0') to
-    take in mind the numer of perion over wich the model is trained
-
-    periods: integer
-    Numer of model that are taken in order to compute plot and final values
+    
     '''
 
     path_n = go_up(level_up=2)
-    path_p = path_n + f'/results/predictions/RAF/{args.name_model}/'
-    path_r = path_n + f'/results/ROC/RAF/{args.name_model}/'
+    path_p = path_n + f'/results/predictions/RAF/{args.name_model}/' # Set the right path for the predictions
+    path_r = path_n + f'/results/ROC/RAF/{args.name_model}/' # Set the right path for the ROC curve
 
     tpr_list = []
     aucs_list = []
@@ -64,13 +61,13 @@ def predictions_roc(n_estimators, max_depth, num_period, criterion):
                                     min_samples_split=2, min_samples_leaf=1,
                                     random_state=10, verbose=1)
         rf_.fit(x_train, y_train)
-        y_proba = rf_.predict_proba(x_test)
+        y_proba = rf_.predict_proba(x_test)[:,1]
 
 
-        fpr, tpr, thresholds = roc_curve(y_test, y_proba[:,1])
+        fpr, tpr, thresholds = roc_curve(y_test, y_proba)
         interp_tpr = np.interp(interp_fpr, fpr, tpr)
         tpr_list.append(interp_tpr)
-        roc_auc = roc_auc_score(y_test, y_proba[:,1])
+        roc_auc = roc_auc_score(y_test, y_proba)
         aucs_list.append(roc_auc)
 
         plt.plot(fpr, tpr, label=f'per{i} (area = %0.4f)' % (roc_auc))
@@ -85,7 +82,7 @@ def predictions_roc(n_estimators, max_depth, num_period, criterion):
         dict_comp = {df_returns.columns[i]: y_pred_companies[i] for i in range(0,365)}
         df_predictions = pd.DataFrame()
         for tick in df_returns.columns:
-            df_predictions[tick] = dict_comp[tick][:,0]
+            df_predictions[tick] = dict_comp[tick]
             df_predictions.to_csv(path_p + f'RAF_{args.name_model}_Predictions_{i}th_Period.csv')
 
     auc_mean = np.mean(np.array(aucs_list))
@@ -110,11 +107,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='RandomForestClassifier')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
-    parser.add_argument('-num_period', type=int, default=10, help='Number of periods (default=10)')
-    parser.add_argument('-n_estimators', type=int, default=1000, help='Number of trees (default=1000)')
-    parser.add_argument('-criterion', type=str, default='gini', help='Criterion (default=gini)')
-    parser.add_argument('-max_depth', type=int, default=25, help='Trees\'s depth (default=25) ')
-    parser.add_argument('name_model', type=str, help='Name_model')
+    parser.add_argument('-np','--num_period', type=int, default=10, help='Number of periods (default=10)')
+    parser.add_argument('-ne','--n_estimators', type=int, default=1000, help='Number of trees (default=1000)')
+    parser.add_argument('-c','--criterion', type=str, default='gini', help='Criterion (default=gini)')
+    parser.add_argument('-md','--max_depth', type=int, default=25, help='Trees\'s depth (default=25) ')
+    parser.add_argument('-nm','--name_model', type=str, help='Name of the new model')
     args = parser.parse_args()
 
     levels = {'critical': logging.CRITICAL,
