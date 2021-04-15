@@ -50,7 +50,7 @@ def get_trading_values(df_price, algorithm, model_name, len_period=1308, len_tra
     trading_values = [tests[i][240:] for i in range(len(tests))]
 
     smart_makedir(f'predictions_for_portfolio/{algorithm}/{model_name}')
-    path = os.getcwd() + f'/predictions_for_portfolio/{algorithm}/{model_name}'
+    path1 = os.getcwd() + f'/predictions_for_portfolio/{algorithm}/{model_name}'
 
     # Insert the 'Date' column in the forecasts made by lstm.py
     for i in range(10):
@@ -59,7 +59,7 @@ def get_trading_values(df_price, algorithm, model_name, len_period=1308, len_tra
         ith_predictions.insert(0,'Date',trading_values[i]['Date'].values)
 
         # Save the csv file
-        ith_predictions.to_csv(f"{path}/Trading_days_period{i}.csv")
+        ith_predictions.to_csv(f"{path1}/Trading_days_period{i}.csv")
     logging.info("Successfully tracked forecasts dates")
 
 def portfolio_creation(algorithm, model_name, num_periods, k=10):
@@ -233,10 +233,9 @@ if __name__ == '__main__':
     parser.add_argument("--num_periods", '-p', type=int, default=10, help="Number of period over which returns have to be calculated ")
     parser.add_argument("--money", '-€', type=int, default=1, help="How much you want to invest")
     parser.add_argument("--top_bottom", '-tp', type=int, default=10, help="Number of top (long pos) and bottom (short pos)")
-    parser.add_argument("--monkey", type=bool, default=False, help="Are you a monkey or not?")
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
-    parser.add_argument("-monkeys_num", type=int, default=10, help="How many monkeys do you want?")
+    parser.add_argument("--monkeys_num", type=int, default=10, help="How many monkeys do you want?")
     args = parser.parse_args()
 
     levels = {'critical': logging.CRITICAL,
@@ -245,14 +244,14 @@ if __name__ == '__main__':
               'info': logging.INFO,
               'debug': logging.DEBUG}
 
-    start = time.time()
-
     logging.basicConfig(level= levels[args.log])
 
     df_price = pd.read_csv(go_up(1) + "/data/PriceData.csv")
     df_price = df_price.dropna(axis=1)
 
+    i = 0
     for alg, mod in zip(args.algorithm, args.model_name):
+        i += 1
         logging.info(f"---------- Model {mod} ----------")
         path = os.getcwd() + f'/predictions_for_portfolio/{alg}/{mod}'
 
@@ -260,51 +259,47 @@ if __name__ == '__main__':
         portfolio = portfolio_creation(alg, mod, args.num_periods)
 
         # Accumulate Returns
-        returns_monkey, acc_returns_monkey = forecast_returns(df_price, num_periods=args.num_periods,
-                                                                    money=args.money, monkey=args.monkey)
+        # returns_monkey, acc_returns_monkey = forecast_returns(df_price, num_periods=args.num_periods,
+                                                                    # money=args.money, monkey=args.monkey)
         #List of trading day:
         flat_list = [item for sublist in portfolio for item in sublist]
         trading_days = [item.columns[0] for item in flat_list]
         x_label_position = np.arange(0,len(trading_days),50)
         x_label_day = [trading_days[i] for i in x_label_position]
 
-
         # Accumulate Returns
-        acc_list = []
-        for i in range(0,10):
-            returns_monkey, acc_returns_monkey = forecast_returns(df_price, num_periods=args.num_periods,
-                                                                    money=args.money, monkey=args.monkey)
-            acc_list.append(np.array(acc_returns_monkey))
-        acc_list = np.array(acc_list)
+        plt.figure("Accumulative Returns", figsize=[13.,10.])
+        if alg == args.algorithm[0]:
+            acc_list = []
+            for i in range(args.monkeys_num):
+                returns_monkey, acc_returns_monkey = forecast_returns(df_price, num_periods=args.num_periods,
+                                                                        money=args.money, monkey=True)
+                acc_list.append(np.array(acc_returns_monkey))
+            acc_list = np.array(acc_list)
 
-        acc_monkey_mean = np.mean(acc_list, axis=0)
+            acc_monkey_mean = np.mean(acc_list, axis=0)
 
-        acc_monkey_std = np.std(acc_list, axis=0)
-        monckey_std_upper = (acc_monkey_mean + acc_monkey_std)
-        monckey_std_lower = (acc_monkey_mean - acc_monkey_std)
+            acc_monkey_std = np.std(acc_list, axis=0)
+            monkey_std_upper = (acc_monkey_mean + acc_monkey_std)
+            monkey_std_lower = (acc_monkey_mean - acc_monkey_std)
+            plt.plot(acc_monkey_mean, color='crimson', label='Monkeys')
+            plt.fill_between(list(range(0,len(acc_monkey_mean))),monkey_std_upper, monkey_std_lower, color='crimson', alpha=0.2,
+                        label=r'$\pm$ 1 std. dev.')
 
         returns_model, acc_returns_model = forecast_returns(df_price, num_periods=args.num_periods, money=args.money, monkey=False)
 
-        plt.figure("Accumulative Returns", figsize=[13.,10.])
-        plt.plot(acc_monkey_mean, color='crimson', label='Monkeys')
-        plt.fill_between(list(range(0,len(acc_monkey_mean))),monckey_std_upper, monckey_std_lower, color='crimson', alpha=0.2,
-                        label=r'$\pm$ 1 std. dev.')
+
         plt.plot(acc_returns_model, label=f'{mod}')
         plt.title("Accumulative Returns over Trading Days")
         plt.xticks(x_label_position, x_label_day, rotation=60)
         plt.xlabel("Trading days")
         plt.ylabel("Accumulative Returns")
-        plt.grid()
+        plt.grid(True)
         plt.legend()
-        # plt.savefig("Accumulative returns")
+        plt.savefig("Accumulative returns")
 
         # Statistic
         a, b, p_val= statistical_significance(df_price, monkeys_num=args.monkeys_num, num_periods=args.num_periods, k=args.top_bottom)
-
-        print(f'p_value: {p_val}')
-
-        end = time.time() - start
-        print(end)
 
         fig, ax1 = plt.subplots(figsize=[8.0, 6.0])
         ax1.hist(a, bins=150, color='crimson',label=f'Monkey return: {a.mean():.5f} $\pm${a.std():.5f}', alpha = 0.9)
@@ -316,6 +311,5 @@ if __name__ == '__main__':
         ax1.set(ylabel='Monkeys')
         ax2.set(ylabel='Model')
         fig.legend(bbox_to_anchor=(1.0,1.0), bbox_transform=ax1.transAxes)
-
-        plt.figure
+        fig.savefig(f"Statistics model: {mod}")
     plt.show()
