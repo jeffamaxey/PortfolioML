@@ -207,14 +207,14 @@ def statistical_significance(df_price, monkeys_num):
     return mean_daily_ret, mean_return_mod, p_val
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Creation of portfolios based on selected model predictions')
-    parser.add_argument('algorithm', type=str, nargs='+', help='CNN, LSTM and/or RAF')
-    parser.add_argument('model_name', type=str, nargs='+', help='Select the particular model trained')
-    parser.add_argument("-log", "--log", default="info",
-                        help=("Provide logging level. Example --log debug', default='info"))
+    parser = argparse.ArgumentParser(description='Creation of portfolios based on selected model predictions and plot basic statistical')
+    parser.add_argument('--algorithm', '-a', type=str, action='append', help='CNN, LSTM , DNN and/or RAF')
+    parser.add_argument('--model_name', '-m', type=str, action='append', help='Select the particular model trained')
     parser.add_argument("-num_period", type=int, default=10, help="Number of period over which returns have to be calculated ")
     parser.add_argument("-money", type=int, default=1, help="How much you want to invest")
     parser.add_argument("-monkey", type=bool, default=False, help="Are you a monkey or not?")
+    parser.add_argument("-log", "--log", default="info",
+                        help=("Provide logging level. Example --log debug', default='info"))
     parser.add_argument("-monkeys_num", type=int, default=10, help="How many monkeys do you want?")
     args = parser.parse_args()
 
@@ -231,7 +231,7 @@ if __name__ == '__main__':
     df_price = pd.read_csv(go_up(1) + "/data/PriceData.csv")
     df_price = df_price.dropna(axis=1)
 
-    plt.figure("Accumulative returns")
+    
     for alg, mod in zip(args.algorithm, args.model_name):
         logging.info(f"---------- Model {mod} ----------")
         path = os.getcwd() + f'/predictions_for_portfolio/{alg}/{mod}'
@@ -241,6 +241,7 @@ if __name__ == '__main__':
         portfolio = [portfolio_creation(f"{path}/Trading_days_period{k}.csv") for k in range(args.num_period)]
 
         # Accumulate Returns
+        
         returns_monkey, acc_returns_monkey = forecast_returns(df_price, num_period=args.num_period, 
                                                                     money=args.money, monkey=args.monkey)
         acc_list = []
@@ -258,6 +259,7 @@ if __name__ == '__main__':
 
         returns_model, acc_returns_model = forecast_returns(df_price, num_period=args.num_period, money=args.money, monkey=False)
 
+        plt.figure("Accumulative returns")
         plt.plot(acc_monkey_mean, color='crimson', label='Monkeys')
         plt.fill_between(list(range(0,len(acc_monkey_mean))),monckey_std_upper, monckey_std_lower, color='crimson', alpha=0.2,
                         label=r'$\pm$ 1 std. dev.')
@@ -267,7 +269,6 @@ if __name__ == '__main__':
         plt.ylabel("Accumulative Returns")
         plt.grid()
         plt.legend()
-        plt.show()
 
         # Statistic
         a, b, p_val= statistical_significance(df_price, monkeys_num=args.monkeys_num)
@@ -284,6 +285,7 @@ if __name__ == '__main__':
         ax2 = ax1.twinx()
         ax2.hist(b, bins=70, color='green', label=f'{mod} Return: {b.mean():.5f} $\pm${b.std():.5f}', alpha=0.5)
         plt.title(f'{mod} significant statistic w.r.t {args.monkeys_num} monkeys')
+        ax1.plot([], color='white', label=f'p-value: {p_val:.4E}')
         ax1.set(xlabel='Average daily return')
         ax1.set(ylabel='Monkeys')
         ax2.set(ylabel='Model')
