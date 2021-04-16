@@ -187,47 +187,75 @@ def forecast_returns(df_price, num_periods=10, k=10, money=1., monkey=False):
 
     return returns, accumulative_returns
 
-def statistical_significance(df_price, monkeys_num, num_periods, k):
+def monkey_trading(df_price, monkeys_num, num_periods=10, k=10, money=1.):
     """
-    Compute statistical significance of selected model.
-
-    Compare the average daily return of model with average daily return of several
-    trading monkey and compute the Z-score test for statistical significance.
-    If p value is grather than 0.05 so the model basically is equal to a monkey.
-
-    Parameters
-    ----------
-    monkeys_nun: integer
-        How many monkeys do you want?
-
-    Results
-    -------
-
+    Returns and accumulative reterns by monkeys' trading
     """
-
 
     # Monkey statistic
     returns_dr = []
+    accumulative_dr = []
     for i in range(0,monkeys_num):
-        returns, acc_returns_m = forecast_returns(df_price, num_periods=num_periods_g,
-                                                        money=money_g, monkey=True)
+        returns, acc_returns_m = forecast_returns(df_price, num_periods=num_periods, k=k, money=money, monkey=True)
         returns = np.reshape(returns, (int(returns.shape[0]/(2*k_g)),(2*k_g)))
         returns_dr.append(returns)
+        accumulative_dr.append(np.array(acc_returns_m))
+
     returns_dr = np.array(returns_dr)
     returns_dr = np.reshape(returns_dr, (returns_dr.shape[0]*returns_dr.shape[1], returns_dr.shape[2]))
     mean_daily_ret = np.array([day_ret.mean() for day_ret in returns_dr])
 
+    accumulative_dr = np.array(accumulative_dr)
+    acc_monkey_mean = np.mean(accumulative_dr, axis=0)
+    acc_monkey_std = np.std(accumulative_dr, axis=0)
+    monkey_std_upper = (acc_monkey_mean + acc_monkey_std)
+    monkey_std_lower = (acc_monkey_mean - acc_monkey_std)
 
-    # Model statistic
-    returns_mod, accumulative_returns_mod = forecast_returns(df_price, num_periods=num_periods_g,
-                                                               money=money_g, monkey=False)
-    returns_mod = np.reshape(returns_mod, (int(returns_mod.shape[0]/(2*k_g)),(2*k_g)))
-    mean_return_mod = np.array([day_ret.mean() for day_ret in returns_mod])
+    accumulative_ret_mon = [acc_monkey_mean, monkey_std_upper, monkey_std_lower]
 
-    # Z-score test
-    t_stat, p_val = stats.ttest_ind(mean_daily_ret, mean_return_mod, equal_var=False)
+    return mean_daily_ret, accumulative_ret_mon
 
-    return mean_daily_ret, mean_return_mod, p_val
+# def statistical_significance(df_price, mean_daily_ret_monkey):
+#     """
+#     Compute statistical significance of selected model.
+
+#     Compare the average daily return of model with average daily return of several
+#     trading monkey and compute the Z-score test for statistical significance.
+#     If p value is grather than 0.05 so the model basically is equal to a monkey.
+
+#     Parameters
+#     ----------
+#     mean_daily_ret_monkey: list
+#         List of value about mean daily reterns of several monkeys
+
+#     Results
+#     -------
+
+#     """
+
+
+#     # Monkey statistic
+#     returns_dr = []
+#     for i in range(0,monkeys_num):
+#         returns, acc_returns_m = forecast_returns(df_price, num_periods=num_periods_g,
+#                                                         money=money_g, monkey=True)
+#         returns = np.reshape(returns, (int(returns.shape[0]/(2*k_g)),(2*k_g)))
+#         returns_dr.append(returns)
+#     returns_dr = np.array(returns_dr)
+#     returns_dr = np.reshape(returns_dr, (returns_dr.shape[0]*returns_dr.shape[1], returns_dr.shape[2]))
+#     mean_daily_ret = np.array([day_ret.mean() for day_ret in returns_dr])
+
+
+#     # Model statistic
+#     returns_mod, accumulative_returns_mod = forecast_returns(df_price, num_periods=num_periods_g,
+#                                                                money=money_g, monkey=False)
+#     returns_mod = np.reshape(returns_mod, (int(returns_mod.shape[0]/(2*k_g)),(2*k_g)))
+#     mean_return_mod = np.array([day_ret.mean() for day_ret in returns_mod])
+
+#     # Z-score test
+#     t_stat, p_val = stats.ttest_ind(mean_daily_ret_monkey, mean_return_mod, equal_var=False)
+
+#     return mean_return_mod, p_val
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Creation of portfolios based on selected model predictions and plot basic statistical')
@@ -252,8 +280,7 @@ if __name__ == '__main__':
 
     df_price = pd.read_csv(go_up(1) + "/data/PriceData.csv")
     df_price = df_price.dropna(axis=1)
-
-
+    
     for alg, mod in zip(args.algorithm, args.model_name):
         logging.info(f"---------- Model {mod} ----------")
         path = os.getcwd() + f'/predictions_for_portfolio/{alg}/{mod}'
@@ -261,9 +288,6 @@ if __name__ == '__main__':
         # Portfolios Generator
         portfolio = portfolio_creation(alg, mod, args.num_periods)
 
-        # Accumulate Returns
-        # returns_monkey, acc_returns_monkey = forecast_returns(df_price, num_periods=args.num_periods,
-                                                                    # money=args.money, monkey=args.monkey)
         # List of trading day:
         flat_list = [item for sublist in portfolio for item in sublist]
         trading_days = [item.columns[0] for item in flat_list]
@@ -273,23 +297,14 @@ if __name__ == '__main__':
         # Accumulate Returns
         plt.figure("Accumulative Returns", figsize=[13.,10.])
         if alg == args.algorithm[0]:
-            acc_list = []
-            for i in range(args.monkeys_num):
-                returns_monkey, acc_returns_monkey = forecast_returns(df_price, num_periods=args.num_periods,
-                                                                        money=args.money, monkey=True)
-                acc_list.append(np.array(acc_returns_monkey))
-            acc_list = np.array(acc_list)
+            monkey_ret, accumulative_monkey = monkey_trading(df_price, monkeys_num=args.monkeys_num, 
+                                                            num_periods=args.num_periods,money=args.money,k=args.top_bottom)
+            plt.plot(accumulative_monkey[0], color='crimson', label='Monkeys')
+            plt.fill_between(list(range(0,len(accumulative_monkey[0]))),accumulative_monkey[1], accumulative_monkey[2], 
+                             color='crimson', alpha=0.2, label=r'$\pm$ 1 std. dev.')
 
-            acc_monkey_mean = np.mean(acc_list, axis=0)
-
-            acc_monkey_std = np.std(acc_list, axis=0)
-            monkey_std_upper = (acc_monkey_mean + acc_monkey_std)
-            monkey_std_lower = (acc_monkey_mean - acc_monkey_std)
-            plt.plot(acc_monkey_mean, color='crimson', label='Monkeys')
-            plt.fill_between(list(range(0,len(acc_monkey_mean))),monkey_std_upper, monkey_std_lower, color='crimson', alpha=0.2,
-                        label=r'$\pm$ 1 std. dev.')
-
-        returns_model, acc_returns_model = forecast_returns(df_price, num_periods=args.num_periods, money=args.money, monkey=False)
+        returns_model, acc_returns_model = forecast_returns(df_price, num_periods=args.num_periods,
+                                                             money=args.money,k=args.top_bottom, monkey=False)
 
 
         plt.plot(acc_returns_model, label=f'{mod}')
@@ -302,14 +317,16 @@ if __name__ == '__main__':
         plt.savefig("Accumulative returns")
 
         # Statistic
-        a, b, p_val= statistical_significance(df_price, monkeys_num=args.monkeys_num, num_periods=args.num_periods, k=args.top_bottom)
+        returns_model = np.reshape(returns_model, (int(returns_model.shape[0]/(2*args.top_bottom)),(2*args.top_bottom)))
+        mean_return_mod = np.array([day_ret.mean() for day_ret in returns_model])
+        t_stat, p_val = stats.ttest_ind(monkey_ret , returns_model, equal_var=False)
 
         fig, ax1 = plt.subplots(figsize=[8.0, 6.0])
-        ax1.hist(a, bins=150, color='crimson',label=f'Monkey return: {a.mean():.5f} $\pm${a.std():.5f}', alpha = 0.9)
+        ax1.hist(monkey_ret, bins=150, color='crimson',label=f'Monkey return: {monkey_ret.mean():.5f} $\pm${monkey_ret.std():.5f}', alpha = 0.9)
         ax2 = ax1.twinx()
-        ax2.hist(b, bins=70, color='green', label=f'{mod} Return: {b.mean():.5f} $\pm${b.std():.5f}', alpha=0.5)
+        ax2.hist(mean_return_mod, bins=70, color='green', label=f'{mod} Return: {mean_return_mod.mean():.5f} $\pm${mean_return_mod.std():.5f}', alpha=0.5)
         plt.title(f'{mod} significant statistic w.r.t {args.monkeys_num} monkeys')
-        ax1.plot([], color='white', label=f'p-value: {p_val:.4E}')
+        # ax1.plot([], color='white', label=f'p-value: {p_val:.4E}')
         ax1.set(xlabel='Average daily return')
         ax1.set(ylabel='Monkeys')
         ax2.set(ylabel='Model')
