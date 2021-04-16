@@ -178,8 +178,8 @@ def all_data_LSTM(df_returns, df_binary, period, len_train=981):
 def all_data_DNN(df_returns, df_binary, period, len_train=981):
     """
     Create a right input data for DNN starting from the right data of LSTM.
-    Indeed the parameters are the same of the all_data_LSTM, these are changed select
-    anly m values (features) exctrated from the 240 values in the LSTM input data.
+    This function selects only m values (features) exctrated from the 240 values
+    in the LSTM input data.
 
     Parameters
     ----------
