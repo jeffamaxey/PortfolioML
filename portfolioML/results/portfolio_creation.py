@@ -178,8 +178,12 @@ def forecast_returns(df_price, num_periods=10, k=10, money=1., monkey=False):
     returns_dr = np.reshape(returns, (int(returns.shape[0]/(2*k)),(2*k)))
     mean_daily_returns = [day_ret.mean() for day_ret in returns_dr]
 
-    logging.info('Average daily returns %2f', returns.mean())
-    logging.info('Standard deviation %2f', returns.std())
+    if monkey:
+        logging.info('\U0001F435 Average daily returns %2f', returns.mean())
+        logging.info('\U0001F435 Standard deviation %2f', returns.std())
+    else:
+        logging.info('Average model daily returns %2f', returns.mean())
+        logging.info('Standard model deviation %2f', returns.std())
 
     return returns, accumulative_returns
 
@@ -276,7 +280,7 @@ if __name__ == '__main__':
 
     df_price = pd.read_csv(go_up(1) + "/data/PriceData.csv")
     df_price = df_price.dropna(axis=1)
-
+    
     for alg, mod in zip(args.algorithm, args.model_name):
         logging.info(f"---------- Model {mod} ----------")
         path = os.getcwd() + f'/predictions_for_portfolio/{alg}/{mod}'
@@ -284,7 +288,7 @@ if __name__ == '__main__':
         # Portfolios Generator
         portfolio = portfolio_creation(alg, mod, args.num_periods)
 
-        #List of trading day:
+        # List of trading day:
         flat_list = [item for sublist in portfolio for item in sublist]
         trading_days = [item.columns[0] for item in flat_list]
         x_label_position = np.arange(0,len(trading_days),50)
