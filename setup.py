@@ -9,7 +9,7 @@ setup(
     author_email='raffaele05@gmail.com',
     license='gnu general public license',
     packages = find_packages(),
-    install_requires=['numpy', 'requests'],
+    install_requires=['numpy', 'requests', 'scikit-learn'],
     classifiers=[
         'Development Status :: 1 - Planning',
         'Intended Audience :: Science/Research',
