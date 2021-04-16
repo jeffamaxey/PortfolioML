@@ -1,12 +1,10 @@
 """Unit test split.py"""
 import os
-import sys
-sys.path.append(os.path.dirname(os.path.abspath("..")))
 import numpy as np
 import unittest
 import pandas as pd
 import random
-from portfolio.model.split import split_sequences, get_train_set, split_Tperiod, all_data_LSTM
+from portfolioML.model.split import get_sequences, get_train_set, split_Tperiod, all_data_LSTM
 
 def _full_path(file_name):
     return os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
@@ -26,12 +24,12 @@ class TestDataReturns(unittest.TestCase):
 
 
 
-    def test_split_sequences(self):
+    def test_get_sequences(self):
         """Test of split_sequences fuction"""
         self.assertEqual(len(df_return), len(df_binary))
         column_idx = random.randint(1, df_return.shape[1])
         random_tick = df_binary.columns[column_idx]
-        X, y = split_sequences(df_return[random_tick], df_binary[random_tick])
+        X, y = get_sequences(df_return[random_tick], df_binary[random_tick])
         for i in range(1,10):
             self.assertAlmostEqual(X[i][0], X[i-1][1])
 
@@ -46,7 +44,7 @@ class TestDataReturns(unittest.TestCase):
         list1 = []
         list1
         for col in df_return.columns[1:10]:
-            x1, y1 = split_sequences(df_return[col], df_binary[col])
+            x1, y1 = get_sequences(df_return[col], df_binary[col])
             list1.append(x1)
         list1 = np.array(list1)
         list1 = list((list1[i] for i in range(list1.shape[0])))

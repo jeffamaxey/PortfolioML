@@ -1,20 +1,15 @@
 """LSTM model"""
-import numpy as np
-import pandas as pd
-import logging
 import argparse
+import logging
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
 from keras.layers import Input, Dense, LSTM, Dropout
-from keras.models import Sequential
-from keras.models import load_model
+from keras.models import Sequential, load_model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.optimizers import RMSprop, Adam
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.abspath("..")))
-from model.split import split_Tperiod, get_train_set, all_data_LSTM
-from data.data_returns import read_filepath
-from sklearn.preprocessing import StandardScaler
-import matplotlib.pyplot as plt
+from portfolioML.model.split import all_data_LSTM
+from portfolioML.data.data_returns import read_filepath
 from makedir import smart_makedir, go_up
 
 def LSTM_model(nodes,optimizer, drop_out=0.2):

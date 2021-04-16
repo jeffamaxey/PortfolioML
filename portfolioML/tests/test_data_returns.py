@@ -1,7 +1,6 @@
 """Unit test data_returns"""
 import os
 import unittest
-import sys
 import pandas as pd
 import random
 from portfolioML.data.data_returns import get_returns, binary_targets

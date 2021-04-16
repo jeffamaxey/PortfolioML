@@ -1,13 +1,10 @@
 """Split time-series in traning and test(trading) for classification """
-import logging
 import argparse
+import logging
 import numpy as np
 import pandas as pd
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.abspath("..")))
-from data.data_returns import read_filepath
 from sklearn.preprocessing import StandardScaler
+from portfolioML.data.data_returns import read_filepath
 
 def split_Tperiod(df_returns, df_binary, len_period=1308, len_test=327):
     """

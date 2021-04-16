@@ -1,18 +1,14 @@
-'''
-random forest
-'''
-import os
-import sys
+'''Random Forest'''
 import argparse
 import logging
+import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score,roc_curve
-sys.path.append(os.path.dirname(os.path.abspath("..")))
-from data.data_returns import read_filepath
-from model.split import all_data_DNN
+from portfolioML.data.data_returns import read_filepath
+from portfolioML.model.split import all_data_DNN
 from makedir import smart_makedir, go_up
 if not sys.warnoptions:
     import warnings
