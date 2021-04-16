@@ -1,16 +1,12 @@
-import pandas as pd
-import numpy as np
-import logging
 import argparse
-import shutil
-import random
-import time
-import sys
+import logging
 import os
-sys.path.append(os.path.dirname(os.path.abspath("..")))
-from portfolioML.makedir import smart_makedir, go_up
+import random
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 from scipy import stats
+from makedir import smart_makedir, go_up
 
 
 def get_trading_values(df_price, algorithm, model_name, len_period=1308, len_train=981, len_test=327):

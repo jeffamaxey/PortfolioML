@@ -1,16 +1,14 @@
 """ CNN model """
-import logging
 import argparse
-import sys
+import logging
 import os
 import matplotlib.pyplot as plt
 from keras.layers import Input, Dense, Dropout, Conv1D, MaxPooling1D, Flatten, Concatenate
 from keras.models import Model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.utils.vis_utils import plot_model
-sys.path.append(os.path.dirname(os.path.abspath("..")))
-from model.split import all_data_LSTM
-from data.data_returns import read_filepath
+from portfolioML.model.split import all_data_LSTM
+from portfolioML.data.data_returns import read_filepath
 from makedir import go_up
 
 class MinPooling1D(MaxPooling1D):

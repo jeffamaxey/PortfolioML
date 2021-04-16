@@ -1,11 +1,10 @@
 """ Generate csv file """
-import pandas as pd
-import numpy as np
+import argparse
+import logging
 import requests
+import pandas as pd
 from bs4 import BeautifulSoup
 import pandas_datareader as web
-import logging
-import argparse
 
 def get_ticker():
     """

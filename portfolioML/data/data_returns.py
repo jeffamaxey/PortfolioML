@@ -1,10 +1,10 @@
 """Pre-processing dataframe"""
-import pandas as pd
-import numpy as np
 import argparse
 import logging
 import sys
 from statistics import median
+import numpy as np
+import pandas as pd
 
 def read_filepath(file_path):
     """

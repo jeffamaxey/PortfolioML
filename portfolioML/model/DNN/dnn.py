@@ -1,14 +1,12 @@
 """DNN model"""
-import logging
 import argparse
-import sys
+import logging
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 from keras.layers import Input, Dense, Dropout
 from keras.models import Sequential
 from keras.callbacks import EarlyStopping, ModelCheckpoint
-sys.path.append(os.path.dirname(os.path.abspath("..")))
 from model.split import all_data_DNN
 from data.data_returns import read_filepath
 from makedir import go_up

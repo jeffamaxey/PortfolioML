@@ -1,19 +1,15 @@
 """ Prediction with DNN model """
+import argparse
+import logging
+import os
 import numpy as np
 import pandas as pd
-import logging
-import argparse
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, auc, roc_auc_score
+from sklearn.metrics import roc_curve, roc_auc_score
 from keras.models import load_model
-import sys
-import os
-import shutil
-import time
-sys.path.append(os.path.dirname(os.path.abspath("..")))
 from portfolioML.model.split import all_data_DNN, all_data_LSTM
 from portfolioML.data.data_returns import read_filepath
-from portfolioML.makedir import smart_makedir, go_up
+from makedir import smart_makedir
 
 
 def plot_roc(algorithm, name_model, periods=10):
