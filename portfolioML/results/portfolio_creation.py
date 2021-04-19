@@ -9,7 +9,7 @@ from scipy import stats
 from portfolioML.makedir import smart_makedir, go_up
 
 
-def get_trading_values(df_price, algorithm, model_name, len_period=1308, len_train=981, len_test=327):
+def get_trading_values(df_price, algorithm, model_name, num_periods, len_period=1308, len_train=981, len_test=327):
     '''
     Generate a pandas dataframe composed by all the days of which lstm.py forecasts
     the prices. This is due to the fact that lstm.py doesn't track the dates'
@@ -49,7 +49,7 @@ def get_trading_values(df_price, algorithm, model_name, len_period=1308, len_tra
     path1 = os.getcwd() + f'/predictions_for_portfolio/{algorithm}/{model_name}'
 
     # Insert the 'Date' column in the forecasts made by lstm.py
-    for i in range(10):
+    for i in range(num_periods):
         ith_predictions = pd.read_csv(f"predictions/{algorithm}/{model_name}/{model_name}_Predictions_{i}th_Period.csv",
                                       index_col=0)
         ith_predictions.insert(0,'Date',trading_values[i]['Date'].values)
@@ -77,7 +77,7 @@ def portfolio_creation(algorithm, model_name, num_periods, k=10):
         List of pandas dataframes.
     '''
 
-    get_trading_values(df_price, algorithm, model_name)
+    get_trading_values(df_price, algorithm, model_name, num_periods)
     path = os.getcwd() + f'/predictions_for_portfolio/{algorithm}/{model_name}'
     portfolio = []
     for j in range(num_periods):
@@ -106,7 +106,7 @@ def portfolio_creation(algorithm, model_name, num_periods, k=10):
         portfolio.append(portfolio_tmp)
     return portfolio
 
-def forecast_returns(df_price, num_periods=10, k=10, money=1., monkey=False):
+def forecast_returns(df_price, num_periods, k=10, money=1., monkey=False):
     '''
     The following is aimed to calculate the daily returns. We set a long position for the
     top k companies at each day and a short position for the bottom k ones. So, we
@@ -183,7 +183,7 @@ def forecast_returns(df_price, num_periods=10, k=10, money=1., monkey=False):
 
     return returns, accumulative_returns
 
-def monkey_trading(df_price, monkeys_num, num_periods=10, k=10, money=1.):
+def monkey_trading(df_price, monkeys_num, num_periods, k=10, money=1.):
     """
     Returns and accumulative reterns by monkeys' trading
     """

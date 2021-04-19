@@ -9,10 +9,10 @@ from sklearn.metrics import roc_curve, roc_auc_score
 from keras.models import load_model
 from portfolioML.model.split import all_data_DNN, all_data_LSTM
 from portfolioML.data.data_returns import read_filepath
-from makedir import smart_makedir
+from portfolioML.makedir import smart_makedir
 
 
-def plot_roc(algorithm, name_model, periods=10):
+def plot_roc(algorithm, name_model, num_periods):
     """
     Plot roc curve with mean and standard deviation of the area under the curve (auc) of a
     trained model.
@@ -48,7 +48,7 @@ def plot_roc(algorithm, name_model, periods=10):
     path = os.getcwd() + f'/ROC/{algorithm}/{name_model}/'
 
     plt.figure()
-    for per in range(0,periods):
+    for per in range(0,num_periods):
         logging.info(f'Creating ROC for period {per}')
         if (algorithm == 'LSTM') or (algorithm == 'CNN'):
             #Splitting data set for each period
@@ -100,13 +100,13 @@ def plot_roc(algorithm, name_model, periods=10):
     plt.title(f'ROC Curve {name_model} - mean +|- std')
     plt.savefig(path + f'ROC Curve {name_model} - mean +|- std.png')
 
-def predictions_csv(algorithm, model_name, num_period=10):
+def predictions_csv(algorithm, model_name, num_periods=10):
     '''
 
 
     Parameters
     ----------
-    num_period : TYPE, optional
+    num_periods : TYPE, optional
         DESCRIPTION. The default is 10.
 
     Returns
@@ -122,7 +122,7 @@ def predictions_csv(algorithm, model_name, num_period=10):
     path = os.getcwd() + f'/predictions/{algorithm}/{model_name}/'
     parent_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 
-    for i in range(num_period):
+    for i in range(num_periods):
         model = load_model(parent_path + f'/model/{algorithm}/{model_name}/{model_name}_period{i}.h5')
         if (algorithm == 'LSTM') or (algorithm == 'CNN'):
             #Splitting data set for each period
@@ -144,6 +144,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prediction and compare traned model')
     parser.add_argument('algorithm', type=str, help='CNN. LSTM or RAF')
     parser.add_argument('model_name', type=str, help='Select the particular model trained')
+    parser.add_argument('num_periods', type=int, help=help="Number of period over which returns have to be calculated ")
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
@@ -167,5 +168,5 @@ if __name__ == "__main__":
     df_binary = read_filepath(df_binary)
 
 
-    plot_roc(args.algorithm, args.model_name)
-    predictions_csv(args.algorithm, args.model_name)
+    plot_roc(args.algorithm, args.model_name, args.num_periods)
+    predictions_csv(args.algorithm, args.model_name, args.num_periods)
