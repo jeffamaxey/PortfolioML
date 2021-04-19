@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, LSTM, RepeatVector, TimeDistributed
 from keras.layers.convolutional import Conv1D, MaxPooling1D
+from sklearn.decomposition import PCA
 def read_filepath(file_path):
     """
     Read and compute basic informations about a data set in csv.
@@ -225,33 +226,77 @@ def all_data_LSTM(df_returns, df_binary, period, len_train=981):
 
     return X_train, y_train, X_test, y_test
 
-def LSTM_model(num_units=25, drop_out=0.1):
-    inputs = Input(shape= (240, 1))
-    drop = Dropout(drop_out)(inputs)
-    hidden = LSTM(num_units, return_sequences=False)(drop)
-    drop = Dropout(drop_out)(hidden)
-    outputs = Dense(1, activation='sigmoid')(drop)
+def pca(df_returns_path, n_components):
 
-    model = Model(inputs=inputs, outputs=outputs)
+    df_returns = read_filepath(df_returns_path)
+    pca = PCA(n_components=n_components)
+    pca.fit(df_returns.values)
+    logging.info(f"Fraction of variance preserved: {pca.explained_variance_ratio_.sum():.2f}")
+
+    n_pca= pca.n_components_ # get number of components
+    most_important = [np.abs(pca.components_[i]).argmax() for i in range(n_pca)] # get the index of the most important feature on EACH component
+    initial_feature_names = df_returns.columns
+    most_important_companies = [initial_feature_names[most_important[i]] for i in range(n_pca)] # get the most important feature names
+    most_important_companies = list(set(most_important_companies))
+
+    return most_important_companies
+
+def LSTM_model(nodes,optimizer, drop_out=0.2):
+    '''
+    Architeture for the LSTM algorithm
+
+    Parameters
+    ----------
+    nodes : list
+        List that contains one number of nodes for each layer the user want to use.
+    optimizer : str
+        Optimizier between RMS_prop or Adam.
+    drop_out : float, optional
+        Value of the dropout in all the dropout layers. The default is 0.2.
+
+    Returns
+    -------
+    model : tensorflow.python.keras.engine.sequential.Sequential
+        Model.
+
+    '''
+
+    model = Sequential()
+    model.add(Input(shape= (240, 1)))
+    model.add(Dropout(drop_out))
+
+    if len(nodes) > 1:
+        ret_seq = True
+    else:
+        ret_seq = False
+
+    for nod in nodes:
+        model.add(LSTM(nod, return_sequences=ret_seq))
+        model.add(Dropout(drop_out))
+
+    model.add(Dense(1, activation='sigmoid'))
 
     # Two optimiziers used during training
-    rms_prop = RMSprop(learning_rate=0.005, momentum=0.5, clipvalue=0.5)
-    adam = Adam(learning_rate=0.005)
+    if optimizer == 'RMS_prop':
+        opt = RMSprop(learning_rate=0.005, momentum=0.5, clipvalue=0.5)
+    if optimizer == 'Adam':
+        opt = Adam(learning_rate=0.005)
 
-    model.compile(loss='binary_crossentropy', optimizer=rms_prop, metrics=['accuracy'])
+    model.compile(loss='binary_crossentropy', optimizer=opt, metrics=['accuracy'])
     return model
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Creation of input and output data for lstm classification problem')
-    parser.add_argument('returns_file', type=str, help='Path to the returns input data')
-    parser.add_argument('binary_file', type=str, help='Path to the binary target data')
+    parser.add_argument('returns_file', type=str, help='Path of returns data')
+    parser.add_argument('binary_file', type=str, help='Path of target data')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
-    parser.add_argument('num_units', type=int, help='Number of units in the LSTM layer')
     parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
-    parser.add_argument('num_epochs', type=int, help='Number of epochs you want to train')
-    parser.add_argument('batch_size', type=int, help='Batch_size')
-    parser.add_argument('drop_out', type=float, help='Value of the dropout')
+    parser.add_argument('nodes',type=int, nargs='+', help='Choose the number of nodes in LSTM+Dropout layers')
+    parser.add_argument('model_name', type=str, help='Choose the name of the model')
+    parser.add_argument('-prin_comp_anal', type=bool, default=False, help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs')
+    parser.add_argument('-recursive', type=bool, default=True, help='Choose whether or not to pass parameters from one period to another during training')
+    parser.add_argument('-optimizer', type=str, default='RMS_prop', help='Choose RMS_prop or Adam')
 
     args = parser.parse_args()
 
@@ -268,39 +313,46 @@ if __name__ == "__main__":
     #Read the data
     df_returns = read_filepath(args.returns_file)
     df_binary = read_filepath(args.binary_file)
-    # Pass or not the weights from one period to another
-    recursive = True
+    if args.prin_comp_anal:
+        logging.info("Using the most important companies obtained from a PCA decomposition")
+        most_imp_comp = pca(args.returns_file, n_components=250)
+        df_returns = df_returns[most_imp_comp]
+        df_binary = df_binary[most_imp_comp]
+    else:
+        pass
 
 
     for i in range(args.num_periods):
         logging.info(f'============ Start Period {i}th ===========')
-        if (i!=0) and (recursive):
+        if (i!=0) and (args.recursive):
             logging.info('LOADING PREVIOUS MODEL')
             model = load_model(f"LSTM_{i-1}_period.h5")
         else:
             logging.info('CREATING NEW MODEL')
-            model = LSTM_model(args.num_units, args.drop_out)
+            model = LSTM_model(args.nodes, args.optimizer)
         logging.info(model.summary())
         X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, i)
         es = EarlyStopping(monitor='val_loss', patience=30, restore_best_weights=True)
-        mc = ModelCheckpoint(f'LSTM_{i}_period.h5', monitor='val_loss', mode='min', verbose=0)
+        mc = ModelCheckpoint(f'{args.model_name}_period{i}.h5', monitor='val_loss', mode='min', verbose=0)
         history = model.fit(X_train, y_train, epochs=args.num_epochs, batch_size=args.batch_size,
                             callbacks=[es,mc], validation_split=0.2, shuffle=False, verbose=1)
 
-        plt.figure(f'Period {i} Losses')
-        plt.plot(history.history['loss'], label='loss')
+        plt.figure(f'Loss and Accuracy Period {i}', figsize=[20.0,10.0])
+        plt.subplot(1,2,1)
+        plt.plot(history.history['loss'], label='train_loss')
         plt.plot(history.history['val_loss'], label='val_loss')
         plt.xlabel('Epochs')
+        plt.title('Training and Validation Losses vs Epochs')
+        plt.grid()
         plt.legend()
-        plt.grid(True)
-        plt.savefig(f'losses_{i}.png')
 
-        plt.figure(f'Period {i} Accuracies')
+        plt.subplot(1,2,2)
         plt.plot(history.history['accuracy'], label='accuracy')
         plt.plot(history.history['val_accuracy'], label='val_accuracy')
         plt.xlabel('Epochs')
+        plt.title('Training and Validation Accuracies vs Epochs')
+        plt.grid()
         plt.legend()
-        plt.grid(True)
         plt.savefig(f'accuracies_{i}.png')
 
         y_pred = model.predict(X_test)
