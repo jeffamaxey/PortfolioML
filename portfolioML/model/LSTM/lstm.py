@@ -13,14 +13,15 @@ from portfolioML.data.data_returns import read_filepath
 from portfolioML.data.pca import pca
 from portfolioML.makedir import smart_makedir, go_up
 
-def LSTM_model(nodes,optimizer, drop_out=0.2):
+def LSTM_model(nodes, optimizer, drop_out=0.2):
     '''
     Architeture for the LSTM algorithm
 
     Parameters
     ----------
     nodes : list
-        List that contains one number of nodes for each layer the user want to use.
+        The lenght of this list is equal to the number of LSTM + Dropout layers. The elements correspond
+        to the numbero of nodes of each LSTM layer.
     optimizer : str
         Optimizier between RMS_prop or Adam.
     drop_out : float, optional
@@ -136,7 +137,3 @@ if __name__ == "__main__":
             model.summary(print_fn=lambda x: file.write(x + '\n'))
 
         logging.info(f'============ End Period {i}th ===========')
-
-
-
-# PROVA
