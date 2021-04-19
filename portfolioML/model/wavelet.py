@@ -7,61 +7,6 @@ import pywt
 import matplotlib.pyplot as plt
 from portfolioML.makedir import smart_makedir, go_up
 
-
-# def timescale_dec(data, wavelet, time_scale):
-#     """
-#     Decomposition of time-series on particular time-scale by wavelet analysis, 
-#     time resolution is specified by the details coefficient of multiresolution decomposition.
-#     Retun the decomposition of time series on selected time scale.
-#     Note: the maximal decomposition is set to max_len_dec, so the approssimation of the series 
-#     is given at the last time-scale
-
-#     Parameters
-#     ----------
-#     data: list, numpy array
-#         Input time-series data
-
-#     wavelet: string
-#         Wavelet's name used to decomposition. For all avelable wavelet see pywt.waveletlist().
-
-#     time-scale: integer
-#         time-scale on wich compute the decomposition. It vaules range is [1, pywt.dwtn_max_level(data, wavelet)+1]
-#         if equal to max_len+1 the output vector is approximation reconstrution
-
-#     Results
-#     -------
-#     data_rec: numpy array
-#         recostruced data by selected time-scale
-
-#     """
-
-#     max_level = pywt.dwtn_max_level(data, wavelet)
-#     logging.info(f'max_level:{max_level}')
-
-#     try:
-#         if time_scale > max_level + 1:
-#             raise ValueError
-#     except:
-#         print('time-scale is out of bound [1, max_level]')
-#         time_scale = max_level + 1
-
-#     if time_scale == max_level + 1:
-#         logging.info(
-#             'time_scale is equal to max_len, return the approx decomposition')
-
-#     coeffs = pywt.wavedec(data, wavelet, level=max_level)
-#     print(f'coeffs: {len(coeffs)}')
-
-#     for i,val in enumerate(coeffs):
-#         print(i)
-#         if i != len(coeffs)-time_scale:
-#             coeffs[i] = np.zeros_like(coeffs[i]) # put to zero all the coefficients I don't want
-
-#     rec_data = pywt.waverec(coeffs, wavelet) # details on the time_scale
-
-#     return rec_data
-
-
 def approx_details_scale(data, wavelet, dec_level):
     """
     Approximation and details signal of a time series at specific time scale.
@@ -141,11 +86,6 @@ if __name__ == "__main__":
     coeffs = pywt.wavedec(open_data, wave, level=max_level)
     print(f'app + details:{len(coeffs)}')
     open_data_rec = pywt.waverec(coeffs, wave) # complete signal
-
-    # open_data_rec1 = timescale_dec(open_data, wave, 1)
-    # open_data_rec2 = timescale_dec(open_data, wave, 2)
-    # open_data_rec3 = timescale_dec(open_data, wave, 3)
-    # open_data_rec4 = timescale_dec(open_data, wave, 5)
 
     coeffs_1 = pywt.wavedec(open_data, wave, level=2)
     coeffs_1[2] = np.zeros_like(coeffs_1[2])
