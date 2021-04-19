@@ -132,9 +132,9 @@ def all_data_LSTM(df_returns, df_binary, period, len_train=981):
     df_returns : pandas dataframe
         Pandas dataframe of returns.
     df_binary : pandas dataframe
-        Pandas dataframe of returns..
+        Pandas dataframe of returns.
     period : int
-        Period over which you wanto to create the input for the LSTM.
+        Period over which you want to create the input for the LSTM.
     len_train : int, optional
         Lenght of the training set. The default is 981.
 
