@@ -10,7 +10,8 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.optimizers import RMSprop, Adam
 from portfolioML.model.split import all_data_LSTM
 from portfolioML.data.data_returns import read_filepath
-from makedir import smart_makedir, go_up
+from portfolioML.data.pca import pca
+from portfolioML.makedir import smart_makedir, go_up
 
 def LSTM_model(nodes,optimizer, drop_out=0.2):
     '''
@@ -63,7 +64,9 @@ if __name__ == "__main__":
     parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
     parser.add_argument('nodes',type=int, nargs='+', help='Choose the number of nodes in LSTM+Dropout layers')
     parser.add_argument('model_name', type=str, help='Choose the name of the model')
-    parser.add_argument('-optimizier', type=str, default='RMS_prop', help='Choose RMS_prop or Adam')
+    parser.add_argument('-prin_comp_anal', type=bool, default=False, help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs')
+    parser.add_argument('-recursive', type=bool, default=True, help='Choose whether or not to pass parameters from one period to another during training')
+    parser.add_argument('-optimizer', type=str, default='RMS_prop', help='Choose RMS_prop or Adam')
 
 
     args = parser.parse_args()
@@ -82,20 +85,25 @@ if __name__ == "__main__":
     df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
     df_returns = read_filepath(df_returns_path)
     df_binary = read_filepath(df_binary_path)
-    # Pass or not the weights from one period to another
-    recursive = True
+    if args.prin_comp_anal:
+        logging.info("Using the most important companies obtained from a PCA decomposition")
+        most_imp_comp = pca(df_returns_path, n_components=250)
+        df_returns = df_returns[most_imp_comp]
+        df_binary = df_binary[most_imp_comp]
+    else:
+        pass
 
     smart_makedir(args.model_name)
     smart_makedir(args.model_name + "/accuracies_losses")
 
     for i in range(args.num_periods):
         logging.info(f'============ Start Period {i}th ===========')
-        if (i!=0) and (recursive):
+        if (i!=0) and (args.recursive):
             logging.info('LOADING PREVIOUS MODEL')
             model = load_model(f"{args.model_name}/{args.model_name}_period{i-1}.h5")
         else:
             logging.info('CREATING NEW MODEL')
-            model = LSTM_model(args.nodes, args.optimizier)
+            model = LSTM_model(args.nodes, args.optimizer)
         logging.info(model.summary())
         X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, i)
         es = EarlyStopping(monitor='val_loss', patience=30, restore_best_weights=True)
