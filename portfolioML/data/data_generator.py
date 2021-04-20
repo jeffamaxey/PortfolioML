@@ -77,6 +77,7 @@ def data_generator(start, end, data_source = 'yahoo', export_csv = True):
 
     return data
 
+
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Generator of historical price data')
     parser.add_argument('-start', type=str, default="1995-01-01", help="Start time")
@@ -91,3 +92,6 @@ if __name__=='__main__':
 
     logging.basicConfig(level= levels[args.log])
     data = data_generator(args.start, args.end)
+
+    df_price = pd.read_csv("PriceData.csv")
+    d = wavelet_dataframe(df_price, 'haar')
