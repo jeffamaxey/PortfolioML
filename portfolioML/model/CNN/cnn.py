@@ -161,11 +161,11 @@ if __name__ == "__main__":
         X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, per)
         #Trainng
         es = EarlyStopping(monitor='val_loss', patience=40, restore_best_weights=True)
-        mc = ModelCheckpoint(f'CNN_minpool_period{per}.h5', monitor='val_loss', mode='min', verbose=0)
-        history = model.fit(X_train ,y_train, callbacks=[es,mc],validation_split=0.2, batch_size=512, epochs=1, verbose=1)
+        mc = ModelCheckpoint(f'{args.model_name}/{args.model_name}_period{per}.h5', monitor='val_loss', mode='min', verbose=0)
+        history = model.fit(X_train ,y_train, callbacks=[es,mc],validation_split=0.2, batch_size=512, epochs=400, verbose=1)
 
         #Elbow curve
-        plt.figure(f'CNN_minpool_Loss and Accuracy Period {per}', figsize=[20.0,10.0])
+        plt.figure(f'{args.model_name} and Accuracy Period {per}', figsize=[20.0,10.0])
         plt.subplot(1,2,1)
         plt.plot(history.history['loss'], label='train_loss')
         plt.plot(history.history['val_loss'], label='val_loss')
