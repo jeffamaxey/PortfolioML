@@ -144,7 +144,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prediction and compare traned model')
     parser.add_argument('algorithm', type=str, help='CNN. LSTM or RAF')
     parser.add_argument('model_name', type=str, help='Select the particular model trained')
-    parser.add_argument('num_periods', type=int, help=help="Number of period over which returns have to be calculated ")
+    parser.add_argument('num_periods', type=int, help="Number of period over which returns have to be calculated ")
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
