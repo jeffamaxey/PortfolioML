@@ -9,7 +9,8 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.utils.vis_utils import plot_model
 from portfolioML.model.split import all_data_LSTM
 from portfolioML.data.data_returns import read_filepath
-from makedir import go_up
+from portfolioML.makedir import smart_makedir, go_up
+from portfolioML.data.preprocessing import pca
 
 class MinPooling1D(MaxPooling1D):
     """
@@ -124,6 +125,8 @@ if __name__ == "__main__":
     parser.add_argument("-activation", type=str, default='tanh', help="activation, for more details see documentation")
     parser.add_argument("-min_pooling", type=bool, default=False, help="If true the structure is multiheaded")
     parser.add_argument("-plt_figure", type=bool, default=False, help="If true create png file of the model")
+    parser.add_argument('-prin_comp_anal', type=bool, default=False, help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs')
+
 
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
@@ -139,10 +142,15 @@ if __name__ == "__main__":
     logging.basicConfig(level= levels[args.log])
 
     #Read the data
-    df_binary = go_up(2) + "/data/ReturnsBinary.csv"
-    df_returns = go_up(2) + "/data/ReturnsData.csv"
-    df_returns = read_filepath(df_returns)
-    df_binary = read_filepath(df_binary)
+    df_returns_path = go_up(2) + "/data/ReturnsData.csv"
+    df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
+    df_returns = read_filepath(df_returns_path)
+    df_binary = read_filepath(df_binary_path)
+    if args.prin_comp_anal:
+        logging.info("Using the most important companies obtained from a PCA decomposition")
+        most_imp_comp = pca(df_returns_path, n_components=250)
+        df_returns = df_returns[most_imp_comp]
+        df_binary = df_binary[most_imp_comp]
 
     smart_makedir(args.model_name)
     smart_makedir(args.model_name + "/accuracies_losses")
