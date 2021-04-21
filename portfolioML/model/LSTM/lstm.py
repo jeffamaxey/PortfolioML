@@ -13,7 +13,7 @@ from portfolioML.data.data_returns import read_filepath
 from portfolioML.data.pca import pca
 from portfolioML.makedir import smart_makedir, go_up
 
-def LSTM_model(nodes, optimizer, drop_out=0.2):
+def LSTM_model(nodes, optimizer, drop_out=0.2, dim):
     '''
     Architeture for the LSTM algorithm
 
@@ -35,7 +35,7 @@ def LSTM_model(nodes, optimizer, drop_out=0.2):
     '''
 
     model = Sequential()
-    model.add(Input(shape= (240, 1)))
+    model.add(Input(shape= (240, dim)))
     model.add(Dropout(drop_out))
 
     if len(nodes) > 1:
@@ -65,7 +65,8 @@ if __name__ == "__main__":
     parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
     parser.add_argument('nodes',type=int, nargs='+', help='Choose the number of nodes in LSTM+Dropout layers')
     parser.add_argument('model_name', type=str, help='Choose the name of the model')
-    parser.add_argument('-prin_comp_anal', type=bool, default=False, help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs')
+    parser.add_argument('-pca_wavelet', type=bool, default=False,
+                        help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs and then DWT')
     parser.add_argument('-recursive', type=bool, default=True, help='Choose whether or not to pass parameters from one period to another during training')
     parser.add_argument('-optimizer', type=str, default='RMS_prop', help='Choose RMS_prop or Adam')
 
@@ -83,11 +84,20 @@ if __name__ == "__main__":
 
     #Read the data
     df_returns_path = go_up(2) + "/data/ReturnsData.csv"
+    df_multidimreturns_path1 = go_up(2) + "/data/MultidimReturnsData1.csv"
+    df_multidimreturns_path2 = go_up(2) + "/data/MultidimReturnsData2.csv"
+    df_multidimreturns_path3 = go_up(2) + "/data/MultidimReturnsData3.csv"
     df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
+
     df_returns = read_filepath(df_returns_path)
+    df_multidimreturns1 = pd.read_csv(df_multidimreturns1, index_col=0)
+    df_multidimreturns2 = pd.read_csv(df_multidimreturns2, index_col=0)
+    df_multidimreturns3 = pd.read_csv(df_multidimreturns3, index_col=0)
     df_binary = read_filepath(df_binary_path)
-    if args.prin_comp_anal:
-        logging.info("Using the most important companies obtained from a PCA decomposition")
+
+    # Compute PCA reduction
+    if args.pca_wavelet:
+        logging.info("==== PCA Reduction ====")
         most_imp_comp = pca(df_returns_path, n_components=250)
         df_returns = df_returns[most_imp_comp]
         df_binary = df_binary[most_imp_comp]
@@ -99,14 +109,26 @@ if __name__ == "__main__":
 
     for i in range(args.num_periods):
         logging.info(f'============ Start Period {i}th ===========')
+
+        # Compute DWT decomposition
+        if args.pca_wavelet:
+            logging.info("==== DWT ====")
+            X_train1, y_train, X_test1, y_test = all_data_LSTM(df_multidimreturns1, df_binary, i)
+            X_train2, y_train, X_test2, y_test = all_data_LSTM(df_multidimreturns1, df_binary, i)
+            X_train3, y_train, X_test3, y_test = all_data_LSTM(df_multidimreturns1, df_binary, i)
+            X_train = np.stack((X_train1, X_train2, X_train3), axis=-1).reshape(X_train1.shape[0],240,3)
+            X_test = np.stack((X_test1, X_test2, X_test3), axis=-1).reshape(X_test1.shape[0],240,3)
+        else:
+            X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, i)
+
         if (i!=0) and (args.recursive):
             logging.info('LOADING PREVIOUS MODEL')
             model = load_model(f"{args.model_name}/{args.model_name}_period{i-1}.h5")
         else:
             logging.info('CREATING NEW MODEL')
-            model = LSTM_model(args.nodes, args.optimizer)
+            model = LSTM_model(args.nodes, args.optimizer, X_train.shape[2])
         logging.info(model.summary())
-        X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, i)
+
         es = EarlyStopping(monitor='val_loss', patience=30, restore_best_weights=True)
         mc = ModelCheckpoint(f'{args.model_name}/{args.model_name}_period{i}.h5', monitor='val_loss', mode='min', verbose=0)
         history = model.fit(X_train, y_train, epochs=1, batch_size=896,

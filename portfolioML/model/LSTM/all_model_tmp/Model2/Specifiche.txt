@@ -1,1 +1,0 @@
-Modello 3: 25 10 400 896 0.2 False RMSprop
