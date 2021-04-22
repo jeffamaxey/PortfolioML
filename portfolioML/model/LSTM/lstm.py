@@ -8,12 +8,12 @@ from keras.layers import Input, Dense, LSTM, Dropout
 from keras.models import Sequential, load_model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.optimizers import RMSprop, Adam
-from portfolioML.model.split import all_data_LSTM
+from portfolioML.model.split import all_data_LSTM, all_multidata_LSTM
 from portfolioML.data.data_returns import read_filepath
-from portfolioML.data.pca import pca
+from portfolioML.data.preprocessing import pca
 from portfolioML.makedir import smart_makedir, go_up
 
-def LSTM_model(nodes, optimizer, drop_out=0.2, dim):
+def LSTM_model(nodes, optimizer, dim, drop_out=0.2):
     '''
     Architeture for the LSTM algorithm
 
@@ -82,17 +82,15 @@ if __name__ == "__main__":
     logging.basicConfig(level= levels[args.log])
     pd.options.mode.chained_assignment = None # Mute some warnings of Pandas
 
-    #Read the data
+    # Get data paths
     df_returns_path = go_up(2) + "/data/ReturnsData.csv"
-    df_multidimreturns_path1 = go_up(2) + "/data/MultidimReturnsData1.csv"
-    df_multidimreturns_path2 = go_up(2) + "/data/MultidimReturnsData2.csv"
-    df_multidimreturns_path3 = go_up(2) + "/data/MultidimReturnsData3.csv"
+    df_multidimret_path = go_up(2) + "/data/MultidimReturnsData"
     df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
-
+    # Read the data
     df_returns = read_filepath(df_returns_path)
-    df_multidimreturns1 = pd.read_csv(df_multidimreturns1, index_col=0)
-    df_multidimreturns2 = pd.read_csv(df_multidimreturns2, index_col=0)
-    df_multidimreturns3 = pd.read_csv(df_multidimreturns3, index_col=0)
+    df_multireturns1 = pd.read_csv(df_multidimret_path + "1.csv", index_col=0)
+    df_multireturns2 = pd.read_csv(df_multidimret_path + "2.csv", index_col=0)
+    df_multireturns3 = pd.read_csv(df_multidimret_path + "3.csv", index_col=0)
     df_binary = read_filepath(df_binary_path)
 
     # Compute PCA reduction
@@ -100,6 +98,7 @@ if __name__ == "__main__":
         logging.info("==== PCA Reduction ====")
         most_imp_comp = pca(df_returns_path, n_components=250)
         df_returns = df_returns[most_imp_comp]
+        df_multireturns = [df_multireturns1[most_imp_comp], df_multireturns2[most_imp_comp], df_multireturns3[most_imp_comp]]
         df_binary = df_binary[most_imp_comp]
     else:
         pass
@@ -113,11 +112,7 @@ if __name__ == "__main__":
         # Compute DWT decomposition
         if args.pca_wavelet:
             logging.info("==== DWT ====")
-            X_train1, y_train, X_test1, y_test = all_data_LSTM(df_multidimreturns1, df_binary, i)
-            X_train2, y_train, X_test2, y_test = all_data_LSTM(df_multidimreturns1, df_binary, i)
-            X_train3, y_train, X_test3, y_test = all_data_LSTM(df_multidimreturns1, df_binary, i)
-            X_train = np.stack((X_train1, X_train2, X_train3), axis=-1).reshape(X_train1.shape[0],240,3)
-            X_test = np.stack((X_test1, X_test2, X_test3), axis=-1).reshape(X_test1.shape[0],240,3)
+            X_train, y_train, X_test, y_test = all_multidata_LSTM(df_multireturns, df_binary, i)
         else:
             X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, i)
 
