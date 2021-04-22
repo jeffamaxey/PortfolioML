@@ -9,7 +9,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score,roc_curve
 from portfolioML.data.data_returns import read_filepath
 from portfolioML.model.split import all_data_DNN
-from makedir import smart_makedir, go_up
+from portfolioML.makedir import smart_makedir, go_up
+from portfolioML.data.preprocessing import pca
 if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore")
@@ -78,7 +79,7 @@ def predictions_roc(n_estimators, max_depth, num_period, criterion):
         plt.savefig(path_r + f'ROC_CURVE.png')
 
         y_pred_companies = [y_proba[i:87+i] for i in range(0,len(y_proba)-87+1,87)]
-        dict_comp = {df_returns.columns[i]: y_pred_companies[i] for i in range(0,365)}
+        dict_comp = {df_returns.columns[i]: y_pred_companies[i] for i in range(len(tick1))}
         df_predictions = pd.DataFrame()
         for tick in df_returns.columns:
             df_predictions[tick] = dict_comp[tick][:,0]
@@ -126,6 +127,12 @@ if __name__ == "__main__":
     df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
     df_returns = read_filepath(df_returns_path)
     df_binary = read_filepath(df_binary_path)
+
+    # Principal component analysis for new DataFrame with less companies
+    tick1 = pca(df_returns_path, 250)
+    df_ret = pd.read_csv(df_returns_path, index_col=0)
+    df_returns = df_ret[tick1]
+    df_binary = df_binary[tick1]
 
     smart_makedir(f'/results/predictions/RAF/{args.name_model}/', level_up=2)
     smart_makedir(f'/results/ROC/RAF/{args.name_model}/', level_up=2)
