@@ -156,11 +156,11 @@ def forecast_returns(df_price, num_periods, k=10, money=1., monkey=False):
 
             # Determine the returns for long and short positions
             for i,comp in enumerate(companies):
-                if i <=9:
+                if i <=(k-1):
                     returns.append(df_price[comp][index]/df_price[comp][index+1] - 1)
                 else:
                     returns.append(df_price[comp][index+1]/df_price[comp][index] - 1)
-    returns = np.array(returns)
+    returns = np.array(returns) # 870*2*k
     returns_rs = np.reshape(returns, (int(len(returns)/(2*k)),(2*k)))
 
     #Accumulative returns
@@ -197,9 +197,9 @@ def monkey_trading(df_price, monkeys_num, num_periods, k=10, money=1.):
         returns_dr.append(returns)
         accumulative_dr.append(np.array(acc_returns_m))
 
-    returns_dr = np.array(returns_dr)
-    returns_dr = np.reshape(returns_dr, (returns_dr.shape[0]*returns_dr.shape[1], returns_dr.shape[2]))
-    mean_daily_ret = np.array([day_ret.mean() for day_ret in returns_dr])
+    returns_dr = np.array(returns_dr) # (num_monkey, 870, 2*k)
+    returns_dr = np.reshape(returns_dr, (returns_dr.shape[0]*returns_dr.shape[1], returns_dr.shape[2])) # all monkeys returns for each day
+    mean_daily_ret = np.array([day_ret.mean() for day_ret in returns_dr]) # one day mean for each day for each monkey
 
     accumulative_dr = np.array(accumulative_dr)
     acc_monkey_mean = np.mean(accumulative_dr, axis=0)
@@ -236,8 +236,10 @@ if __name__ == '__main__':
     df_price = pd.read_csv(go_up(1) + "/data/PriceData.csv")
     df_price = df_price.dropna(axis=1)
 
+    i = 0
     for alg, mod in zip(args.algorithm, args.model_name):
         logging.info(f"---------- Model {mod} ----------")
+        i += 1
         path = os.getcwd() + f'/predictions_for_portfolio/{alg}/{mod}'
 
         # Portfolios Generator
@@ -251,7 +253,7 @@ if __name__ == '__main__':
 
         # Accumulate Returns
         plt.figure("Accumulative Returns", figsize=[13.,10.])
-        if alg == args.algorithm[0]:
+        if i == 1:
             monkey_ret, accumulative_monkey = monkey_trading(df_price, monkeys_num=args.monkeys_num,
                                                             num_periods=args.num_periods,money=args.money,k=args.top_bottom)
             plt.plot(accumulative_monkey[0], color='crimson', label='Monkeys')
@@ -269,19 +271,19 @@ if __name__ == '__main__':
         plt.ylabel("Accumulative Returns")
         plt.grid(True)
         plt.legend()
-        plt.savefig("Accumulative returns")
+        plt.savefig(f"Accumulative returns {args.model_name}")
 
         # Statistic
         returns_model = np.reshape(returns_model, (int(returns_model.shape[0]/(2*args.top_bottom)),(2*args.top_bottom)))
         mean_return_mod = np.array([day_ret.mean() for day_ret in returns_model])
-        t_stat, p_val = stats.ttest_ind(monkey_ret , returns_model, equal_var=False)
+        t_stat, p_val = stats.ttest_ind(monkey_ret , mean_return_mod, equal_var=False)
 
         fig, ax1 = plt.subplots(figsize=[8.0, 6.0])
         ax1.hist(monkey_ret, bins=150, color='crimson',label=f'Monkey return: {monkey_ret.mean():.5f} $\pm${monkey_ret.std():.5f}', alpha = 0.9)
         ax2 = ax1.twinx()
         ax2.hist(mean_return_mod, bins=70, color='green', label=f'{mod} Return: {mean_return_mod.mean():.5f} $\pm${mean_return_mod.std():.5f}', alpha=0.5)
         plt.title(f'{mod} significant statistic w.r.t {args.monkeys_num} monkeys')
-        # ax1.plot([], color='white', label=f'p-value: {p_val:.4E}')
+        ax1.plot([], color='white', label=f'p-value: {p_val}')
         ax1.set(xlabel='Average daily return')
         ax1.set(ylabel='Monkeys')
         ax2.set(ylabel='Model')
