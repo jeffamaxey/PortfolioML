@@ -3,13 +3,15 @@ import argparse
 import logging
 import os
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from keras.layers import Input, Dense, Dropout
 from keras.models import Sequential
 from keras.callbacks import EarlyStopping, ModelCheckpoint
-from model.split import all_data_DNN
-from data.data_returns import read_filepath
-from makedir import go_up
+from portfolioML.model.split import all_data_DNN
+from portfolioML.data.data_returns import read_filepath
+from portfolioML.makedir import smart_makedir, go_up
+from portfolioML.data.preprocessing import pca
 
 def DNN_model(nodes_args, hidden=None , activation='tanh', loss='binary_crossentropy', optimizer='adam'):
     """
@@ -98,6 +100,8 @@ if __name__ == "__main__":
                         help='Number of nodes in each layers of DNN, see documentation')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
+    parser.add_argument('-prin_comp_anal', type=bool, default=False, help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs')
+
 
     args = parser.parse_args()
 
@@ -110,23 +114,29 @@ if __name__ == "__main__":
     logging.basicConfig(level= levels[args.log])
 
     #Read the data
-    df_binary = go_up(2) + "/data/ReturnsBinary.csv"
-    df_returns = go_up(2) + "/data/ReturnsData.csv"
-    df_returns = read_filepath(df_returns)
-    df_binary = read_filepath(df_binary)
+    df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
+    df_returns_path = go_up(2) + "/data/ReturnsData.csv"
+    df_returns = read_filepath(df_returns_path)
+    df_binary = read_filepath(df_binary_path)
+
+    if args.prin_comp_anal:
+        logging.info("Using the most important companies obtained from a PCA decomposition")
+        most_imp_comp = pca(df_returns_path, n_components=250)
+        df_returns = df_returns[most_imp_comp]
+        df_binary = df_binary[most_imp_comp]
 
     smart_makedir(args.model_name)
     # losses = smart_makedir(args.model_name + "/losses")
-    accuracies = smart_makedir(args.model_name + "/accuracies_losses")
+    smart_makedir(args.model_name + "/accuracies_losses")
 
     for per in range(args.num_periods):
         model = DNN_model(args.nodes, optimizer='adam')
         #Splitting data for each period
         X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, per)
         #Trainng
-        es = EarlyStopping(monitor='val_loss', patience=40, restore_best_weights=True)
+        es = EarlyStopping(monitor='val_loss', patience=30, restore_best_weights=True)
         mc = ModelCheckpoint(f'{args.model_name}/{args.model_name}_period{per}.h5', monitor='val_loss', mode='min', verbose=0)
-        history = model.fit(X_train ,y_train, callbacks=[es,mc],validation_split=0.2, batch_size=256, epochs=1, verbose=1)
+        history = model.fit(X_train ,y_train, callbacks=[es,mc],validation_split=0.2, batch_size=256, epochs=400, verbose=1)
 
         #Elbow curve
         plt.figure(f'Loss and Accuracy Period {per}', figsize=[20.0,10.0])
@@ -147,8 +157,8 @@ if __name__ == "__main__":
         plt.legend()
         plt.savefig(os.getcwd() + f'/{args.model_name}/accuracies_losses/accuracies_{per}.png')
 
-    plt.show()
-
     with open(f"{args.model_name}/{args.model_name}_specifics.txt", 'w', encoding='utf-8') as file:
         file.write(f'\n Model Name: {args.model_name} \n Number of periods: {args.num_periods} \n Number of nodes: {args.nodes} \n \n')
         model.summary(print_fn=lambda x: file.write(x + '\n'))
+
+    plt.show()
