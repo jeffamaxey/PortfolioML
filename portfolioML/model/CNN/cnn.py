@@ -2,6 +2,8 @@
 import argparse
 import logging
 import os
+import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from keras.layers import Input, Dense, Dropout, Conv1D, MaxPooling1D, Flatten, Concatenate
 from keras.models import Model
@@ -27,7 +29,7 @@ class MinPooling1D(MaxPooling1D):
         return -MaxPooling1D(self.pool_size, self.strides, self.padding, self.data_format)(-x)
 
 
-def CNN_model(filters, kernel_size=(20), strides=5, activation='tanh', min_pooling=False, plt_figure=False):
+def CNN_model(filters, dim, kernel_size=(20), strides=5, activation='tanh', min_pooling=False, plt_figure=False):
     """
     CNN model with selected number of filters for the convolutional layers for classification
     task about time-series of data. Beacous of the problem one convolutional layes is enough
@@ -88,7 +90,7 @@ def CNN_model(filters, kernel_size=(20), strides=5, activation='tanh', min_pooli
     model: tensorflow.python.keras.engine.sequential.Sequential
         tensorflow model with selected hidden layers
     """
-    inputs = Input(shape=(240,1))
+    inputs = Input(shape=(240,dim))
     drop = Dropout(0.1)(inputs)
 
     conv = Conv1D(filters, kernel_size=kernel_size, strides=strides, activation=activation)(drop)
@@ -143,23 +145,42 @@ if __name__ == "__main__":
 
     #Read the data
     df_returns_path = go_up(2) + "/data/ReturnsData.csv"
+    df_multidimreturns_path1 = go_up(2) + "/data/MultidimReturnsData1.csv"
+    df_multidimreturns_path2 = go_up(2) + "/data/MultidimReturnsData2.csv"
+    df_multidimreturns_path3 = go_up(2) + "/data/MultidimReturnsData3.csv"
     df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
     df_returns = read_filepath(df_returns_path)
     df_binary = read_filepath(df_binary_path)
+
     if args.prin_comp_anal:
         logging.info("Using the most important companies obtained from a PCA decomposition")
         most_imp_comp = pca(df_returns_path, n_components=250)
         df_returns = df_returns[most_imp_comp]
-        df_binary = df_binary[most_imp_comp]
+        df_multidimreturns1 = pd.read_csv(df_multidimreturns_path1, index_col=0)
+        df_multidimreturns2 = pd.read_csv(df_multidimreturns_path2, index_col=0)
+        df_multidimreturns3 = pd.read_csv(df_multidimreturns_path3, index_col=0)
+        df_binary = read_filepath(df_binary_path)
+   
 
     smart_makedir(args.model_name)
     smart_makedir(args.model_name + "/accuracies_losses")
 
     for per in range(args.num_periods):
-        model = CNN_model(args.filters, min_pooling=args.min_pooling, plt_figure=args.plt_figure)
-        #Training
-        X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, per)
-        #Trainng
+        logging.info(f'============ Start Period {per}th ===========')
+
+         # Compute DWT decomposition for Test and Train sets
+        if args.prin_comp_anal:
+            logging.info("==== DWT ====")
+            X_train1, y_train, X_test1, y_test = all_data_LSTM(df_multidimreturns1, df_binary, per)
+            X_train2, y_train, X_test2, y_test = all_data_LSTM(df_multidimreturns1, df_binary, per)
+            X_train3, y_train, X_test3, y_test = all_data_LSTM(df_multidimreturns1, df_binary, per)
+            X_train = np.stack((X_train1, X_train2, X_train3), axis=-1).reshape(X_train1.shape[0],240,3)
+            X_test = np.stack((X_test1, X_test2, X_test3), axis=-1).reshape(X_test1.shape[0],240,3)
+        else:
+            X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, per)
+
+        model = CNN_model(args.filters, min_pooling=args.min_pooling, plt_figure=args.plt_figure, dim=X_train.shape[2])
+       
         es = EarlyStopping(monitor='val_loss', patience=40, restore_best_weights=True)
         mc = ModelCheckpoint(f'{args.model_name}/{args.model_name}_period{per}.h5', monitor='val_loss', mode='min', verbose=0)
         history = model.fit(X_train ,y_train, callbacks=[es,mc],validation_split=0.2, batch_size=512, epochs=400, verbose=1)
