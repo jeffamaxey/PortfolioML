@@ -14,10 +14,17 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import os
+import sys
+package_name = 'PortfolioML'
+package_root = os.path.abspath('..')
+sys.path.insert(0, package_root)
+sys.path.insert(0, os.path.join(package_root, package_name))
+
 
 # -- Project information -----------------------------------------------------
 
-project = 'Portfolio ML'
+project = 'PortfolioML'
 copyright = '2021, Di Nosse, Lasala, Paradiso'
 author = 'Di Nosse, Lasala, Paradiso'
 
