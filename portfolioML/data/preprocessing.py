@@ -57,9 +57,6 @@ def wavelet_dataframe(df_returns_path, wavelet):
             Pandas dataframe in which each element is composed by the three timestamp of the first 3 approximations
     '''
 
-    # df_price = pd.read_csv(df_price_path)
-    # df_price = df_price.dropna(axis=1) # Drop NaN
-    # df_price = df_price.drop(labels='Date', axis=1)
     df_returns = read_filepath(df_returns_path)
     dic1, dic2, dic3 = {}, {}, {}
     for tick in df_returns.columns:
@@ -94,8 +91,9 @@ if __name__ == "__main__":
 
     df_returns_path = os.getcwd() + "/ReturnsData.csv"
     df_binary = read_filepath("ReturnsBinary.csv")
-    # most_important_companies = pca(df_returns_path, n_components=250)
-    wavelet_data1, wavelet_data2, wavelet_data3 = wavelet_dataframe(df_returns_path, 'haar')
+    most_important_companies = pca(df_returns_path, n_components=250)
+    print(most_important_companies)
+    # wavelet_data1, wavelet_data2, wavelet_data3 = wavelet_dataframe(df_returns_path, 'haar')
     # X_train1, y_train, X_test1, y_test = all_data_LSTM(wavelet_data1, df_binary, 1)
     # X_train2, y_train, X_test2, y_test = all_data_LSTM(wavelet_data2, df_binary, 1)
     # X_train3, y_train, X_test3, y_test = all_data_LSTM(wavelet_data3, df_binary, 1)
