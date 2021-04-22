@@ -175,6 +175,33 @@ def all_data_LSTM(df_returns, df_binary, period, len_train=981):
 
     return X_train, y_train, X_test, y_test
 
+def all_multidata_LSTM(df_multidim_list, df_binary, period):
+    '''
+    When computing the DWT you get different approximations of the signal. This function
+    returns the multidimensional data that will be used for LSTM and CNN
+
+    Parameters
+    ----------
+    df_multidim_list : list
+        List of the multidimensional dataframe. Note, they are 3 and only 3.
+    period : int
+        Period over which you want to generate the data
+
+    Returns
+    ---------
+    X_train, y_train, X_test, y_test : numpy array
+        Data for LSTM or CNN models
+    '''
+    logging.info("DWT decomposition")
+    df_multireturns1, df_multireturns2, df_multireturns3 = df_multidim_list[0], df_multidim_list[1], df_multidim_list[2]
+
+    X_train1, y_train, X_test1, y_test = all_data_LSTM(df_multireturns1, df_binary, period)
+    X_train2, y_train, X_test2, y_test = all_data_LSTM(df_multireturns1, df_binary, period)
+    X_train3, y_train, X_test3, y_test = all_data_LSTM(df_multireturns1, df_binary, period)
+    X_train = np.stack((X_train1, X_train2, X_train3), axis=-1).reshape(X_train1.shape[0],240,3)
+    X_test = np.stack((X_test1, X_test2, X_test3), axis=-1).reshape(X_test1.shape[0],240,3)
+    return X_train, y_train, X_test, y_test
+
 def all_data_DNN(df_returns, df_binary, period, len_train=981):
     """
     Create a right input data for DNN starting from the right data of LSTM.
