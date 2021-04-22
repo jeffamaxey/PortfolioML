@@ -3,11 +3,60 @@ import logging
 import os
 import numpy as np
 import pandas as pd
+import pywt
 from sklearn.decomposition import PCA
 from portfolioML.data.data_returns import read_filepath
-from portfolioML.data.wavelet import approx_details_scale
-from portfolioML.model.split import all_data_LSTM
+from portfolioML.makedir import go_up, smart_makedir
 
+def approx_details_scale(data, wavelet, dec_level):
+    """
+    Approximation and details signal of a time series at specific time scale.
+
+    Parameters
+    ----------
+    data: list, numpy array
+        Input time-series data
+
+    wavelet: string
+        Wavelet's name used for the decomposition. For all available wavelet see https://pywavelets.readthedocs.io/en/latest/ref/wavelets.html.
+
+    dec_level: integer
+        level of time_scale on which compute the approximation and details analysis.
+        Its range is [1, pywt.dwtn_max_level(data, wavelet)+1]
+
+    Result
+    ------
+    approx: numpy array
+        Approximation values
+
+    detail: numpy array
+        Details values
+    """
+
+    max_level = pywt.dwt_max_level(len(data), wavelet)
+    logging.info(f'max_level:{max_level}')
+
+    try:
+        if dec_level > max_level + 1: raise ValueError
+    except :
+        print('dec_level is out of bound [1, max_level]')
+        dec_level = max_level + 1
+
+    coeffs = pywt.wavedec(data, wavelet, level=dec_level)
+
+    for i in range(2,len(coeffs)):
+        coeffs[i] = np.zeros_like(coeffs[i])
+
+    det = coeffs[1]
+
+    coeffs[1] = np.zeros_like(coeffs[1])
+    approx = pywt.waverec(coeffs, wavelet)
+
+    coeffs[1] = det
+    coeffs[0] = np.zeros_like(coeffs[0])
+    details = pywt.waverec(coeffs, wavelet)
+
+    return approx, details
 
 def pca(df_returns_path, n_components):
     '''
@@ -93,9 +142,4 @@ if __name__ == "__main__":
     df_binary = read_filepath("ReturnsBinary.csv")
     most_important_companies = pca(df_returns_path, n_components=250)
     print(most_important_companies)
-    # wavelet_data1, wavelet_data2, wavelet_data3 = wavelet_dataframe(df_returns_path, 'haar')
-    # X_train1, y_train, X_test1, y_test = all_data_LSTM(wavelet_data1, df_binary, 1)
-    # X_train2, y_train, X_test2, y_test = all_data_LSTM(wavelet_data2, df_binary, 1)
-    # X_train3, y_train, X_test3, y_test = all_data_LSTM(wavelet_data3, df_binary, 1)
-    # X_train = np.stack((X_train1, X_train2, X_train3), axis=-1).reshape(X_train1.shape[0],240,3)
-    # X_test = np.stack((X_test1, X_test2, X_test3), axis=-1).reshape(X_test1.shape[0],240,3)
+    wavelet_data1, wavelet_data2, wavelet_data3 = wavelet_dataframe(df_returns_path, 'db1')

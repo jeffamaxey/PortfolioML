@@ -132,7 +132,7 @@ def predictions_csv(algorithm, model_name, num_periods=10):
 
         y_pred = model.predict(X_test)
         y_pred_companies = [y_pred[i:87+i] for i in range(0,len(y_pred)-87+1,87)]
-        dict_comp = {df_returns.columns[i]: y_pred_companies[i] for i in range(0,365)}
+        dict_comp = {df_returns.columns[i]: y_pred_companies[i] for i in range(len(df_returns.columns))}
         df_predictions = pd.DataFrame()
         for tick in df_returns.columns:
             df_predictions[tick] = dict_comp[tick][:,0]
