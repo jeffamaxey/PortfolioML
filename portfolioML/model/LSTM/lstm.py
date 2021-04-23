@@ -117,7 +117,7 @@ if __name__ == "__main__":
 
         es = EarlyStopping(monitor='val_loss', patience=30, restore_best_weights=True)
         mc = ModelCheckpoint(f'{args.model_name}/{args.model_name}_period{i}.h5', monitor='val_loss', mode='min', verbose=0)
-        history = model.fit(X_train, y_train, epochs=1, batch_size=896,
+        history = model.fit(X_train, y_train, epochs=800, batch_size=768,
                             callbacks=[es,mc], validation_split=0.2, shuffle=False, verbose=1)
 
 
