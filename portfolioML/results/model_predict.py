@@ -146,6 +146,11 @@ def predictions_csv(algorithm, model_name, num_periods=10, wavelet=False):
             X_train, y_train, X_test, y_test = all_multidata_LSTM(df_multiret, df_binary, i)
 
         y_pred = model.predict(X_test)
+        classes = model.predict_classes(X_test)
+        tmp = sum(y_test == classes)
+        accuracies = tmp/len(y_test) 
+        print(accuracies)
+
         y_pred_companies = [y_pred[i:87+i] for i in range(0,len(y_pred)-87+1,87)]
         dict_comp = {df_returns.columns[i]: y_pred_companies[i] for i in range(len(df_returns.columns))}
         df_predictions = pd.DataFrame()

@@ -64,9 +64,9 @@ if __name__ == "__main__":
     parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
     parser.add_argument('nodes',type=int, nargs='+', help='Choose the number of nodes in LSTM+Dropout layers')
     parser.add_argument('model_name', type=str, help='Choose the name of the model')
-    parser.add_argument('-pca_wavelet', type=bool, default=False,
+    parser.add_argument('-pca_wavelet', action='store_false',
                         help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs and then DWT')
-    parser.add_argument('-recursive', type=bool, default=True, help='Choose whether or not to pass parameters from one period to another during training')
+    parser.add_argument('-recursive', action='store_true', help='Choose whether or not to pass parameters from one period to another during training')
     parser.add_argument('-optimizer', type=str, default='RMS_prop', help='Choose RMS_prop or Adam')
 
 
