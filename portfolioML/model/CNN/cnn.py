@@ -124,9 +124,9 @@ if __name__ == "__main__":
     parser.add_argument("-kernel_size", type=tuple, default=(20), help="kernel_size, for more details see documentation")
     parser.add_argument("-strides", type=int, default=5, help="strides, for more details see documentation")
     parser.add_argument("-activation", type=str, default='tanh', help="activation, for more details see documentation")
-    parser.add_argument("-min_pooling", type=bool, default=False, help="If true the structure is multiheaded")
-    parser.add_argument("-plt_figure", type=bool, default=False, help="If true create png file of the model")
-    parser.add_argument('-prin_comp_anal', type=bool, default=False, help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs')
+    parser.add_argument("-min_pooling", action='store_false', help="If true the structure is multiheaded")
+    parser.add_argument("-plt_figure", action='store_false', help="If true create png file of the model")
+    parser.add_argument('-prin_comp_anal', action='store_false', help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs')
 
 
     parser.add_argument("-log", "--log", default="info",

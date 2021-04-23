@@ -69,7 +69,6 @@ if __name__ == "__main__":
     parser.add_argument('-r', '--recursive', action='store_false', help='Choose whether or not to pass parameters from one period to another during training')
     parser.add_argument('-o', '--optimizer', type=str, default='RMS_prop', help='Choose RMS_prop or Adam')
 
-
     args = parser.parse_args()
 
     levels = {'critical': logging.CRITICAL,
