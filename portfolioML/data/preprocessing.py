@@ -85,7 +85,7 @@ def pca(df_returns_path, n_components=250):
     initial_feature_names = df_returns.columns
     most_important_features = [initial_feature_names[most_important[i]] for i in range(n_pca)] # get the most important feature names
     most_important_features = list(set(most_important_features))
-    df_returns[most_important_features].to_csv('ReturnsDataPCA.csv')
+    df_returns[most_important_features].to_csv('ReturnsDataPCA.csv', index=False)
 
     return most_important_features
 

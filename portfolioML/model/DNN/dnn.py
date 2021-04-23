@@ -9,7 +9,6 @@ from keras.layers import Input, Dense, Dropout
 from keras.models import Sequential
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from portfolioML.model.split import all_data_DNN
-from portfolioML.data.data_returns import pd.read_csv
 from portfolioML.makedir import smart_makedir, go_up
 from portfolioML.data.preprocessing import pca
 
@@ -100,7 +99,7 @@ if __name__ == "__main__":
                         help='Number of nodes in each layers of DNN, see documentation')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
-    parser.add_argument('-prin_comp_anal', action='store_false', help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs')
+    parser.add_argument('-prin_comp_anal', action='store_true', help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs')
 
 
     args = parser.parse_args()
@@ -121,9 +120,8 @@ if __name__ == "__main__":
 
     if args.prin_comp_anal:
         logging.info("Using the most important companies obtained from a PCA decomposition")
-        most_imp_comp = pca(df_returns_path, n_components=250)
-        df_returns = df_returns[most_imp_comp]
-        df_binary = df_binary[most_imp_comp]
+        df_returns = pd.read_csv(go_up(2) + "/data/ReturnsDataPCA.csv")[1:]
+        df_binary = pd.read_csv(go_up(2) + "/data/ReturnsBinaryPCA.csv")[1:]
 
     smart_makedir(args.model_name)
     # losses = smart_makedir(args.model_name + "/losses")
