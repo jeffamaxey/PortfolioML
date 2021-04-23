@@ -136,7 +136,7 @@ def predictions_csv(algorithm, model_name, num_periods=10, wavelet=False):
                    pd.read_csv(df_multiret_path + "3.csv", index_col=0)]
 
     for i in range(num_periods):
-        model = load_model(parent_path + f'/model/{algorithm}/{model_name}/{model_name}_period{i}.h5')
+        model = load_model(go_up(1) + f'/model/{algorithm}/{model_name}/{model_name}_period{i}.h5')
         logging.info(f'Creating predictions csv file for period {i}')
         #Splitting data set for each period
         if (algorithm == 'LSTM') or (algorithm == 'CNN'):
@@ -152,7 +152,7 @@ def predictions_csv(algorithm, model_name, num_periods=10, wavelet=False):
         df_predictions = pd.DataFrame()
         for tick in df_returns.columns:
             df_predictions[tick] = dict_comp[tick][:,0]
-            df_predictions.to_csv(path + f'{model_name}_Predictions_{i}th_Period.csv')
+            df_predictions.to_csv(f'/predictions/{algorithm}/{model_name}/{model_name}_Predictions_{i}th_Period.csv')
 
 
 
