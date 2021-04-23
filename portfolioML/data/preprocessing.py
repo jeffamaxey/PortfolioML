@@ -34,12 +34,12 @@ def approx_details_scale(data, wavelet, dec_level):
     """
 
     max_level = pywt.dwt_max_level(len(data), wavelet)
-    logging.info(f'max_level:{max_level}')
+    # logging.info(f'max_level:{max_level}')
 
     try:
         if dec_level > max_level + 1: raise ValueError
     except :
-        print('dec_level is out of bound [1, max_level]')
+        # print('dec_level is out of bound [1, max_level]')
         dec_level = max_level + 1
 
     coeffs = pywt.wavedec(data, wavelet, level=dec_level)
@@ -58,7 +58,7 @@ def approx_details_scale(data, wavelet, dec_level):
 
     return approx, details
 
-def pca(df_returns_path, n_components):
+def pca(df_returns_path, n_components=250):
     '''
     Compute the PCA decomposition of a dataset
 
@@ -91,7 +91,7 @@ def pca(df_returns_path, n_components):
 
 def wavelet_dataframe(df_returns_path, wavelet):
     '''
-    Compute the DWT (Discrete Wavelet Tranform) of a dataset composed by multiple time signals
+    Compute the DWT (Discrete Wavelet Tranform) of a dataset composed by multiple time signals reduced by PCA.
 
     Parameters
     ----------
@@ -107,6 +107,9 @@ def wavelet_dataframe(df_returns_path, wavelet):
     '''
 
     df_returns = read_filepath(df_returns_path)
+    most_imp_comp = pca(df_returns_path)
+    logging.info(f"Number of companies choosen by PCA: {len(most_imp_comp)}")
+    df_returns = df_returns[most_imp_comp]
     dic1, dic2, dic3 = {}, {}, {}
     for tick in df_returns.columns:
         a1,d1 = approx_details_scale(df_returns[tick], wavelet, 1)
@@ -140,6 +143,4 @@ if __name__ == "__main__":
 
     df_returns_path = os.getcwd() + "/ReturnsData.csv"
     df_binary = read_filepath("ReturnsBinary.csv")
-    most_important_companies = pca(df_returns_path, n_components=250)
-    print(most_important_companies)
     wavelet_data1, wavelet_data2, wavelet_data3 = wavelet_dataframe(df_returns_path, 'db1')

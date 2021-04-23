@@ -7,12 +7,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, roc_auc_score
 from keras.models import load_model
-from portfolioML.model.split import all_data_DNN, all_data_LSTM
+from portfolioML.model.split import all_data_DNN, all_data_LSTM, all_multidata_LSTM
 from portfolioML.data.data_returns import read_filepath
-from portfolioML.makedir import smart_makedir
+from portfolioML.makedir import smart_makedir, go_up
 
 
-def plot_roc(algorithm, name_model, num_periods):
+def plot_roc(algorithm, name_model, num_periods, wavelet=False):
     """
     Plot roc curve with mean and standard deviation of the area under the curve (auc) of a
     trained model.
@@ -46,15 +46,24 @@ def plot_roc(algorithm, name_model, num_periods):
     smart_makedir(f'/ROC/{algorithm}/{name_model}/')
 
     path = os.getcwd() + f'/ROC/{algorithm}/{name_model}/'
+    df_multiret_path = go_up(1) + "/data/MultidimReturnsData"
+
+    df_returns = read_filepath(go_up(1) + "/data/ReturnsData.csv")
+    df_binary = read_filepath(go_up(1) + "/data/ReturnsBinary.csv")
+    df_multiret = [pd.read_csv(df_multiret_path + "1.csv", index_col=0),
+                   pd.read_csv(df_multiret_path + "2.csv", index_col=0),
+                   pd.read_csv(df_multiret_path + "3.csv", index_col=0)]
 
     plt.figure()
     for per in range(0,num_periods):
         logging.info(f'Creating ROC for period {per}')
+        #Splitting data set for each period
         if (algorithm == 'LSTM') or (algorithm == 'CNN'):
-            #Splitting data set for each period
             X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, per)
-        else:
+        if (algorithm == 'DNN'):
             X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, per)
+        if (algorithm == 'LSTM') or (algorithm == 'CNN') and (wavelet == True):
+            X_train, y_train, X_test, y_test = all_multidata_LSTM(df_multiret, df_binary, per)
 
         model = load_model(parent_path + f'/model/{algorithm}/{name_model}/{name_model}_period{per}.h5')
 
@@ -100,7 +109,7 @@ def plot_roc(algorithm, name_model, num_periods):
     plt.title(f'ROC Curve {name_model} - mean +|- std')
     plt.savefig(path + f'ROC Curve {name_model} - mean +|- std.png')
 
-def predictions_csv(algorithm, model_name, num_periods=10):
+def predictions_csv(algorithm, model_name, num_periods=10, wavelet=False):
     '''
 
 
@@ -118,17 +127,24 @@ def predictions_csv(algorithm, model_name, num_periods=10):
     logging.info('----- I am creating predictions csv file -----')
 
     smart_makedir(f'/predictions/{algorithm}/{model_name}/')
+    df_multiret_path = go_up(1) + "/data/MultidimReturnsData"
 
-    path = os.getcwd() + f'/predictions/{algorithm}/{model_name}/'
-    parent_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    df_returns = read_filepath(go_up(1) + "/data/ReturnsData.csv")
+    df_binary = read_filepath(go_up(1) + "/data/ReturnsBinary.csv")
+    df_multiret = [pd.read_csv(df_multiret_path + "1.csv", index_col=0),
+                   pd.read_csv(df_multiret_path + "2.csv", index_col=0),
+                   pd.read_csv(df_multiret_path + "3.csv", index_col=0)]
 
     for i in range(num_periods):
         model = load_model(parent_path + f'/model/{algorithm}/{model_name}/{model_name}_period{i}.h5')
+        logging.info(f'Creating predictions csv file for period {i}')
+        #Splitting data set for each period
         if (algorithm == 'LSTM') or (algorithm == 'CNN'):
-            #Splitting data set for each period
             X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, i)
-        else:
+        if (algorithm == 'DNN'):
             X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, i)
+        if (algorithm == 'LSTM') or (algorithm == 'CNN') and (wavelet == True):
+            X_train, y_train, X_test, y_test = all_multidata_LSTM(df_multiret, df_binary, i)
 
         y_pred = model.predict(X_test)
         y_pred_companies = [y_pred[i:87+i] for i in range(0,len(y_pred)-87+1,87)]
@@ -145,6 +161,7 @@ if __name__ == "__main__":
     parser.add_argument('algorithm', type=str, help='CNN. LSTM or RAF')
     parser.add_argument('model_name', type=str, help='Select the particular model trained')
     parser.add_argument('num_periods', type=int, help="Number of period over which returns have to be calculated ")
+    parser.add_argument('--wavelet', '-w', type=bool, help='Set True if you have trained the model with DWT')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
@@ -160,13 +177,16 @@ if __name__ == "__main__":
     pd.options.mode.chained_assignment = None
 
     #Read the data
-    path = os.getcwd()
-    parent_path = os.path.abspath(os.path.join(path, os.pardir))
-    df_binary = parent_path + "/data/ReturnsBinary.csv"
-    df_returns = parent_path + "/data/ReturnsData.csv"
-    df_returns = read_filepath(df_returns)
-    df_binary = read_filepath(df_binary)
+    # path = os.getcwd()
+    # parent_path = os.path.abspath(os.path.join(path, os.pardir))
+    # df_binary = parent_path + "/data/ReturnsBinary.csv"
+    # df_returns = parent_path + "/data/ReturnsData.csv"
+    # df_returns = read_filepath(df_returns)
+    # df_multireturns1 = pd.read_csv(parent_path + "/data/MultidimReturnsData1.csv", index_col=0)
+    # df_multireturns2 = pd.read_csv(parent_path + "/data/MultidimReturnsData2.csv", index_col=0)
+    # df_multireturns3 = pd.read_csv(parent_path + "/data/MultidimReturnsData3.csv", index_col=0)
+    # df_binary = read_filepath(df_binary)
 
 
-    plot_roc(args.algorithm, args.model_name, args.num_periods)
-    predictions_csv(args.algorithm, args.model_name, args.num_periods)
+    plot_roc(args.algorithm, args.model_name, args.num_periods, args.wavelet)
+    predictions_csv(args.algorithm, args.model_name, args.num_periods, args.wavelet)
