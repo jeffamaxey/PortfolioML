@@ -4,7 +4,6 @@ import logging
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
-from portfolioML.data.data_returns import read_filepath
 
 def split_Tperiod(df_returns, df_binary, len_period=1308, len_test=327):
     """
@@ -259,7 +258,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level= levels[args.log])
 
-    df_returns = read_filepath(args.returns_file)
-    df_binary = read_filepath(args.binary_file)
+    df_returns = pd.read_csv(args.returns_file)
+    df_binary = pd.read_csv(args.binary_file)
 
     X_train, y_train = get_sequences(df_returns, df_binary)

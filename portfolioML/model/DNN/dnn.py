@@ -9,7 +9,7 @@ from keras.layers import Input, Dense, Dropout
 from keras.models import Sequential
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from portfolioML.model.split import all_data_DNN
-from portfolioML.data.data_returns import read_filepath
+from portfolioML.data.data_returns import pd.read_csv
 from portfolioML.makedir import smart_makedir, go_up
 from portfolioML.data.preprocessing import pca
 
@@ -116,8 +116,8 @@ if __name__ == "__main__":
     #Read the data
     df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
     df_returns_path = go_up(2) + "/data/ReturnsData.csv"
-    df_returns = read_filepath(df_returns_path)
-    df_binary = read_filepath(df_binary_path)
+    df_returns = pd.read_csv(df_returns_path)
+    df_binary = pd.read_csv(df_binary_path)
 
     if args.prin_comp_anal:
         logging.info("Using the most important companies obtained from a PCA decomposition")

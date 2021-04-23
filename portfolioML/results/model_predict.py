@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve, roc_auc_score
 from keras.models import load_model
 from portfolioML.model.split import all_data_DNN, all_data_LSTM, all_multidata_LSTM
-from portfolioML.data.data_returns import read_filepath
 from portfolioML.makedir import smart_makedir, go_up
 
 
@@ -48,8 +47,8 @@ def plot_roc(algorithm, name_model, num_periods, wavelet=False):
     path = os.getcwd() + f'/ROC/{algorithm}/{name_model}/'
     df_multiret_path = go_up(1) + "/data/MultidimReturnsData"
 
-    df_returns = read_filepath(go_up(1) + "/data/ReturnsData.csv")
-    df_binary = read_filepath(go_up(1) + "/data/ReturnsBinary.csv")
+    df_returns = pd.read_csv(go_up(1) + "/data/ReturnsData.csv")
+    df_binary = pd.read_csv(go_up(1) + "/data/ReturnsBinary.csv")
     df_multiret = [pd.read_csv(df_multiret_path + "1.csv", index_col=0),
                    pd.read_csv(df_multiret_path + "2.csv", index_col=0),
                    pd.read_csv(df_multiret_path + "3.csv", index_col=0)]
@@ -129,8 +128,8 @@ def predictions_csv(algorithm, model_name, num_periods=10, wavelet=False):
     smart_makedir(f'/predictions/{algorithm}/{model_name}/')
     df_multiret_path = go_up(1) + "/data/MultidimReturnsData"
 
-    df_returns = read_filepath(go_up(1) + "/data/ReturnsData.csv")
-    df_binary = read_filepath(go_up(1) + "/data/ReturnsBinary.csv")
+    df_returns = pd.read_csv(go_up(1) + "/data/ReturnsData.csv")
+    df_binary = pd.read_csv(go_up(1) + "/data/ReturnsBinary.csv")
     df_multiret = [pd.read_csv(df_multiret_path + "1.csv", index_col=0),
                    pd.read_csv(df_multiret_path + "2.csv", index_col=0),
                    pd.read_csv(df_multiret_path + "3.csv", index_col=0)]
@@ -181,11 +180,11 @@ if __name__ == "__main__":
     # parent_path = os.path.abspath(os.path.join(path, os.pardir))
     # df_binary = parent_path + "/data/ReturnsBinary.csv"
     # df_returns = parent_path + "/data/ReturnsData.csv"
-    # df_returns = read_filepath(df_returns)
+    # df_returns = pd.read_csv(df_returns)
     # df_multireturns1 = pd.read_csv(parent_path + "/data/MultidimReturnsData1.csv", index_col=0)
     # df_multireturns2 = pd.read_csv(parent_path + "/data/MultidimReturnsData2.csv", index_col=0)
     # df_multireturns3 = pd.read_csv(parent_path + "/data/MultidimReturnsData3.csv", index_col=0)
-    # df_binary = read_filepath(df_binary)
+    # df_binary = pd.read_csv(df_binary)
 
 
     plot_roc(args.algorithm, args.model_name, args.num_periods, args.wavelet)

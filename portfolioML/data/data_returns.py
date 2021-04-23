@@ -7,44 +7,6 @@ import numpy as np
 import pandas as pd
 from portfolioML.data.preprocessing import wavelet_dataframe
 
-def read_filepath(file_path):
-    """
-    Read and compute basic informations about a data set in csv.
-
-    Parameters
-    ----------
-    file_path: str
-        Path to the csv file
-
-    Returns
-    -------
-    df: pandas dataframe
-        Pandas Dataframe of the read file
-    """
-    name_file = file_path.split('/')[-1]
-    extention = name_file.split('.')[-1]
-
-    try:
-        if extention != 'csv':
-            raise NameError('The file is not a csv one')
-    except NameError as ne:
-        logging.error(ne)
-        sys.exit()
-
-    df = pd.read_csv(file_path, encoding='latin-1')
-    #df = df.drop(['Days'], axis=1)
-
-    # logging.info('DATA INFO, attributes: %s', df.columns)
-    # logging.info('DATA INFO, shape: %s', df.shape)
-
-    total_data = df.shape[0]*df.shape[1]
-    total_missing = pd.DataFrame.isnull(df).sum().sum()
-
-    # logging.info(f'DATA QUALITY, missing values: {total_missing/total_data:.2%}')
-
-    return df
-
-
 def get_returns(dataframe, m, export_returns_csv, no_missing=True):
     """
     Get the day-by-day returns value of a company. The dataframe has got companies as attributes

@@ -10,7 +10,6 @@ from keras.models import Model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.utils.vis_utils import plot_model
 from portfolioML.model.split import all_data_LSTM
-from portfolioML.data.data_returns import read_filepath
 from portfolioML.makedir import smart_makedir, go_up
 from portfolioML.data.preprocessing import pca
 
@@ -149,8 +148,8 @@ if __name__ == "__main__":
     df_multidimreturns_path2 = go_up(2) + "/data/MultidimReturnsData2.csv"
     df_multidimreturns_path3 = go_up(2) + "/data/MultidimReturnsData3.csv"
     df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
-    df_returns = read_filepath(df_returns_path)
-    df_binary = read_filepath(df_binary_path)
+    df_returns = pd.read_csv(df_returns_path)
+    df_binary = pd.read_csv(df_binary_path)
 
     if args.prin_comp_anal:
         logging.info("Using the most important companies obtained from a PCA decomposition")
@@ -159,7 +158,7 @@ if __name__ == "__main__":
         df_multidimreturns1 = pd.read_csv(df_multidimreturns_path1, index_col=0)
         df_multidimreturns2 = pd.read_csv(df_multidimreturns_path2, index_col=0)
         df_multidimreturns3 = pd.read_csv(df_multidimreturns_path3, index_col=0)
-        df_binary = read_filepath(df_binary_path)
+        df_binary = pd.read_csv(df_binary_path)
    
 
     smart_makedir(args.model_name)

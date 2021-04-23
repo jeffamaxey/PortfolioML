@@ -7,7 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score,roc_curve
-from portfolioML.data.data_returns import read_filepath
+from portfolioML.data.data_returns import pd.read_csv
 from portfolioML.model.split import all_data_DNN
 from portfolioML.makedir import smart_makedir, go_up
 from portfolioML.data.preprocessing import pca
@@ -125,8 +125,8 @@ if __name__ == "__main__":
 
     df_returns_path = go_up(2) + "/data/ReturnsData.csv"
     df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
-    df_returns = read_filepath(df_returns_path)
-    df_binary = read_filepath(df_binary_path)
+    df_returns = pd.read_csv(df_returns_path)
+    df_binary = pd.read_csv(df_binary_path)
 
     # Principal component analysis for new DataFrame with less companies
     tick1 = pca(df_returns_path, 250)

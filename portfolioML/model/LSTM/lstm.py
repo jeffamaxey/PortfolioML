@@ -9,7 +9,6 @@ from keras.models import Sequential, load_model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.optimizers import RMSprop, Adam
 from portfolioML.model.split import all_data_LSTM, all_multidata_LSTM
-from portfolioML.data.data_returns import read_filepath
 from portfolioML.data.preprocessing import pca
 from portfolioML.makedir import smart_makedir, go_up
 
@@ -87,7 +86,7 @@ if __name__ == "__main__":
     df_multidimret_path = go_up(2) + "/data/MultidimReturnsData"
     df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
     # Read binary file here, since it's the same for both the following cases
-    df_binary = read_filepath(df_binary_path)
+    df_binary = pd.read_csv(df_binary_path)
     # Compute PCA reduction
     if args.pca_wavelet:
         logging.info("==== PCA Reduction ====")
@@ -97,7 +96,7 @@ if __name__ == "__main__":
         most_imp_comp = list(df_multiret[0].columns)
         df_binary = df_binary[most_imp_comp]
     else:
-        df_returns = read_filepath(df_returns_path)
+        df_returns = pd.read_csv(df_returns_path)
 
     smart_makedir(args.model_name)
     smart_makedir(args.model_name + "/accuracies_losses")
