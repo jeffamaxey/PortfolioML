@@ -92,8 +92,8 @@ def binary_targets(dataframe, export_binary_csv,  name='ReturnsBinary'):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process price data and get the dataframe of m period returns')
     parser.add_argument('-m','--m_period_return', type=int, default=1, help='m period return')
-    parser.add_argument("-export_returns_csv", default= False, help='Export to csv the dataframe of m-period price returns')
-    parser.add_argument("-export_binary_csv", default= True, help='Export to csv the dataframe for the classification task')
+    parser.add_argument("-export_returns_csv", type=bool, default=True, help='Export to csv the dataframe of m-period price returns')
+    parser.add_argument("-export_binary_csv", type=bool, default=True, help='Export to csv the dataframe for the classification task')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
@@ -108,9 +108,9 @@ if __name__ == '__main__':
     logging.basicConfig(level= levels[args.log])
 
     df = pd.read_csv('PriceData.csv')
-
+    df.drop(['Date'], axis=1)
     dataframe_ritorni = get_returns(df,args.m_period_return, args.export_returns_csv)
     dataframe_binary = binary_targets(dataframe_ritorni, args.export_binary_csv)
 
-    a = wavelet_dataframe('ReturnsData.csv', 'db1')
-    df_binary_pca = binary_targets(a, args.export_binary_csv, name='ReturnsBinaryPCA',)
+    df_returns_pca = wavelet_dataframe('ReturnsData.csv', 'db1')
+    df_binary_pca = binary_targets(df_returns_pca, args.export_binary_csv, name='ReturnsBinaryPCA',)
