@@ -100,7 +100,7 @@ if __name__ == "__main__":
                         help='Number of nodes in each layers of DNN, see documentation')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
-    parser.add_argument('-prin_comp_anal', type=bool, default=False, help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs')
+    parser.add_argument('-prin_comp_anal', action='store_false', help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs')
 
 
     args = parser.parse_args()
