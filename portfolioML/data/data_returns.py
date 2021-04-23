@@ -92,8 +92,8 @@ def binary_targets(dataframe, export_binary_csv,  name='ReturnsBinary'):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process price data and get the dataframe of m period returns')
     parser.add_argument('-m','--m_period_return', type=int, default=1, help='m period return')
-    parser.add_argument("-export_returns_csv", type=bool, default=True, help='Export to csv the dataframe of m-period price returns')
-    parser.add_argument("-export_binary_csv", type=bool, default=True, help='Export to csv the dataframe for the classification task')
+    parser.add_argument("--export_returns_csv", action='store_false', help='Export to csv the dataframe of m-period price returns')
+    parser.add_argument("--export_binary_csv", action='store_false', help='Export to csv the dataframe for the classification task')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 

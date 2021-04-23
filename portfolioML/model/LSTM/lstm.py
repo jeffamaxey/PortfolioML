@@ -64,10 +64,10 @@ if __name__ == "__main__":
     parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
     parser.add_argument('nodes',type=int, nargs='+', help='Choose the number of nodes in LSTM+Dropout layers')
     parser.add_argument('model_name', type=str, help='Choose the name of the model')
-    parser.add_argument('-pca_wavelet', type=bool, default=False,
+    parser.add_argument('-pca_wavelet', action='store_true',
                         help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs and then DWT')
-    parser.add_argument('-recursive', type=bool, default=True, help='Choose whether or not to pass parameters from one period to another during training')
-    parser.add_argument('-optimizer', type=str, default='RMS_prop', help='Choose RMS_prop or Adam')
+    parser.add_argument('-r', '--recursive', action='store_false', help='Choose whether or not to pass parameters from one period to another during training')
+    parser.add_argument('-o', '--optimizer', type=str, default='RMS_prop', help='Choose RMS_prop or Adam')
 
 
     args = parser.parse_args()
@@ -82,21 +82,18 @@ if __name__ == "__main__":
     pd.options.mode.chained_assignment = None # Mute some warnings of Pandas
 
     # Get data paths
-    df_returns_path = go_up(2) + "/data/ReturnsData.csv"
     df_multidimret_path = go_up(2) + "/data/MultidimReturnsData"
-    df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
-    # Read binary file here, since it's the same for both the following cases
-    df_binary = pd.read_csv(df_binary_path)
+
     # Compute PCA reduction
     if args.pca_wavelet:
         logging.info("==== PCA Reduction ====")
-        df_multiret = [pd.read_csv(df_multidimret_path + "1.csv", index_col=0),
-                       pd.read_csv(df_multidimret_path + "2.csv", index_col=0),
-                       pd.read_csv(df_multidimret_path + "3.csv", index_col=0)]
-        most_imp_comp = list(df_multiret[0].columns)
-        df_binary = df_binary[most_imp_comp]
+        df_multiret = [pd.read_csv(df_multidimret_path + "1.csv"),
+                       pd.read_csv(df_multidimret_path + "2.csv"),
+                       pd.read_csv(df_multidimret_path + "3.csv")]
+        df_binary = pd.read_csv(go_up(2) + "/data/ReturnsBinaryPCA.csv")
     else:
-        df_returns = pd.read_csv(df_returns_path)
+        df_returns = pd.read_csv(go_up(2) + "/data/ReturnsData.csv")
+        df_binary = pd.read_csv(go_up(2) + "/data/ReturnsBinary.csv")
 
     smart_makedir(args.model_name)
     smart_makedir(args.model_name + "/accuracies_losses")
