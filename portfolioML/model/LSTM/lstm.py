@@ -86,22 +86,18 @@ if __name__ == "__main__":
     df_returns_path = go_up(2) + "/data/ReturnsData.csv"
     df_multidimret_path = go_up(2) + "/data/MultidimReturnsData"
     df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
-    # Read the data
-    df_returns = read_filepath(df_returns_path)
-    df_multireturns1 = pd.read_csv(df_multidimret_path + "1.csv", index_col=0)
-    df_multireturns2 = pd.read_csv(df_multidimret_path + "2.csv", index_col=0)
-    df_multireturns3 = pd.read_csv(df_multidimret_path + "3.csv", index_col=0)
+    # Read binary file here, since it's the same for both the following cases
     df_binary = read_filepath(df_binary_path)
-
     # Compute PCA reduction
     if args.pca_wavelet:
         logging.info("==== PCA Reduction ====")
-        most_imp_comp = pca(df_returns_path, n_components=250)
-        df_returns = df_returns[most_imp_comp]
-        df_multireturns = [df_multireturns1[most_imp_comp], df_multireturns2[most_imp_comp], df_multireturns3[most_imp_comp]]
+        df_multiret = [pd.read_csv(df_multidimret_path + "1.csv", index_col=0),
+                       pd.read_csv(df_multidimret_path + "2.csv", index_col=0),
+                       pd.read_csv(df_multidimret_path + "3.csv", index_col=0)]
+        most_imp_comp = list(df_multiret[0].columns)
         df_binary = df_binary[most_imp_comp]
     else:
-        pass
+        df_returns = read_filepath(df_returns_path)
 
     smart_makedir(args.model_name)
     smart_makedir(args.model_name + "/accuracies_losses")
@@ -112,7 +108,7 @@ if __name__ == "__main__":
         # Compute DWT decomposition
         if args.pca_wavelet:
             logging.info("==== DWT ====")
-            X_train, y_train, X_test, y_test = all_multidata_LSTM(df_multireturns, df_binary, i)
+            X_train, y_train, X_test, y_test = all_multidata_LSTM(df_multiret, df_binary, i)
         else:
             X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, i)
 
