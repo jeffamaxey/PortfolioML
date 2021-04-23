@@ -107,12 +107,10 @@ def wavelet_dataframe(df_returns_path, wavelet):
     '''
 
     df_returns1 = pd.read_csv('ReturnsData.csv', index_col=0)
-    # df_returns1.drop(['Days'], axis=1)
 
     most_imp_comp = pca(df_returns_path)
     logging.info(f"Number of companies choosen by PCA: {len(most_imp_comp)}")
     df_returns1 = df_returns1[most_imp_comp]
-    print(df_returns1)
 
     dic1, dic2, dic3 = {}, {}, {}
     for tick in df_returns1.columns:
