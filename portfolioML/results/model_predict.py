@@ -152,7 +152,7 @@ def predictions_csv(algorithm, model_name, num_periods=10, wavelet=False):
         df_predictions = pd.DataFrame()
         for tick in df_returns.columns:
             df_predictions[tick] = dict_comp[tick][:,0]
-            df_predictions.to_csv(f'/predictions/{algorithm}/{model_name}/{model_name}_Predictions_{i}th_Period.csv')
+            df_predictions.to_csv(f'predictions/{algorithm}/{model_name}/{model_name}_Predictions_{i}th_Period.csv')
 
 
 

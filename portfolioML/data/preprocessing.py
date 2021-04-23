@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pywt
 from sklearn.decomposition import PCA
-from portfolioML.data.data_returns import read_filepath
+# from portfolioML.data.data_returns import binary_targets
 from portfolioML.makedir import go_up, smart_makedir
 
 def approx_details_scale(data, wavelet, dec_level):
@@ -76,7 +76,7 @@ def pca(df_returns_path, n_components=250):
 
     '''
 
-    df_returns = read_filepath(df_returns_path)
+    df_returns = pd.read_csv(df_returns_path, index_col=0)
     pca = PCA(n_components=n_components)
     pca.fit(df_returns.values)
     logging.info(f"Fraction of variance preserved: {pca.explained_variance_ratio_.sum():.2f}")
@@ -86,6 +86,7 @@ def pca(df_returns_path, n_components=250):
     initial_feature_names = df_returns.columns
     most_important_features = [initial_feature_names[most_important[i]] for i in range(n_pca)] # get the most important feature names
     most_important_features = list(set(most_important_features))
+    df_returns[most_important_features].to_csv('ReturnsDataPCA.csv')
 
     return most_important_features
 
@@ -106,15 +107,19 @@ def wavelet_dataframe(df_returns_path, wavelet):
             Pandas dataframe in which each element is composed by the three timestamp of the first 3 approximations
     '''
 
-    df_returns = read_filepath(df_returns_path)
+    df_returns1 = pd.read_csv('ReturnsData.csv', index_col=0)
+    # df_returns1.drop(['Days'], axis=1)
+
     most_imp_comp = pca(df_returns_path)
     logging.info(f"Number of companies choosen by PCA: {len(most_imp_comp)}")
-    df_returns = df_returns[most_imp_comp]
+    df_returns1 = df_returns1[most_imp_comp]
+    print(df_returns1)
+    
     dic1, dic2, dic3 = {}, {}, {}
-    for tick in df_returns.columns:
-        a1,d1 = approx_details_scale(df_returns[tick], wavelet, 1)
-        a2,d2 = approx_details_scale(df_returns[tick], wavelet, 2)
-        a3,d3 = approx_details_scale(df_returns[tick], wavelet, 3)
+    for tick in df_returns1.columns:
+        a1,d1 = approx_details_scale(df_returns1[tick], wavelet, 1)
+        a2,d2 = approx_details_scale(df_returns1[tick], wavelet, 2)
+        a3,d3 = approx_details_scale(df_returns1[tick], wavelet, 3)
         dic1[tick], dic2[tick], dic3[tick] = a1, a2, a3
     dataframe1 = pd.DataFrame(dic1)
     dataframe2 = pd.DataFrame(dic2)
@@ -123,8 +128,7 @@ def wavelet_dataframe(df_returns_path, wavelet):
     dataframe2.to_csv("MultidimReturnsData2.csv")
     dataframe3.to_csv("MultidimReturnsData3.csv")
 
-    return dataframe1, dataframe2, dataframe3
-
+    return df_returns1
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Determine the most important companies on each components obtained from PCA')
@@ -142,5 +146,5 @@ if __name__ == "__main__":
 
 
     df_returns_path = os.getcwd() + "/ReturnsData.csv"
-    df_binary = read_filepath("ReturnsBinary.csv")
-    wavelet_data1, wavelet_data2, wavelet_data3 = wavelet_dataframe(df_returns_path, 'db1')
+    df_binary = pd.read_csv("ReturnsBinary.csv", index_col=0)
+ 

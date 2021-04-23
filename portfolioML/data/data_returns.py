@@ -5,6 +5,7 @@ import sys
 from statistics import median
 import numpy as np
 import pandas as pd
+from portfolioML.data.preprocessing import wavelet_dataframe
 
 def read_filepath(file_path):
     """
@@ -31,7 +32,7 @@ def read_filepath(file_path):
         sys.exit()
 
     df = pd.read_csv(file_path, encoding='latin-1')
-    df = df.drop(['Days'], axis=1)
+    #df = df.drop(['Days'], axis=1)
 
     # logging.info('DATA INFO, attributes: %s', df.columns)
     # logging.info('DATA INFO, shape: %s', df.shape)
@@ -86,11 +87,11 @@ def get_returns(dataframe, m, export_returns_csv, no_missing=True):
     if no_missing: df = df.dropna(axis=1)
 
     if export_returns_csv:
-        df.to_csv('ReturnsData.csv')
+        df.to_csv('ReturnsData.csv', index=False)
 
     return df
 
-def binary_targets(dataframe, export_binary_csv):
+def binary_targets(dataframe, export_binary_csv,  name='ReturnsBinary'):
     """
     Returns binary value of returns for classification task, binary values are 0 and 1.
     To define the two classes, we order all m-period returns of all stocks 's'
@@ -122,14 +123,13 @@ def binary_targets(dataframe, export_binary_csv):
 
         df.iloc[time_idx] = dataframe.iloc[time_idx].apply(lambda x:  0 if x<=compare_value else 1)
 
-    if export_binary_csv: df.to_csv('ReturnsBinary.csv')
+    if export_binary_csv: df.to_csv(f'{name}.csv', index=False)
     return df
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process price data and get the dataframe of m period returns')
-    parser.add_argument('input_file', type=str, help='Path to the input file')
-    parser.add_argument('m_period_return', type=int, help='m period return')
+    parser.add_argument('-m','--m_period_return', type=int, default=1, help='m period return')
     parser.add_argument("-export_returns_csv", default= False, help='Export to csv the dataframe of m-period price returns')
     parser.add_argument("-export_binary_csv", default= True, help='Export to csv the dataframe for the classification task')
     parser.add_argument("-log", "--log", default="info",
@@ -145,8 +145,10 @@ if __name__ == '__main__':
 
     logging.basicConfig(level= levels[args.log])
 
-    df = read_filepath(args.input_file)
-    dataframe_ritorni = get_returns(df,args.m_period_return, args.export_returns_csv)
+    df = pd.read_csv('PriceData.csv')
 
+    dataframe_ritorni = get_returns(df,args.m_period_return, args.export_returns_csv)
     dataframe_binary = binary_targets(dataframe_ritorni, args.export_binary_csv)
 
+    a = wavelet_dataframe('ReturnsData.csv', 'db1')
+    df_binary_pca = binary_targets(a, args.export_binary_csv, name='ReturnsBinaryPCA',)
