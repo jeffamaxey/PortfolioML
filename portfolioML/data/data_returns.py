@@ -41,7 +41,7 @@ def get_returns(dataframe, m, export_returns_csv, no_missing=True):
         exit()
 
     df = pd.DataFrame()
-    for col in dataframe.columns[1:]:
+    for col in dataframe.columns:
         today = dataframe[col]
         tomorrow = today[m:]
         df[col] = (np.array(tomorrow)/np.array(today)[:-m])-1

@@ -113,15 +113,21 @@ if __name__ == "__main__":
     logging.basicConfig(level= levels[args.log])
 
     #Read the data
-    df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
-    df_returns_path = go_up(2) + "/data/ReturnsData.csv"
-    df_returns = pd.read_csv(df_returns_path)
-    df_binary = pd.read_csv(df_binary_path)
+    # df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
+    # df_returns_path = go_up(2) + "/data/ReturnsData.csv"
+    # df_returns = pd.read_csv(df_returns_path)
+    # df_binary = pd.read_csv(df_binary_path)
 
     if args.prin_comp_anal:
         logging.info("Using the most important companies obtained from a PCA decomposition")
-        df_returns = pd.read_csv(go_up(2) + "/data/ReturnsDataPCA.csv")[1:]
-        df_binary = pd.read_csv(go_up(2) + "/data/ReturnsBinaryPCA.csv")[1:]
+        df_returns = pd.read_csv(go_up(2) + "/data/ReturnsDataPCA.csv")
+        df_binary = pd.read_csv(go_up(2) + "/data/ReturnsBinaryPCA.csv")
+    else:
+        df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
+        df_returns_path = go_up(2) + "/data/ReturnsData.csv"
+        df_returns = pd.read_csv(df_returns_path)
+        df_binary = pd.read_csv(df_binary_path)
+            
 
     smart_makedir(args.model_name)
     # losses = smart_makedir(args.model_name + "/losses")

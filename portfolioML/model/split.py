@@ -76,7 +76,7 @@ def get_sequences(returns, targets, n_steps=240):
     return X, y
 
 
-def get_train_set(df_returns, df_binary):
+def get_train_set(df_returns1, df_binary1):
     """
     Return the train set for the LSTM.
     The argumets are the returns dataframe and the binary dataframe. The function compute respectively
@@ -103,13 +103,13 @@ def get_train_set(df_returns, df_binary):
     list_tot_X = []
     list_tot_y = []
 
-    if (str(type(df_returns)) != "pandas.core.frame.DataFrame"):
-        df_returns = pd.DataFrame(df_returns)
-    if (str(type(df_binary)) != "pandas.core.frame.DataFrame"):
-        df_binary = pd.DataFrame(df_binary)
+    if (str(type(df_returns1)) != "pandas.core.frame.DataFrame"):
+        df_returns1 = pd.DataFrame(df_returns1)
+    if (str(type(df_binary1)) != "pandas.core.frame.DataFrame"):
+        df_binary1 = pd.DataFrame(df_binary1)
 
-    for comp in df_returns.columns:
-        X_train, y_train = get_sequences(df_returns[comp], df_binary[comp])
+    for comp in df_returns1.columns:
+        X_train, y_train = get_sequences(df_returns1[comp], df_binary1[comp])
         list_tot_X.append(X_train)
         list_tot_y.append(y_train)
 
