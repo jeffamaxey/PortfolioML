@@ -9,7 +9,6 @@ from keras.models import load_model
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath("..")))
-from portfolioML.data.data_returns import read_filepath
 import matplotlib.pyplot as plt
 import seaborn as sns
 from portfolioML.makedir import smart_makedir, go_up

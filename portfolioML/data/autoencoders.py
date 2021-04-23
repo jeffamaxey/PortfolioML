@@ -11,7 +11,7 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.layers import Input, Dense
 from tensorflow.keras.models import Model
 from tensorflow.keras.utils import plot_model
-from portfolioML.data.data_returns import read_filepath
+from portfolioML.data.data_returns import pd.read_csv
 from portfolioML.model.split import all_data_LSTM
 from portfolioML.makedir import smart_makedir
 from portfolioML.data.preprocessing import pca
@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
 
     df_ret = args.returns_file
-    df_bin = read_filepath(args.binary_file)
+    df_bin = pd.read_csv(args.binary_file)
     per = args.period
     n_components = args.n_components
     botneck = args.botneck
