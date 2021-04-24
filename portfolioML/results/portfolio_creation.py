@@ -86,7 +86,7 @@ def portfolio_creation(algorithm, model_name, num_periods, k=10):
     portfolio = []
     for j in range(num_periods):
         trading_days = pd.read_csv(
-            f"{path}/Trading_days_period{j}.csv", index_col=0)
+            f"{path}/Trading_days_period{j}.csv")
         portfolio_tmp = []
         for i in range(trading_days.shape[0]):
             df_portfolio = pd.DataFrame()
