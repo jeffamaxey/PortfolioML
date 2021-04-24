@@ -53,12 +53,11 @@ def get_trading_values(df_price, algorithm, model_name, num_periods, len_period=
 
     # Insert the 'Date' column in the forecasts made by lstm.py
     for i in range(num_periods):
-        ith_predictions = pd.read_csv(f"predictions/{algorithm}/{model_name}/{model_name}_Predictions_{i}th_Period.csv",
-                                      index_col=0)
+        ith_predictions = pd.read_csv(f"predictions/{algorithm}/{model_name}/{model_name}_Predictions_{i}th_Period.csv")
         ith_predictions.insert(0, 'Date', trading_values[i]['Date'].values)
 
         # Save the csv file
-        ith_predictions.to_csv(f"{path1}/Trading_days_period{i}.csv")
+        ith_predictions.to_csv(f"{path1}/Trading_days_period{i}.csv", index=False)
     logging.info("Successfully tracked forecasts dates")
 
 
@@ -236,7 +235,7 @@ if __name__ == '__main__':
         '--algorithm', '-a', type=str, action='append', help='CNN, LSTM , DNN and/or RAF')
     requiredNamed.add_argument('--model_name', '-m', type=str,
                                action='append', help='Select the particular model trained')
-    parser.add_argument("--num_periods", '-p', type=int, default=10,
+    parser.add_argument("--num_periods", '-p', type=int,
                         help="Number of period over which returns have to be calculated ")
     parser.add_argument("--money", '-€', type=int, default=1,
                         help="How much you want to invest")
