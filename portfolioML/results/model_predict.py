@@ -51,9 +51,9 @@ def plot_roc(algorithm, name_model, num_periods, wavelet=False):
 
     df_returns = pd.read_csv(go_up(1) + "/data/ReturnsData.csv")
     df_binary = pd.read_csv(go_up(1) + "/data/ReturnsBinary.csv")
-    df_multiret = [pd.read_csv(df_multiret_path + "1.csv", index_col=0),
-                   pd.read_csv(df_multiret_path + "2.csv", index_col=0),
-                   pd.read_csv(df_multiret_path + "3.csv", index_col=0)]
+    df_multiret = [pd.read_csv(df_multiret_path + "1.csv"),
+                   pd.read_csv(df_multiret_path + "2.csv"),
+                   pd.read_csv(df_multiret_path + "3.csv")]
 
     plt.figure()
     for per in range(0, num_periods):
@@ -70,7 +70,7 @@ def plot_roc(algorithm, name_model, num_periods, wavelet=False):
                 df_multiret, df_binary, per)
 
         model = load_model(
-            parent_path + f'/model/{algorithm}/{name_model}/{name_model}_period{per}.h5')
+            go_up(1) + f'/model/{algorithm}/{name_model}/{name_model}_period{per}.h5')
 
         # ROC curve
         probas = model.predict(X_test)
@@ -114,7 +114,7 @@ def plot_roc(algorithm, name_model, num_periods, wavelet=False):
     plt.savefig(path + f'ROC Curve {name_model} - mean +|- std.png')
 
 
-def predictions_csv(algorithm, model_name, num_periods=10, wavelet=False):
+def predictions_csv(algorithm, model_name, num_periods, wavelet):
     '''
 
 
@@ -134,39 +134,43 @@ def predictions_csv(algorithm, model_name, num_periods=10, wavelet=False):
     smart_makedir(f'/predictions/{algorithm}/{model_name}/')
     df_multiret_path = go_up(1) + "/data/MultidimReturnsData"
 
-    df_returns = pd.read_csv(go_up(1) + "/data/ReturnsData.csv")
-    df_binary = pd.read_csv(go_up(1) + "/data/ReturnsBinary.csv")
-    df_multiret = [pd.read_csv(df_multiret_path + "1.csv", index_col=0),
-                   pd.read_csv(df_multiret_path + "2.csv", index_col=0),
-                   pd.read_csv(df_multiret_path + "3.csv", index_col=0)]
+    if wavelet:
+        logging.info("==== PCA Reduction ====")
+        df_multiret = [pd.read_csv(df_multiret_path + "1.csv"),
+                       pd.read_csv(df_multiret_path + "2.csv"),
+                       pd.read_csv(df_multiret_path + "3.csv")]
+        df_binary = pd.read_csv(go_up(1) + "/data/ReturnsBinaryPCA.csv")
+    else:
+        df_returns = pd.read_csv(go_up(1) + "/data/ReturnsData.csv")
+        df_binary = pd.read_csv(go_up(1) + "/data/ReturnsBinary.csv")
 
     for i in range(num_periods):
         model = load_model(
             go_up(1) + f'/model/{algorithm}/{model_name}/{model_name}_period{i}.h5')
         logging.info(f'Creating predictions csv file for period {i}')
         # Splitting data set for each period
-        if (algorithm == 'LSTM') or (algorithm == 'CNN'):
+        if ((algorithm == 'LSTM') or (algorithm == 'CNN')) and (wavelet == False):
             X_train, y_train, X_test, y_test = all_data_LSTM(
                 df_returns, df_binary, i)
         if (algorithm == 'DNN'):
             X_train, y_train, X_test, y_test = all_data_DNN(
                 df_returns, df_binary, i)
-        if (algorithm == 'LSTM') or (algorithm == 'CNN') and (wavelet == True):
+        if ((algorithm == 'LSTM') or (algorithm == 'CNN')) and (wavelet == True):
             X_train, y_train, X_test, y_test = all_multidata_LSTM(
                 df_multiret, df_binary, i)
 
-        y_pred = model.predict(X_test)
-        classes = model.predict_classes(X_test)
-        tmp = sum(y_test == classes)
-        accuracies = tmp / len(y_test)
-        print(accuracies)
+        # y_pred = model.predict(X_test)
+        # classes = model.predict_classes(X_test)
+        # tmp = sum(y_test == classes)
+        # accuracies = tmp / len(y_test)
+        # print(accuracies)
 
         y_pred_companies = [y_pred[i:87 + i]
                             for i in range(0, len(y_pred) - 87 + 1, 87)]
-        dict_comp = {df_returns.columns[i]: y_pred_companies[i]
-                     for i in range(len(df_returns.columns))}
+        dict_comp = {df_binary.columns[i]: y_pred_companies[i]
+                     for i in range(len(df_binary.columns))}
         df_predictions = pd.DataFrame()
-        for tick in df_returns.columns:
+        for tick in df_binary.columns:
             df_predictions[tick] = dict_comp[tick][:, 0]
             df_predictions.to_csv(
                 f'predictions/{algorithm}/{model_name}/{model_name}_Predictions_{i}th_Period.csv')
@@ -180,8 +184,8 @@ if __name__ == "__main__":
                         help='Select the particular model trained')
     parser.add_argument('num_periods', type=int,
                         help="Number of period over which returns have to be calculated ")
-    parser.add_argument('--wavelet', '-w', type=bool,
-                        help='Set True if you have trained the model with DWT')
+    parser.add_argument('--pca_wavelet', '-p', action='store_true',
+                        help='Set True if you have trained the model with DWT. Default: False')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
@@ -196,17 +200,6 @@ if __name__ == "__main__":
     logging.basicConfig(level=levels[args.log])
     pd.options.mode.chained_assignment = None
 
-    # Read the data
-    # path = os.getcwd()
-    # parent_path = os.path.abspath(os.path.join(path, os.pardir))
-    # df_binary = parent_path + "/data/ReturnsBinary.csv"
-    # df_returns = parent_path + "/data/ReturnsData.csv"
-    # df_returns = pd.read_csv(df_returns)
-    # df_multireturns1 = pd.read_csv(parent_path + "/data/MultidimReturnsData1.csv", index_col=0)
-    # df_multireturns2 = pd.read_csv(parent_path + "/data/MultidimReturnsData2.csv", index_col=0)
-    # df_multireturns3 = pd.read_csv(parent_path + "/data/MultidimReturnsData3.csv", index_col=0)
-    # df_binary = pd.read_csv(df_binary)
-
-    plot_roc(args.algorithm, args.model_name, args.num_periods, args.wavelet)
+    plot_roc(args.algorithm, args.model_name, args.num_periods, args.pca_wavelet)
     predictions_csv(args.algorithm, args.model_name,
-                    args.num_periods, args.wavelet)
+                    args.num_periods, args.pca_wavelet)
