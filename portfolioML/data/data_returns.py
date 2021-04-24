@@ -108,7 +108,9 @@ if __name__ == '__main__':
     logging.basicConfig(level= levels[args.log])
 
     df = pd.read_csv('PriceData.csv')
-    df.drop(['Date'], axis=1)
+    df = df.drop(['Date'], axis=1)
+    if df.columns[0] != 'Date': logging.info('Successfully removed Date column')
+    
     dataframe_ritorni = get_returns(df,args.m_period_return, args.export_returns_csv)
     dataframe_binary = binary_targets(dataframe_ritorni, args.export_binary_csv)
 
