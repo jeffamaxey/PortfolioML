@@ -93,13 +93,14 @@ def DNN_model(nodes_args, hidden=None , activation='tanh', loss='binary_crossent
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Make DNN for classification task to prediction class label 0 or 1')
-    parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
-    parser.add_argument('model_name', type=str, help='Choose the name of the model')
     parser.add_argument("nodes", type=int, nargs='+',
                         help='Number of nodes in each layers of DNN, see documentation')
+    parser.add_argument('model_name', type=str, help='Choose the name of the model')
+    parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
-    parser.add_argument('-prin_comp_anal', action='store_true', help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs')
+    parser.add_argument('-prin_comp_anal', action='store_true', help="""Use the most important companies obtained by a PCA 
+                                                               decomposition on the first 250 PCs, default=False""")
 
 
     args = parser.parse_args()
@@ -113,11 +114,6 @@ if __name__ == "__main__":
     logging.basicConfig(level= levels[args.log])
 
     #Read the data
-    # df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
-    # df_returns_path = go_up(2) + "/data/ReturnsData.csv"
-    # df_returns = pd.read_csv(df_returns_path)
-    # df_binary = pd.read_csv(df_binary_path)
-
     if args.prin_comp_anal:
         logging.info("Using the most important companies obtained from a PCA decomposition")
         df_returns = pd.read_csv(go_up(2) + "/data/ReturnsDataPCA.csv")

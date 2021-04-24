@@ -2,6 +2,7 @@
 import argparse
 import logging
 import os
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -9,9 +10,8 @@ from keras.layers import Input, Dense, Dropout, Conv1D, MaxPooling1D, Flatten, C
 from keras.models import Model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.utils.vis_utils import plot_model
-from portfolioML.model.split import all_data_LSTM
+from portfolioML.model.split import all_data_LSTM, all_multidata_LSTM
 from portfolioML.makedir import smart_makedir, go_up
-from portfolioML.data.preprocessing import pca
 
 class MinPooling1D(MaxPooling1D):
     """
@@ -126,7 +126,8 @@ if __name__ == "__main__":
     parser.add_argument("-activation", type=str, default='tanh', help="activation, for more details see documentation")
     parser.add_argument("-min_pooling", action='store_false', help="If true the structure is multiheaded")
     parser.add_argument("-plt_figure", action='store_false', help="If true create png file of the model")
-    parser.add_argument('-prin_comp_anal', action='store_false', help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs')
+    parser.add_argument('-p', '--pca_wavelet', action='store_true',
+                        help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs and then DWT. Default: False')
 
 
     parser.add_argument("-log", "--log", default="info",
@@ -142,24 +143,20 @@ if __name__ == "__main__":
 
     logging.basicConfig(level= levels[args.log])
 
-    #Read the data
-    df_returns_path = go_up(2) + "/data/ReturnsData.csv"
-    df_multidimreturns_path1 = go_up(2) + "/data/MultidimReturnsData1.csv"
-    df_multidimreturns_path2 = go_up(2) + "/data/MultidimReturnsData2.csv"
-    df_multidimreturns_path3 = go_up(2) + "/data/MultidimReturnsData3.csv"
-    df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
-    df_returns = pd.read_csv(df_returns_path)
-    df_binary = pd.read_csv(df_binary_path)
+    # Get data paths
+    df_multidimret_path = go_up(2) + "/data/MultidimReturnsData"
 
-    if args.prin_comp_anal:
-        logging.info("Using the most important companies obtained from a PCA decomposition")
-        most_imp_comp = pca(df_returns_path, n_components=250)
-        df_returns = df_returns[most_imp_comp]
-        df_multidimreturns1 = pd.read_csv(df_multidimreturns_path1, index_col=0)
-        df_multidimreturns2 = pd.read_csv(df_multidimreturns_path2, index_col=0)
-        df_multidimreturns3 = pd.read_csv(df_multidimreturns_path3, index_col=0)
-        df_binary = pd.read_csv(df_binary_path)
-   
+    #Read the data
+    if args.pca_wavelet:
+        logging.info("==== PCA Reduction and Wavelet Decomposition ====")
+        df_multiret = [pd.read_csv(df_multidimret_path + "1.csv"),
+                       pd.read_csv(df_multidimret_path + "2.csv"),
+                       pd.read_csv(df_multidimret_path + "3.csv")]
+        df_binary = pd.read_csv(go_up(2) + "/data/ReturnsBinaryPCA.csv")
+    else:
+        df_returns = pd.read_csv(go_up(2) + "/data/ReturnsData.csv")
+        df_binary = pd.read_csv(go_up(2) + "/data/ReturnsBinary.csv")
+
 
     smart_makedir(args.model_name)
     smart_makedir(args.model_name + "/accuracies_losses")
@@ -167,16 +164,14 @@ if __name__ == "__main__":
     for per in range(args.num_periods):
         logging.info(f'============ Start Period {per}th ===========')
 
-         # Compute DWT decomposition for Test and Train sets
-        if args.prin_comp_anal:
+        # Compute DWT decomposition
+        if args.pca_wavelet:
             logging.info("==== DWT ====")
-            X_train1, y_train, X_test1, y_test = all_data_LSTM(df_multidimreturns1, df_binary, per)
-            X_train2, y_train, X_test2, y_test = all_data_LSTM(df_multidimreturns1, df_binary, per)
-            X_train3, y_train, X_test3, y_test = all_data_LSTM(df_multidimreturns1, df_binary, per)
-            X_train = np.stack((X_train1, X_train2, X_train3), axis=-1).reshape(X_train1.shape[0],240,3)
-            X_test = np.stack((X_test1, X_test2, X_test3), axis=-1).reshape(X_test1.shape[0],240,3)
+            X_train, y_train, X_test, y_test = all_multidata_LSTM(
+                df_multiret, df_binary, per)
         else:
-            X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, per)
+            X_train, y_train, X_test, y_test = all_data_LSTM(
+                df_returns, df_binary, per)
 
         model = CNN_model(args.filters, min_pooling=args.min_pooling, plt_figure=args.plt_figure, dim=X_train.shape[2])
        
