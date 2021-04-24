@@ -1,9 +1,11 @@
 """Split time-series in traning and test(trading) for classification """
 import argparse
 import logging
+
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+
 
 def split_Tperiod(df_returns, df_binary, len_period=1308, len_test=327):
     """
@@ -32,9 +34,12 @@ def split_Tperiod(df_returns, df_binary, len_period=1308, len_test=327):
         List of pandas dataframe of all periods of lenght len_period.
     """
 
-    len_total_leave = len(df_returns)-len_period #ho solo chiamato come unica variabile quella cosa che c'era nel for, il nome è da rivedere
-    periods_ret = [(df_returns[i:len_period+i]) for i in range(0, len_total_leave+1, len_test)]
-    periods_bin = [(df_binary[i:len_period+i]) for i in range(0, len_total_leave+1, len_test)] # questa mancava
+    # ho solo chiamato come unica variabile quella cosa che c'era nel for, il nome è da rivedere
+    len_total_leave = len(df_returns) - len_period
+    periods_ret = [(df_returns[i:len_period + i])
+                   for i in range(0, len_total_leave + 1, len_test)]
+    periods_bin = [(df_binary[i:len_period + i])
+                   for i in range(0, len_total_leave + 1, len_test)]  # questa mancava
 
     return periods_ret, periods_bin
 
@@ -70,8 +75,8 @@ def get_sequences(returns, targets, n_steps=240):
     except AttributeError:
         pass
 
-    X = [returns[i:i+n_steps] for i in range(len(returns)-n_steps)]
-    y = [targets[i+n_steps] for i in range(len(targets)-n_steps)]
+    X = [returns[i:i + n_steps] for i in range(len(returns) - n_steps)]
+    y = [targets[i + n_steps] for i in range(len(targets) - n_steps)]
 
     return X, y
 
@@ -116,10 +121,13 @@ def get_train_set(df_returns1, df_binary1):
     list_tot_X = np.array(list_tot_X)
     list_tot_y = np.array(list_tot_y)
 
-    list_tot_X = np.reshape(list_tot_X,(list_tot_X.shape[0]*list_tot_X.shape[1],list_tot_X.shape[2]))
-    list_tot_y = np.reshape(list_tot_y,(list_tot_y.shape[0]*list_tot_y.shape[1]))
+    list_tot_X = np.reshape(
+        list_tot_X, (list_tot_X.shape[0] * list_tot_X.shape[1], list_tot_X.shape[2]))
+    list_tot_y = np.reshape(
+        list_tot_y, (list_tot_y.shape[0] * list_tot_y.shape[1]))
 
     return list_tot_X, list_tot_y
+
 
 def all_data_LSTM(df_returns, df_binary, period, len_train=981):
     """
@@ -174,6 +182,7 @@ def all_data_LSTM(df_returns, df_binary, period, len_train=981):
 
     return X_train, y_train, X_test, y_test
 
+
 def all_multidata_LSTM(df_multidim_list, df_binary, period):
     '''
     When computing the DWT you get different approximations of the signal. This function
@@ -192,14 +201,21 @@ def all_multidata_LSTM(df_multidim_list, df_binary, period):
         Data for LSTM or CNN models
     '''
     logging.info("DWT decomposition")
-    df_multireturns1, df_multireturns2, df_multireturns3 = df_multidim_list[0], df_multidim_list[1], df_multidim_list[2]
+    df_multireturns1, df_multireturns2, df_multireturns3 = df_multidim_list[
+        0], df_multidim_list[1], df_multidim_list[2]
 
-    X_train1, y_train, X_test1, y_test = all_data_LSTM(df_multireturns1, df_binary, period)
-    X_train2, y_train, X_test2, y_test = all_data_LSTM(df_multireturns1, df_binary, period)
-    X_train3, y_train, X_test3, y_test = all_data_LSTM(df_multireturns1, df_binary, period)
-    X_train = np.stack((X_train1, X_train2, X_train3), axis=-1).reshape(X_train1.shape[0],240,3)
-    X_test = np.stack((X_test1, X_test2, X_test3), axis=-1).reshape(X_test1.shape[0],240,3)
+    X_train1, y_train, X_test1, y_test = all_data_LSTM(
+        df_multireturns1, df_binary, period)
+    X_train2, y_train, X_test2, y_test = all_data_LSTM(
+        df_multireturns1, df_binary, period)
+    X_train3, y_train, X_test3, y_test = all_data_LSTM(
+        df_multireturns1, df_binary, period)
+    X_train = np.stack((X_train1, X_train2, X_train3),
+                       axis=-1).reshape(X_train1.shape[0], 240, 3)
+    X_test = np.stack((X_test1, X_test2, X_test3), axis=-
+                      1).reshape(X_test1.shape[0], 240, 3)
     return X_train, y_train, X_test, y_test
+
 
 def all_data_DNN(df_returns, df_binary, period, len_train=981):
     """
@@ -230,21 +246,27 @@ def all_data_DNN(df_returns, df_binary, period, len_train=981):
 
     """
 
-    X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, period)
+    X_train, y_train, X_test, y_test = all_data_LSTM(
+        df_returns, df_binary, period)
 
-    m = list(range(0,240,20))+list(range(221,240))
-    X_train = X_train[:,m,:]
+    m = list(range(0, 240, 20)) + list(range(221, 240))
+    X_train = X_train[:, m, :]
     X_train = np.reshape(X_train, (X_train.shape[0], 31))
 
-    X_test = X_test[:,m,:]
+    X_test = X_test[:, m, :]
     X_test = np.reshape(X_test, (X_test.shape[0], 31))
 
     return X_train, y_train, X_test, y_test
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Creation of input and output data for lstm classification problem')
-    parser.add_argument('returns_file', type=str, help='Path to the returns input data')
-    parser.add_argument('binary_file', type=str, help='Path to the binary target data')
+
+    parser = argparse.ArgumentParser(
+        description='Creation of input and output data for lstm classification problem')
+    parser.add_argument('returns_file', type=str,
+                        help='Path to the returns input data')
+    parser.add_argument('binary_file', type=str,
+                        help='Path to the binary target data')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
@@ -256,7 +278,7 @@ if __name__ == "__main__":
               'info': logging.INFO,
               'debug': logging.DEBUG}
 
-    logging.basicConfig(level= levels[args.log])
+    logging.basicConfig(level=levels[args.log])
 
     df_returns = pd.read_csv(args.returns_file)
     df_binary = pd.read_csv(args.binary_file)

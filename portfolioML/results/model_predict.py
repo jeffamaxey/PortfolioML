@@ -2,13 +2,15 @@
 import argparse
 import logging
 import os
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, roc_auc_score
 from keras.models import load_model
-from portfolioML.model.split import all_data_DNN, all_data_LSTM, all_multidata_LSTM
-from portfolioML.makedir import smart_makedir, go_up
+from portfolioML.makedir import go_up, smart_makedir
+from portfolioML.model.split import (all_data_DNN, all_data_LSTM,
+                                     all_multidata_LSTM)
+from sklearn.metrics import roc_auc_score, roc_curve
 
 
 def plot_roc(algorithm, name_model, num_periods, wavelet=False):
@@ -54,29 +56,32 @@ def plot_roc(algorithm, name_model, num_periods, wavelet=False):
                    pd.read_csv(df_multiret_path + "3.csv", index_col=0)]
 
     plt.figure()
-    for per in range(0,num_periods):
+    for per in range(0, num_periods):
         logging.info(f'Creating ROC for period {per}')
-        #Splitting data set for each period
+        # Splitting data set for each period
         if (algorithm == 'LSTM') or (algorithm == 'CNN'):
-            X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, per)
+            X_train, y_train, X_test, y_test = all_data_LSTM(
+                df_returns, df_binary, per)
         if (algorithm == 'DNN'):
-            X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, per)
+            X_train, y_train, X_test, y_test = all_data_DNN(
+                df_returns, df_binary, per)
         if (algorithm == 'LSTM') or (algorithm == 'CNN') and (wavelet == True):
-            X_train, y_train, X_test, y_test = all_multidata_LSTM(df_multiret, df_binary, per)
+            X_train, y_train, X_test, y_test = all_multidata_LSTM(
+                df_multiret, df_binary, per)
 
-        model = load_model(parent_path + f'/model/{algorithm}/{name_model}/{name_model}_period{per}.h5')
+        model = load_model(
+            parent_path + f'/model/{algorithm}/{name_model}/{name_model}_period{per}.h5')
 
-        #ROC curve
+        # ROC curve
         probas = model.predict(X_test)
 
-        fpr, tpr, thresholds = roc_curve(y_test, probas[:,0])
+        fpr, tpr, thresholds = roc_curve(y_test, probas[:, 0])
 
         interp_tpr = np.interp(interp_fpr, fpr, tpr)
         tpr_list.append(interp_tpr)
 
-        roc_auc = roc_auc_score(y_test, probas[:,0], average=None)
+        roc_auc = roc_auc_score(y_test, probas[:, 0], average=None)
         aucs_list.append(roc_auc)
-
 
         plt.plot(fpr, tpr, label=f'per{per} (area = %0.4f)' % (roc_auc))
         plt.plot([0, 1], [0, 1], 'k--')
@@ -94,19 +99,20 @@ def plot_roc(algorithm, name_model, num_periods, wavelet=False):
 
     plt.figure()
     plt.plot(interp_fpr, tpr_mean, color='b',
-          label=f'Mean ROC (AUC = {auc_mean:.4f} $\pm$ {auc_std:.4f})',
-          lw=1, alpha=.8)
+             label=f'Mean ROC (AUC = {auc_mean:.4f} $\pm$ {auc_std:.4f})',
+             lw=1, alpha=.8)
 
     tpr_std = np.std(tpr_list, axis=0)
     tprs_upper = np.minimum(tpr_mean + tpr_std, 1)
     tprs_lower = np.maximum(tpr_mean - tpr_std, 0)
     plt.fill_between(interp_fpr, tprs_lower, tprs_upper, color='blue', alpha=.2,
-                  label=r'$\pm$ 1 std. dev.')
+                     label=r'$\pm$ 1 std. dev.')
     plt.xlabel('False Positive Rate',)
     plt.ylabel('True Positive Rate')
     plt.legend(loc="lower right", fontsize=12, frameon=False)
     plt.title(f'ROC Curve {name_model} - mean +|- std')
     plt.savefig(path + f'ROC Curve {name_model} - mean +|- std.png')
+
 
 def predictions_csv(algorithm, model_name, num_periods=10, wavelet=False):
     '''
@@ -135,37 +141,47 @@ def predictions_csv(algorithm, model_name, num_periods=10, wavelet=False):
                    pd.read_csv(df_multiret_path + "3.csv", index_col=0)]
 
     for i in range(num_periods):
-        model = load_model(go_up(1) + f'/model/{algorithm}/{model_name}/{model_name}_period{i}.h5')
+        model = load_model(
+            go_up(1) + f'/model/{algorithm}/{model_name}/{model_name}_period{i}.h5')
         logging.info(f'Creating predictions csv file for period {i}')
-        #Splitting data set for each period
+        # Splitting data set for each period
         if (algorithm == 'LSTM') or (algorithm == 'CNN'):
-            X_train, y_train, X_test, y_test = all_data_LSTM(df_returns, df_binary, i)
+            X_train, y_train, X_test, y_test = all_data_LSTM(
+                df_returns, df_binary, i)
         if (algorithm == 'DNN'):
-            X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, i)
+            X_train, y_train, X_test, y_test = all_data_DNN(
+                df_returns, df_binary, i)
         if (algorithm == 'LSTM') or (algorithm == 'CNN') and (wavelet == True):
-            X_train, y_train, X_test, y_test = all_multidata_LSTM(df_multiret, df_binary, i)
+            X_train, y_train, X_test, y_test = all_multidata_LSTM(
+                df_multiret, df_binary, i)
 
         y_pred = model.predict(X_test)
         classes = model.predict_classes(X_test)
         tmp = sum(y_test == classes)
-        accuracies = tmp/len(y_test) 
+        accuracies = tmp / len(y_test)
         print(accuracies)
 
-        y_pred_companies = [y_pred[i:87+i] for i in range(0,len(y_pred)-87+1,87)]
-        dict_comp = {df_returns.columns[i]: y_pred_companies[i] for i in range(len(df_returns.columns))}
+        y_pred_companies = [y_pred[i:87 + i]
+                            for i in range(0, len(y_pred) - 87 + 1, 87)]
+        dict_comp = {df_returns.columns[i]: y_pred_companies[i]
+                     for i in range(len(df_returns.columns))}
         df_predictions = pd.DataFrame()
         for tick in df_returns.columns:
-            df_predictions[tick] = dict_comp[tick][:,0]
-            df_predictions.to_csv(f'predictions/{algorithm}/{model_name}/{model_name}_Predictions_{i}th_Period.csv')
-
+            df_predictions[tick] = dict_comp[tick][:, 0]
+            df_predictions.to_csv(
+                f'predictions/{algorithm}/{model_name}/{model_name}_Predictions_{i}th_Period.csv')
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Prediction and compare traned model')
+    parser = argparse.ArgumentParser(
+        description='Prediction and compare traned model')
     parser.add_argument('algorithm', type=str, help='CNN. LSTM or RAF')
-    parser.add_argument('model_name', type=str, help='Select the particular model trained')
-    parser.add_argument('num_periods', type=int, help="Number of period over which returns have to be calculated ")
-    parser.add_argument('--wavelet', '-w', type=bool, help='Set True if you have trained the model with DWT')
+    parser.add_argument('model_name', type=str,
+                        help='Select the particular model trained')
+    parser.add_argument('num_periods', type=int,
+                        help="Number of period over which returns have to be calculated ")
+    parser.add_argument('--wavelet', '-w', type=bool,
+                        help='Set True if you have trained the model with DWT')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
@@ -177,10 +193,10 @@ if __name__ == "__main__":
               'info': logging.INFO,
               'debug': logging.DEBUG}
 
-    logging.basicConfig(level= levels[args.log])
+    logging.basicConfig(level=levels[args.log])
     pd.options.mode.chained_assignment = None
 
-    #Read the data
+    # Read the data
     # path = os.getcwd()
     # parent_path = os.path.abspath(os.path.join(path, os.pardir))
     # df_binary = parent_path + "/data/ReturnsBinary.csv"
@@ -191,6 +207,6 @@ if __name__ == "__main__":
     # df_multireturns3 = pd.read_csv(parent_path + "/data/MultidimReturnsData3.csv", index_col=0)
     # df_binary = pd.read_csv(df_binary)
 
-
     plot_roc(args.algorithm, args.model_name, args.num_periods, args.wavelet)
-    predictions_csv(args.algorithm, args.model_name, args.num_periods, args.wavelet)
+    predictions_csv(args.algorithm, args.model_name,
+                    args.num_periods, args.wavelet)
