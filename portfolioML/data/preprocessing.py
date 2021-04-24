@@ -106,7 +106,7 @@ def wavelet_dataframe(df_returns_path, wavelet):
             Pandas dataframe in which each element is composed by the three timestamp of the first 3 approximations
     '''
 
-    df_returns1 = pd.read_csv('ReturnsData.csv', index_col=0)
+    df_returns1 = pd.read_csv('ReturnsData.csv')
 
     most_imp_comp = pca(df_returns_path)
     logging.info(f"Number of companies choosen by PCA: {len(most_imp_comp)}")
