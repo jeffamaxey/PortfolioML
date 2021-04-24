@@ -1,7 +1,8 @@
-import os
-import logging
-import shutil
 import argparse
+import logging
+import os
+import shutil
+
 
 def go_up(level_up):
     if level_up == 0:
@@ -21,6 +22,7 @@ def go_up(level_up):
         path = os.path.abspath(os.path.join(path, os.pardir))
         path = os.path.abspath(os.path.join(path, os.pardir))
     return path
+
 
 def smart_makedir(name_dir, level_up=0):
     '''
@@ -51,16 +53,20 @@ def smart_makedir(name_dir, level_up=0):
         path = go_up(4) + "/" + name_dir
 
     if os.path.exists(path):
-        logging.info(f"Path '{path}' already exists, it will be overwritten \n")
+        logging.info(
+            f"Path '{path}' already exists, it will be overwritten \n")
         # Remove all the files in case they already exist
         shutil.rmtree(path)
     os.makedirs(path)
     logging.info(f"Successfully created the directory '{path}' \n")
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Easy way to create folders')
-    parser.add_argument('name_directory', type=str, help='Name of the directory that will be created')
-    parser.add_argument('-level_up', default=0, help='How many step up yo want from the current directory')
+    parser.add_argument('name_directory', type=str,
+                        help='Name of the directory that will be created')
+    parser.add_argument('-level_up', default=0,
+                        help='How many step up yo want from the current directory')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
     args = parser.parse_args()
@@ -71,6 +77,6 @@ if __name__=='__main__':
               'info': logging.INFO,
               'debug': logging.DEBUG}
 
-    logging.basicConfig(level= levels[args.log])
+    logging.basicConfig(level=levels[args.log])
 
     smart_makedir(args.name_directory, args.level_up)

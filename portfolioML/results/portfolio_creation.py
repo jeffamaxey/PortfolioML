@@ -2,11 +2,12 @@ import argparse
 import logging
 import os
 import random
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from portfolioML.makedir import go_up, smart_makedir
 from scipy import stats
-from portfolioML.makedir import smart_makedir, go_up
 
 
 def get_trading_values(df_price, algorithm, model_name, num_periods, len_period=1308, len_train=981, len_test=327):
@@ -34,10 +35,11 @@ def get_trading_values(df_price, algorithm, model_name, num_periods, len_period=
     None.
 
     '''
-    len_total_leave = len(df_price)-len_period
+    len_total_leave = len(df_price) - len_period
 
     # Divide in periods the price dataframe
-    periods_price = [(df_price[i:len_period+i]) for i in range(0, len_total_leave+1, len_test)]
+    periods_price = [(df_price[i:len_period + i])
+                     for i in range(0, len_total_leave + 1, len_test)]
 
     # Select only the test sets
     tests = [periods_price[i][len_train:] for i in range(len(periods_price))]
@@ -46,17 +48,19 @@ def get_trading_values(df_price, algorithm, model_name, num_periods, len_period=
     trading_values = [tests[i][240:] for i in range(len(tests))]
 
     smart_makedir(f'predictions_for_portfolio/{algorithm}/{model_name}')
-    path1 = os.getcwd() + f'/predictions_for_portfolio/{algorithm}/{model_name}'
+    path1 = os.getcwd() + \
+        f'/predictions_for_portfolio/{algorithm}/{model_name}'
 
     # Insert the 'Date' column in the forecasts made by lstm.py
     for i in range(num_periods):
         ith_predictions = pd.read_csv(f"predictions/{algorithm}/{model_name}/{model_name}_Predictions_{i}th_Period.csv",
                                       index_col=0)
-        ith_predictions.insert(0,'Date',trading_values[i]['Date'].values)
+        ith_predictions.insert(0, 'Date', trading_values[i]['Date'].values)
 
         # Save the csv file
         ith_predictions.to_csv(f"{path1}/Trading_days_period{i}.csv")
     logging.info("Successfully tracked forecasts dates")
+
 
 def portfolio_creation(algorithm, model_name, num_periods, k=10):
     '''
@@ -81,7 +85,8 @@ def portfolio_creation(algorithm, model_name, num_periods, k=10):
     path = os.getcwd() + f'/predictions_for_portfolio/{algorithm}/{model_name}'
     portfolio = []
     for j in range(num_periods):
-        trading_days = pd.read_csv(f"{path}/Trading_days_period{j}.csv", index_col=0)
+        trading_days = pd.read_csv(
+            f"{path}/Trading_days_period{j}.csv", index_col=0)
         portfolio_tmp = []
         for i in range(trading_days.shape[0]):
             df_portfolio = pd.DataFrame()
@@ -105,6 +110,7 @@ def portfolio_creation(algorithm, model_name, num_periods, k=10):
             portfolio_tmp.append(df_portfolio)
         portfolio.append(portfolio_tmp)
     return portfolio
+
 
 def forecast_returns(df_price, num_periods, k=10, money=1., monkey=False):
     '''
@@ -144,7 +150,7 @@ def forecast_returns(df_price, num_periods, k=10, money=1., monkey=False):
             # Select one trading day
             trading_day = portfolio[period][i].columns[0]
             if monkey:
-                rand = random.sample(range(1,len(df_price.columns)),2*k)
+                rand = random.sample(range(1, len(df_price.columns)), 2 * k)
                 companies = df_price.columns[rand]
             else:
                 # List all companies in that day
@@ -155,23 +161,26 @@ def forecast_returns(df_price, num_periods, k=10, money=1., monkey=False):
             index = index[0]
 
             # Determine the returns for long and short positions
-            for i,comp in enumerate(companies):
-                if i <=(k-1):
-                    returns.append(df_price[comp][index]/df_price[comp][index+1] - 1)
+            for i, comp in enumerate(companies):
+                if i <= (k - 1):
+                    returns.append(
+                        df_price[comp][index] / df_price[comp][index + 1] - 1)
                 else:
-                    returns.append(df_price[comp][index+1]/df_price[comp][index] - 1)
-    returns = np.array(returns) # 870*2*k
-    returns_rs = np.reshape(returns, (int(len(returns)/(2*k)),(2*k)))
+                    returns.append(
+                        df_price[comp][index + 1] / df_price[comp][index] - 1)
+    returns = np.array(returns)  # 870*2*k
+    returns_rs = np.reshape(returns, (int(len(returns) / (2 * k)), (2 * k)))
 
-    #Accumulative returns
+    # Accumulative returns
     accumulative_returns = []
     for day_returns in returns_rs:
-        money = money + ((money/(2*k))*day_returns).sum()
+        money = money + ((money / (2 * k)) * day_returns).sum()
         accumulative_returns.append(money)
     accumulative_returns = np.array(accumulative_returns)
 
-    #Mean daily returns
-    returns_dr = np.reshape(returns, (int(returns.shape[0]/(2*k)),(2*k)))
+    # Mean daily returns
+    returns_dr = np.reshape(
+        returns, (int(returns.shape[0] / (2 * k)), (2 * k)))
     mean_daily_returns = [day_ret.mean() for day_ret in returns_dr]
 
     if monkey:
@@ -183,6 +192,7 @@ def forecast_returns(df_price, num_periods, k=10, money=1., monkey=False):
 
     return returns, accumulative_returns
 
+
 def monkey_trading(df_price, monkeys_num, num_periods, k=10, money=1.):
     """
     Returns and accumulative reterns by monkeys' trading
@@ -191,15 +201,20 @@ def monkey_trading(df_price, monkeys_num, num_periods, k=10, money=1.):
     # Monkey statistic
     returns_dr = []
     accumulative_dr = []
-    for i in range(0,monkeys_num):
-        returns, acc_returns_m = forecast_returns(df_price, num_periods=num_periods, k=k, money=money, monkey=True)
-        returns = np.reshape(returns, (int(returns.shape[0]/(2*k_g)),(2*k_g)))
+    for i in range(0, monkeys_num):
+        returns, acc_returns_m = forecast_returns(
+            df_price, num_periods=num_periods, k=k, money=money, monkey=True)
+        returns = np.reshape(
+            returns, (int(returns.shape[0] / (2 * k_g)), (2 * k_g)))
         returns_dr.append(returns)
         accumulative_dr.append(np.array(acc_returns_m))
 
-    returns_dr = np.array(returns_dr) # (num_monkey, 870, 2*k)
-    returns_dr = np.reshape(returns_dr, (returns_dr.shape[0]*returns_dr.shape[1], returns_dr.shape[2])) # all monkeys returns for each day
-    mean_daily_ret = np.array([day_ret.mean() for day_ret in returns_dr]) # one day mean for each day for each monkey
+    returns_dr = np.array(returns_dr)  # (num_monkey, 870, 2*k)
+    # all monkeys returns for each day
+    returns_dr = np.reshape(
+        returns_dr, (returns_dr.shape[0] * returns_dr.shape[1], returns_dr.shape[2]))
+    # one day mean for each day for each monkey
+    mean_daily_ret = np.array([day_ret.mean() for day_ret in returns_dr])
 
     accumulative_dr = np.array(accumulative_dr)
     acc_monkey_mean = np.mean(accumulative_dr, axis=0)
@@ -207,22 +222,30 @@ def monkey_trading(df_price, monkeys_num, num_periods, k=10, money=1.):
     monkey_std_upper = (acc_monkey_mean + acc_monkey_std)
     monkey_std_lower = (acc_monkey_mean - acc_monkey_std)
 
-    accumulative_ret_mon = [acc_monkey_mean, monkey_std_upper, monkey_std_lower]
+    accumulative_ret_mon = [acc_monkey_mean,
+                            monkey_std_upper, monkey_std_lower]
 
     return mean_daily_ret, accumulative_ret_mon
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Creation of portfolios based on selected model predictions and plot basic statistical')
+    parser = argparse.ArgumentParser(
+        description='Creation of portfolios based on selected model predictions and plot basic statistical')
     requiredNamed = parser.add_argument_group('Required named arguments')
-    requiredNamed.add_argument('--algorithm', '-a', type=str, action='append', help='CNN, LSTM , DNN and/or RAF')
-    requiredNamed.add_argument('--model_name', '-m', type=str, action='append', help='Select the particular model trained')
-    parser.add_argument("--num_periods", '-p', type=int, default=10, help="Number of period over which returns have to be calculated ")
-    parser.add_argument("--money", '-€', type=int, default=1, help="How much you want to invest")
-    parser.add_argument("--top_bottom", '-tp', type=int, default=10, help="Number of top (long pos) and bottom (short pos)")
+    requiredNamed.add_argument(
+        '--algorithm', '-a', type=str, action='append', help='CNN, LSTM , DNN and/or RAF')
+    requiredNamed.add_argument('--model_name', '-m', type=str,
+                               action='append', help='Select the particular model trained')
+    parser.add_argument("--num_periods", '-p', type=int, default=10,
+                        help="Number of period over which returns have to be calculated ")
+    parser.add_argument("--money", '-€', type=int, default=1,
+                        help="How much you want to invest")
+    parser.add_argument("--top_bottom", '-tp', type=int, default=10,
+                        help="Number of top (long pos) and bottom (short pos)")
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
-    parser.add_argument("--monkeys_num", type=int, default=10, help="How many monkeys do you want?")
+    parser.add_argument("--monkeys_num", type=int, default=10,
+                        help="How many monkeys do you want?")
     args = parser.parse_args()
 
     levels = {'critical': logging.CRITICAL,
@@ -231,7 +254,7 @@ if __name__ == '__main__':
               'info': logging.INFO,
               'debug': logging.DEBUG}
 
-    logging.basicConfig(level= levels[args.log])
+    logging.basicConfig(level=levels[args.log])
 
     df_price = pd.read_csv(go_up(1) + "/data/PriceData.csv")
     df_price = df_price.dropna(axis=1)
@@ -248,21 +271,20 @@ if __name__ == '__main__':
         # List of trading day:
         flat_list = [item for sublist in portfolio for item in sublist]
         trading_days = [item.columns[0] for item in flat_list]
-        x_label_position = np.arange(0,len(trading_days),50)
+        x_label_position = np.arange(0, len(trading_days), 50)
         x_label_day = [trading_days[i] for i in x_label_position]
 
         # Accumulate Returns
-        plt.figure("Accumulative Returns", figsize=[13.,10.])
+        plt.figure("Accumulative Returns", figsize=[13., 10.])
         if i == 1:
             monkey_ret, accumulative_monkey = monkey_trading(df_price, monkeys_num=args.monkeys_num,
-                                                            num_periods=args.num_periods,money=args.money,k=args.top_bottom)
+                                                             num_periods=args.num_periods, money=args.money, k=args.top_bottom)
             plt.plot(accumulative_monkey[0], color='crimson', label='Monkeys')
-            plt.fill_between(list(range(0,len(accumulative_monkey[0]))),accumulative_monkey[1], accumulative_monkey[2],
+            plt.fill_between(list(range(0, len(accumulative_monkey[0]))), accumulative_monkey[1], accumulative_monkey[2],
                              color='crimson', alpha=0.2, label=r'$\pm$ 1 std. dev.')
 
         returns_model, acc_returns_model = forecast_returns(df_price, num_periods=args.num_periods,
-                                                             money=args.money,k=args.top_bottom, monkey=False)
-
+                                                            money=args.money, k=args.top_bottom, monkey=False)
 
         plt.plot(acc_returns_model, label=f'{mod}')
         plt.title("Accumulative Returns over Trading Days")
@@ -274,19 +296,25 @@ if __name__ == '__main__':
         plt.savefig(f"Accumulative returns {args.model_name}")
 
         # Statistic
-        returns_model = np.reshape(returns_model, (int(returns_model.shape[0]/(2*args.top_bottom)),(2*args.top_bottom)))
-        mean_return_mod = np.array([day_ret.mean() for day_ret in returns_model])
-        t_stat, p_val = stats.ttest_ind(monkey_ret , mean_return_mod, equal_var=False)
+        returns_model = np.reshape(returns_model, (int(
+            returns_model.shape[0] / (2 * args.top_bottom)), (2 * args.top_bottom)))
+        mean_return_mod = np.array([day_ret.mean()
+                                   for day_ret in returns_model])
+        t_stat, p_val = stats.ttest_ind(
+            monkey_ret, mean_return_mod, equal_var=False)
 
         fig, ax1 = plt.subplots(figsize=[8.0, 6.0])
-        ax1.hist(monkey_ret, bins=150, color='crimson',label=f'Monkey return: {monkey_ret.mean():.5f} $\pm${monkey_ret.std():.5f}', alpha = 0.9)
+        ax1.hist(monkey_ret, bins=150, color='crimson',
+                 label=f'Monkey return: {monkey_ret.mean():.5f} $\pm${monkey_ret.std():.5f}', alpha=0.9)
         ax2 = ax1.twinx()
-        ax2.hist(mean_return_mod, bins=70, color='green', label=f'{mod} Return: {mean_return_mod.mean():.5f} $\pm${mean_return_mod.std():.5f}', alpha=0.5)
-        plt.title(f'{mod} significant statistic w.r.t {args.monkeys_num} monkeys')
+        ax2.hist(mean_return_mod, bins=70, color='green',
+                 label=f'{mod} Return: {mean_return_mod.mean():.5f} $\pm${mean_return_mod.std():.5f}', alpha=0.5)
+        plt.title(
+            f'{mod} significant statistic w.r.t {args.monkeys_num} monkeys')
         ax1.plot([], color='white', label=f'p-value: {p_val}')
         ax1.set(xlabel='Average daily return')
         ax1.set(ylabel='Monkeys')
         ax2.set(ylabel='Model')
-        fig.legend(bbox_to_anchor=(1.0,1.0), bbox_transform=ax1.transAxes)
+        fig.legend(bbox_to_anchor=(1.0, 1.0), bbox_transform=ax1.transAxes)
         fig.savefig(f"Statistics model: {mod}")
     plt.show()
