@@ -13,7 +13,7 @@ from portfolioML.model.split import (all_data_DNN, all_data_LSTM,
 from sklearn.metrics import roc_auc_score, roc_curve
 
 
-def plot_roc(algorithm, name_model, num_periods, wavelet=False):
+def plot_roc(algorithm, name_model, num_periods, wavelet):
     """
     Plot roc curve with mean and standard deviation of the area under the curve (auc) of a
     trained model.
@@ -28,13 +28,18 @@ def plot_roc(algorithm, name_model, num_periods, wavelet=False):
 
     Parameters
     ----------
-    model: string
+    model : string
         File path of the model, it must have in the name 'periond' (for istance 'period0') to
         take in mind the numer of perion over wich the model is trained
 
-    periods: integer
+    periods : integer
         Numer of model that are taken in order to compute plot and final values
+    wavelet : bool
+        Set true if you have used DWT during the model training.
 
+    Returns
+    -------
+    None
     """
 
     logging.info('----- I am creating ROC curve png files -----')
@@ -116,12 +121,18 @@ def plot_roc(algorithm, name_model, num_periods, wavelet=False):
 
 def predictions_csv(algorithm, model_name, num_periods, wavelet):
     '''
-
+    Create the csv files of forecasts.
 
     Parameters
     ----------
+    algorithm : str
+        Algorithm used (LSTM, DNN, RAF or CNN)
+    model_name : str
+        Name of the model (e.g. for LSTM check folder names in portfolio/model/LSTM/)
     num_periods : TYPE, optional
         DESCRIPTION. The default is 10.
+    wavelet : bool
+        Set true if you have used DWT during the model training.
 
     Returns
     -------
@@ -159,7 +170,7 @@ def predictions_csv(algorithm, model_name, num_periods, wavelet):
             X_train, y_train, X_test, y_test = all_multidata_LSTM(
                 df_multiret, df_binary, i)
 
-        # y_pred = model.predict(X_test)
+        y_pred = model.predict(X_test)
         # classes = model.predict_classes(X_test)
         # tmp = sum(y_test == classes)
         # accuracies = tmp / len(y_test)
@@ -173,7 +184,7 @@ def predictions_csv(algorithm, model_name, num_periods, wavelet):
         for tick in df_binary.columns:
             df_predictions[tick] = dict_comp[tick][:, 0]
             df_predictions.to_csv(
-                f'predictions/{algorithm}/{model_name}/{model_name}_Predictions_{i}th_Period.csv')
+                f'predictions/{algorithm}/{model_name}/{model_name}_Predictions_{i}th_Period.csv', index=False)
 
 
 if __name__ == "__main__":

@@ -90,10 +90,10 @@ def get_train_set(df_returns1, df_binary1):
 
     Parameters
     ----------
-    df_returns: pandas dataframe, numpy array
+    df_returns1: pandas dataframe, numpy array
         Dataframe of returns
 
-    df_binary: pandas dataframe, numpy array
+    df_binary1: pandas dataframe, numpy array
         Datframe of binary target associated to data returns. It has the same shape of df_returns
 
     Returns
@@ -132,7 +132,7 @@ def get_train_set(df_returns1, df_binary1):
 def all_data_LSTM(df_returns, df_binary, period, len_train=981):
     """
     Function that create the right input for the LSTM algorithm.
-    X_train and X_test are normalized. X_train is reshaped.
+    X_train and X_test are normalized and reshaped.
 
     Parameters
     ----------
@@ -186,12 +186,14 @@ def all_data_LSTM(df_returns, df_binary, period, len_train=981):
 def all_multidata_LSTM(df_multidim_list, df_binary, period):
     '''
     When computing the DWT you get different approximations of the signal. This function
-    returns the multidimensional data that will be used for LSTM and CNN
+    returns the multidimensional data that will be used for LSTM and CNN.
 
     Parameters
     ----------
     df_multidim_list : list
         List of the multidimensional dataframe. Note, they are 3 and only 3.
+    df_binary : pandas dataframe
+        Pandas dataframe of returns.
     period : int
         Period over which you want to generate the data
 
@@ -200,7 +202,7 @@ def all_multidata_LSTM(df_multidim_list, df_binary, period):
     X_train, y_train, X_test, y_test : numpy array
         Data for LSTM or CNN models
     '''
-    logging.info("DWT decomposition")
+
     df_multireturns1, df_multireturns2, df_multireturns3 = df_multidim_list[
         0], df_multidim_list[1], df_multidim_list[2]
 
