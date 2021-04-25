@@ -203,19 +203,21 @@ def all_multidata_LSTM(df_multidim_list, df_binary, period):
         Data for LSTM or CNN models
     '''
 
-    df_multireturns1, df_multireturns2, df_multireturns3 = df_multidim_list[
-        0], df_multidim_list[1], df_multidim_list[2]
+    df_multireturns1, df_multireturns2, df_multireturns3, df_multireturns4 = df_multidim_list[
+        0], df_multidim_list[1], df_multidim_list[2], df_multidim_list[3]
 
     X_train1, y_train, X_test1, y_test = all_data_LSTM(
         df_multireturns1, df_binary, period)
     X_train2, y_train, X_test2, y_test = all_data_LSTM(
-        df_multireturns1, df_binary, period)
+        df_multireturns2, df_binary, period)
     X_train3, y_train, X_test3, y_test = all_data_LSTM(
-        df_multireturns1, df_binary, period)
-    X_train = np.stack((X_train1, X_train2, X_train3),
-                       axis=-1).reshape(X_train1.shape[0], 240, 3)
-    X_test = np.stack((X_test1, X_test2, X_test3), axis=-
-                      1).reshape(X_test1.shape[0], 240, 3)
+        df_multireturns3, df_binary, period)
+    X_train4, y_train, X_test4, y_test = all_data_LSTM(
+        df_multireturns4, df_binary, period)
+    X_train = np.stack((X_train1, X_train2, X_train3, X_train4),
+                       axis=-1).reshape(X_train1.shape[0], 240, 4)
+    X_test = np.stack((X_test1, X_test2, X_test3, X_test4), axis=-1
+                      ).reshape(X_test1.shape[0], 240, 4)
     return X_train, y_train, X_test, y_test
 
 
