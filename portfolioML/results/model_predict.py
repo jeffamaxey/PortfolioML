@@ -2,6 +2,7 @@
 import argparse
 import logging
 import os
+import tensorflow as tf
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -210,6 +211,22 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=levels[args.log])
     pd.options.mode.chained_assignment = None
+
+    # Restrict memory allocation on GPU
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        try:
+            # Restrict TensorFlow to only use the fourth GPU
+            tf.config.experimental.set_visible_devices(gpus[0], 'GPU')
+
+            # Currently, memory growth needs to be the same across GPUs
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+            logging.info(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+        except RuntimeError as e:
+            # Memory growth must be set before GPUs have been initialized
+            logging.info(e)
 
     plot_roc(args.algorithm, args.model_name, args.num_periods, args.pca_wavelet)
     predictions_csv(args.algorithm, args.model_name,

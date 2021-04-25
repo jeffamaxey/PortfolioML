@@ -173,7 +173,7 @@ def forecast_returns(df_price, num_periods, k=10, money=1., monkey=False):
     # Accumulative returns
     accumulative_returns = []
     for day_returns in returns_rs:
-        money = money + ((money / (2 * k)) * day_returns).sum()
+        money = money + ((1 / (2 * k)) * day_returns).sum()
         accumulative_returns.append(money)
     accumulative_returns = np.array(accumulative_returns)
 
