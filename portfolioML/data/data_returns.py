@@ -58,7 +58,7 @@ def get_returns(dataframe, m, export_returns_csv, no_missing=True):
     return df
 
 
-def binary_targets(dataframe, export_binary_csv,  name='ReturnsBinary'):
+def binary_targets(dataframe, export_binary_csv, name='ReturnsBinary'):
     """
     Returns binary value of returns for classification task, binary values are 0 and 1.
     To define the two classes, we order all m-period returns of all stocks 's'
@@ -102,9 +102,9 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--m_period_return', type=int,
                         default=1, help='m period return')
     parser.add_argument("--export_returns_csv", action='store_false',
-                        help='Export to csv the dataframe of m-period price returns')
+                        help='Export to csv the dataframe of m-period price returns. The default is True')
     parser.add_argument("--export_binary_csv", action='store_false',
-                        help='Export to csv the dataframe for the classification task')
+                        help='Export to csv the dataframe for the classification task. The default is True')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
 
