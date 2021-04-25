@@ -124,17 +124,20 @@ def wavelet_dataframe(df_returns_path, wavelet):
     logging.info(f"Number of companies choosen by PCA: {len(most_imp_comp)}")
     df_returns1 = df_returns1[most_imp_comp]
 
-    dic1, dic2, dic3 = {}, {}, {}
+    dic1, dic2, dic3, dic4 = {}, {}, {}, {}
     for tick in df_returns1.columns:
         a1, d1 = approx_details_scale(df_returns1[tick], wavelet, 1)
         a2, d2 = approx_details_scale(df_returns1[tick], wavelet, 2)
         a3, d3 = approx_details_scale(df_returns1[tick], wavelet, 3)
-        dic1[tick], dic2[tick], dic3[tick] = a1, a2, a3
+        a4, d4 = approx_details_scale(df_returns1[tick], wavelet, 4)
+        dic1[tick], dic2[tick], dic3[tick], dic4[tick] = d1, d2, d3, a4
     dataframe1 = pd.DataFrame(dic1)
     dataframe2 = pd.DataFrame(dic2)
     dataframe3 = pd.DataFrame(dic3)
+    dataframe4 = pd.DataFrame(dic4)
     dataframe1.to_csv("MultidimReturnsData1.csv", index=False)
     dataframe2.to_csv("MultidimReturnsData2.csv", index=False)
     dataframe3.to_csv("MultidimReturnsData3.csv", index=False)
+    dataframe4.to_csv("MultidimReturnsData4.csv", index=False)
 
     return df_returns1

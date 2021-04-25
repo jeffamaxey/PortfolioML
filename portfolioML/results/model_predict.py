@@ -59,24 +59,25 @@ def plot_roc(algorithm, name_model, num_periods, wavelet):
     df_binary = pd.read_csv(go_up(1) + "/data/ReturnsBinary.csv")
     df_multiret = [pd.read_csv(df_multiret_path + "1.csv"),
                    pd.read_csv(df_multiret_path + "2.csv"),
-                   pd.read_csv(df_multiret_path + "3.csv")]
+                   pd.read_csv(df_multiret_path + "3.csv"),
+                   pd.read_csv(df_multiret_path + "4.csv")]
 
     plt.figure()
-    for per in range(0, num_periods):
-        logging.info(f'Creating ROC for period {per}')
+    for i in range(0, num_periods):
+        logging.info(f'Creating ROC for period {i}')
         # Splitting data set for each period
-        if (algorithm == 'LSTM') or (algorithm == 'CNN'):
+        if ((algorithm == 'LSTM') or (algorithm == 'CNN')) and (wavelet == False):
             X_train, y_train, X_test, y_test = all_data_LSTM(
-                df_returns, df_binary, per)
+                df_returns, df_binary, i)
         if (algorithm == 'DNN'):
             X_train, y_train, X_test, y_test = all_data_DNN(
-                df_returns, df_binary, per)
-        if (algorithm == 'LSTM') or (algorithm == 'CNN') and (wavelet == True):
+                df_returns, df_binary, i)
+        if ((algorithm == 'LSTM') or (algorithm == 'CNN')) and (wavelet == True):
             X_train, y_train, X_test, y_test = all_multidata_LSTM(
-                df_multiret, df_binary, per)
+                df_multiret, df_binary, i)
 
         model = load_model(
-            go_up(1) + f'/model/{algorithm}/{name_model}/{name_model}_period{per}.h5')
+            go_up(1) + f'/model/{algorithm}/{name_model}/{name_model}_period{i}.h5')
 
         # ROC curve
         probas = model.predict(X_test)
@@ -89,7 +90,7 @@ def plot_roc(algorithm, name_model, num_periods, wavelet):
         roc_auc = roc_auc_score(y_test, probas[:, 0], average=None)
         aucs_list.append(roc_auc)
 
-        plt.plot(fpr, tpr, label=f'per{per} (area = %0.4f)' % (roc_auc))
+        plt.plot(fpr, tpr, label=f'per{i} (area = %0.4f)' % (roc_auc))
         plt.plot([0, 1], [0, 1], 'k--')
 
     plt.xlabel('False Positive Rate',)
@@ -150,7 +151,8 @@ def predictions_csv(algorithm, model_name, num_periods, wavelet):
         logging.info("==== PCA Reduction ====")
         df_multiret = [pd.read_csv(df_multiret_path + "1.csv"),
                        pd.read_csv(df_multiret_path + "2.csv"),
-                       pd.read_csv(df_multiret_path + "3.csv")]
+                       pd.read_csv(df_multiret_path + "3.csv"),
+                       pd.read_csv(df_multiret_path + "4.csv")]
         df_binary = pd.read_csv(go_up(1) + "/data/ReturnsBinaryPCA.csv")
     else:
         df_returns = pd.read_csv(go_up(1) + "/data/ReturnsData.csv")
@@ -172,11 +174,6 @@ def predictions_csv(algorithm, model_name, num_periods, wavelet):
                 df_multiret, df_binary, i)
 
         y_pred = model.predict(X_test)
-        # classes = model.predict_classes(X_test)
-        # tmp = sum(y_test == classes)
-        # accuracies = tmp / len(y_test)
-        # print(accuracies)
-
         y_pred_companies = [y_pred[i:87 + i]
                             for i in range(0, len(y_pred) - 87 + 1, 87)]
         dict_comp = {df_binary.columns[i]: y_pred_companies[i]

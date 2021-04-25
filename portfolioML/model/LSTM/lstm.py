@@ -5,6 +5,7 @@ import os
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import tensorflow as tf
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.layers import LSTM, Dense, Dropout, Input
 from keras.models import Sequential, load_model
@@ -90,7 +91,6 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=levels[args.log])
     pd.options.mode.chained_assignment = None  # Mute some warnings of Pandas
-
     # Get data paths
     df_multidimret_path = go_up(2) + "/data/MultidimReturnsData"
 
@@ -99,7 +99,8 @@ if __name__ == "__main__":
         logging.info("==== PCA Reduction ====")
         df_multiret = [pd.read_csv(df_multidimret_path + "1.csv"),
                        pd.read_csv(df_multidimret_path + "2.csv"),
-                       pd.read_csv(df_multidimret_path + "3.csv")]
+                       pd.read_csv(df_multidimret_path + "3.csv"),
+                       pd.read_csv(df_multidimret_path + "4.csv")]
         df_binary = pd.read_csv(go_up(2) + "/data/ReturnsBinaryPCA.csv")
     else:
         df_returns = pd.read_csv(go_up(2) + "/data/ReturnsData.csv")
@@ -157,7 +158,11 @@ if __name__ == "__main__":
 
         with open(f"{args.model_name}/{args.model_name}_specifics.txt", 'w', encoding='utf-8') as file:
             file.write(
-                f'\n Model Name: {args.model_name} \n Number of periods: {args.num_periods} \n Number of nodes: {args.nodes} \n Optimizier: {args.optimizer} \n \n')
+                f'''\n Model Name: {args.model_name}
+                  \n Number of periods: {args.num_periods}
+                  \n Number of nodes: {args.nodes}
+                  \n Optimizier: {args.optimizer}
+                  \n PCA + Wavelet: {args.pca_wavelet}''')
             model.summary(print_fn=lambda x: file.write(x + '\n'))
 
         logging.info(f'============ End Period {i}th ===========')
