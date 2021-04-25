@@ -128,6 +128,6 @@ if __name__ == '__main__':
     dataframe_binary = binary_targets(
         dataframe_ritorni, args.export_binary_csv)
 
-    df_returns_pca = wavelet_dataframe('ReturnsData.csv', 'db1')
+    df_returns_pca = wavelet_dataframe('ReturnsData.csv', 'haar')
     df_binary_pca = binary_targets(
         df_returns_pca, args.export_binary_csv, name='ReturnsBinaryPCA',)

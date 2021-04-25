@@ -98,8 +98,13 @@ def pca(df_returns_path, n_components=250):
 
 def wavelet_dataframe(df_returns_path, wavelet):
     '''
-    Compute the DWT (Discrete Wavelet Tranform) of a dataset composed by multiple time signals reduced by PCA.
-
+    Compute the DWT (Discrete Wavelet Tranform) of a dataset composed by multiple
+    time signals reduced by PCA.
+    "Discrete  Wavelet  Transform  (DWT)  can decompose
+    the  signal  in  both  timeand  frequency  domain  simultaneously.On  the  other
+    hand,Fourier  Transform  decomposesthe signal  only  in  frequency  domain;
+    information  related  to occurrence  of  frequency  is  not  captured  and  it
+    eliminates  the  time  resolution"  (Ortega  & Khashanah,2014).
     Parameters
     ----------
     df_price_path : str
