@@ -159,7 +159,7 @@ def predictions_csv(algorithm, model_name, num_periods, wavelet):
             X_train, y_train, X_test, y_test = all_multidata_LSTM(
                 df_multiret, df_binary, i)
 
-        # y_pred = model.predict(X_test)
+        y_pred = model.predict(X_test)
         # classes = model.predict_classes(X_test)
         # tmp = sum(y_test == classes)
         # accuracies = tmp / len(y_test)
