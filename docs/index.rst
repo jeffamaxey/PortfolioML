@@ -9,8 +9,12 @@ Welcome to PortfolioML's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
-    Modules
+    
+    source/modules
+    source/portfolioML
+    source/portfolioML.data
+    source/portfolioML.model
+    source/portfolioML.results
 
 Indices and tables
 ==================
