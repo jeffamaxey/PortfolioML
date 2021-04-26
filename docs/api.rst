@@ -8,5 +8,5 @@ makedir
    
 data generator
 ----
-.. automodule:: /data/data_generator.py
+.. automodule:: data_generator
    :members:
