@@ -1,12 +1,7 @@
 API documentation
 =================
 
-data_generator
+makedir
 ----
-.. automodule:: data_generator
-   :members: 
-
-data_returns
-----
-.. automodule:: data_returns
-   :members: 
+.. automodule:: makedir
+   :members:
