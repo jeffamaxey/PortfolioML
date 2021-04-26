@@ -5,6 +5,18 @@ import shutil
 
 
 def go_up(level_up):
+    '''
+    Simple function that returns the path of parent directory at a specified level
+
+    Parameters
+    ----------
+    level up : int
+        How much level you want to go up
+
+    Returns
+    --------
+    None
+    '''
     if level_up == 0:
         path = os.getcwd()
     if level_up == 1:
