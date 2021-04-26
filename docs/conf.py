@@ -12,20 +12,7 @@
 #
 import os
 import sys
-<<<<<<< HEAD
 sys.path.insert(0, os.path.abspath('..'))
-=======
-package_root = os.path.abspath('..')
-sys.path.insert(0, package_root)
-sys.path.insert(0, os.path.abspath('../portfolioML'))
-sys.path.insert(0, os.path.abspath('../portfolioML/data'))
-sys.path.insert(0, os.path.abspath('../portfolioML/model'))
-sys.path.insert(0, os.path.abspath('../portfolioML/results'))
-sys.path.insert(0, os.path.abspath('../portfolioML/tests'))
-sys.path.insert(0, os.path.abspath('../portfolioML/model/LSTM'))
-sys.path.insert(0, os.path.abspath('../portfolioML/model/CNN'))
-sys.path.insert(0, os.path.abspath('../portfolioML/model/RAF'))
->>>>>>> 2abf665091a57f7a018e5c0324c05541c33638d1
 
 
 # -- Project information -----------------------------------------------------
@@ -43,8 +30,7 @@ release = '1.0.0'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [
-]
+extensions = ['sphinx.ext.autodoc']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
