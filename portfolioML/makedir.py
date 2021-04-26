@@ -44,7 +44,7 @@ def smart_makedir(name_dir, level_up=0):
     ----------
     name_dir : str
         From level you have set, complete path of the directory you want to create
-    level_up : TYPE, optional
+    level_up : int, optional
         How many step up you want to do from the current path. The default is 0.
 
     Returns
