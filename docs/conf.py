@@ -19,6 +19,13 @@ package_root = os.path.abspath('..')
 sys.path.insert(0, package_root)
 sys.path.insert(0, os.path.abspath('../portfolioML'))
 sys.path.insert(0, os.path.abspath('../portfolioML/data'))
+sys.path.insert(0, os.path.abspath('../portfolioML/model'))
+sys.path.insert(0, os.path.abspath('../portfolioML/results'))
+sys.path.insert(0, os.path.abspath('../portfolioML/tests'))
+sys.path.insert(0, os.path.abspath('../portfolioML/model/LSTM'))
+sys.path.insert(0, os.path.abspath('../portfolioML/model/CNN'))
+sys.path.insert(0, os.path.abspath('../portfolioML/model/RAF'))
+
 
 # -- Project information -----------------------------------------------------
 
