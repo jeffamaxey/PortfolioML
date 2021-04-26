@@ -18,6 +18,7 @@ import sys
 package_root = os.path.abspath('..')
 sys.path.insert(0, package_root)
 sys.path.insert(0, os.path.abspath('../portfolioML'))
+sys.path.insert(0, os.path.abspath('../portfolioML/data'))
 
 # -- Project information -----------------------------------------------------
 
