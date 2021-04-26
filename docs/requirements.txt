@@ -5,7 +5,6 @@ tensorflow
 pandas_datareader
 keras
 matplotlib
-shutil
 bs4
 scipy
 sklearn
