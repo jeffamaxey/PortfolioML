@@ -8,5 +8,5 @@ makedir
    
 data generator
 ----
-.. automodule:: data_generator
+.. automodule:: /data/data_generator
    :members:
