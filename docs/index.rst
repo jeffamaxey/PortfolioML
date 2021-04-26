@@ -1,10 +1,10 @@
-.. Portfolio ML documentation master file, created by
-   sphinx-quickstart on Sat Mar 20 18:09:01 2021.
+.. PortfolioML documentation master file, created by
+   sphinx-quickstart on Mon Apr 26 11:36:54 2021.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Portfolio ML's documentation!
-========================================
+Welcome to PortfolioML's documentation!
+=======================================
 
 .. toctree::
    :maxdepth: 2
