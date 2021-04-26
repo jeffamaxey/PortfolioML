@@ -151,7 +151,8 @@ if __name__ == "__main__":
         logging.info("==== PCA Reduction and Wavelet Decomposition ====")
         df_multiret = [pd.read_csv(df_multidimret_path + "1.csv"),
                        pd.read_csv(df_multidimret_path + "2.csv"),
-                       pd.read_csv(df_multidimret_path + "3.csv")]
+                       pd.read_csv(df_multidimret_path + "3.csv"),
+                       pd.read_csv(df_multidimret_path + "4.csv")]
         df_binary = pd.read_csv(go_up(2) + "/data/ReturnsBinaryPCA.csv")
     else:
         df_returns = pd.read_csv(go_up(2) + "/data/ReturnsData.csv")
