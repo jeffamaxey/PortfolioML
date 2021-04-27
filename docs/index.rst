@@ -5,7 +5,7 @@
 
 Welcome to PortfolioML's documentation!
 =======================================
-This package contains functions used to forecasts stock market returns on a fraction of the S&P500 index.
+This package contains functions used to forecast stock market returns on a fraction of the S&P500 index.
 The procedure used is mainly focused on the following two articles:
 
 Thomas Fischer, Christopher Krauss,
@@ -16,7 +16,7 @@ Volume 270, Issue 2,
 Pages 654-669,
 ISSN 0377-2217,
 https://doi.org/10.1016/j.ejor.2017.11.054.
-('<https://www.sciencedirect.com/science/article/pii/S0377221717310652>')
+(https://www.sciencedirect.com/science/article/pii/S0377221717310652)
 
 Christopher Krauss, Xuan Anh Do, Nicolas Huck,
 Deep neural networks, gradient-boosted trees, random forests: Statistical arbitrage on the S&P 500,
@@ -26,7 +26,7 @@ Volume 259, Issue 2,
 Pages 689-702,
 ISSN 0377-2217,
 https://doi.org/10.1016/j.ejor.2016.10.031.
-('<https://www.sciencedirect.com/science/article/pii/S0377221716308657>')
+(https://www.sciencedirect.com/science/article/pii/S0377221716308657)
 
 
 .. toctree::
