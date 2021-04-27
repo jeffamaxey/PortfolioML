@@ -22,8 +22,6 @@ class TestDataReturns(unittest.TestCase):
             self.assertAlmostEqual(check_value, len(elm1))
             self.assertAlmostEqual(check_value, len(elm2))
 
-
-
     def test_get_sequences(self):
         """Test of split_sequences fuction"""
         self.assertEqual(len(df_return), len(df_binary))
@@ -53,11 +51,13 @@ class TestDataReturns(unittest.TestCase):
         list2, y2 = get_train_set(df_return, df_binary)
         self.assertTrue((list1 == list2[:9*6300]).all())
 
-    # def test_all_data_LSTM(self):
-    #     '''Test of all_data_LSTM function'''
-    #     X_train, y_train, X_test, y_test = all_data_LSTM(df_return, df_binary, period=10)
-
-
+    def test_all_data_LSTM(self):
+        '''Test of all_data_LSTM function'''
+        len_train = np.arange(500,1000,100)
+        for train in len_train:
+            X_train, y_train, X_test, y_test = all_data_LSTM(df_return, df_binary, period=7, len_train=train)
+            self.assertEqual(X_train.shape[0], y_train.shape[0])
+            self.assertEqual(X_test.shape[0], y_test.shape[0])
 
 
 if __name__ == '__main__':
