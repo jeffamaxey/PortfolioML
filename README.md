@@ -1,5 +1,31 @@
-# PortfolioML
+## PortfolioML
+[![Build Status](https://travis-ci.org/DanieleMDiNosse/PortfolioML.svg?branch=main)](https://travis-ci.org/DanieleMDiNosse/PortfolioML)
+[![Documentation Status](https://readthedocs.org/projects/portfolioml/badge/?version=latest)](https://portfolioml.readthedocs.io/en/latest/?badge=latest)
+
+## Table of contents
+* [General info](#general-info)
+* [Project structure](#project-structure)
+* [Setup](#setup)
+
+## General info
+pass
+	
+## Setup
+To run this project, clone the repository.
 ```
+$ git clone https://github.com/DanieleMDiNosse/PortfolioML.git
+```
+If you use conda, you can create a new conda environment with:
+```
+$ conda create -n name_environment
+$ conda activate name_environment
+```
+And then install with:
+```
+$ cd ../PortfolioML/
+$ pip install .
+```
+## Project structure
 ├── docs
 ├── LICENSE
 ├── portfolioML
@@ -39,5 +65,4 @@
 ├── requirements.txt
 └── setup.py
 ```
-[![Build Status](https://travis-ci.org/DanieleMDiNosse/PortfolioML.svg?branch=main)](https://travis-ci.org/DanieleMDiNosse/PortfolioML)
-[![Documentation Status](https://readthedocs.org/projects/portfolioml/badge/?version=latest)](https://portfolioml.readthedocs.io/en/latest/?badge=latest)
+
