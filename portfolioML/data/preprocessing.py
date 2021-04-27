@@ -1,3 +1,5 @@
+''' Pre process data in order to capture its most important aspects. The methods
+implemented are DWT and PCA '''
 import logging
 
 import numpy as np
@@ -13,22 +15,22 @@ def approx_details_scale(data, wavelet, dec_level):
     Parameters
     ----------
     data: list, numpy array
-        Input time-series data
+        Input time-series data.
 
     wavelet: string
         Wavelet's name used for the decomposition. For all available wavelet see https://pywavelets.readthedocs.io/en/latest/ref/wavelets.html.
 
     dec_level: integer
-        level of time_scale on which compute the approximation and details analysis.
-        Its range is [1, pywt.dwtn_max_level(data, wavelet)+1]
+        Level of time_scale on which compute the approximations and details.
+        Its range is [1, pywt.dwtn_max_level(data, wavelet)+1].
 
-    Result
+    Returns
     ------
     approx: numpy array
-        Approximation values
+        Approximation values.
 
     detail: numpy array
-        Details values
+        Details values.
     """
 
     max_level = pywt.dwt_max_level(len(data), wavelet)
@@ -37,8 +39,7 @@ def approx_details_scale(data, wavelet, dec_level):
     try:
         if dec_level > max_level + 1:
             raise ValueError
-    except:
-        # print('dec_level is out of bound [1, max_level]')
+    except Exception:
         dec_level = max_level + 1
 
     coeffs = pywt.wavedec(data, wavelet, level=dec_level)
@@ -60,7 +61,7 @@ def approx_details_scale(data, wavelet, dec_level):
 
 def pca(df_returns_path, n_components=250):
     '''
-    Compute the PCA decomposition of a dataset
+    Compute the PCA decomposition of a dataset.
 
     Parameters
     ----------
@@ -83,12 +84,13 @@ def pca(df_returns_path, n_components=250):
         f"Fraction of variance preserved: {pca.explained_variance_ratio_.sum():.2f}")
 
     n_pca = pca.n_components_  # get number of components
-    # get the index of the most important feature on EACH component
+    # Get the index of the most important feature on each component
     most_important = [np.abs(pca.components_[i]).argmax()
                       for i in range(n_pca)]
     initial_feature_names = df_returns.columns
+    # Get the most important feature names
     most_important_features = [initial_feature_names[most_important[i]]
-                               for i in range(n_pca)]  # get the most important feature names
+                               for i in range(n_pca)]
     most_important_features = list(set(most_important_features))
     df_returns[most_important_features].to_csv(
         'ReturnsDataPCA.csv', index=False)
@@ -99,23 +101,28 @@ def pca(df_returns_path, n_components=250):
 def wavelet_dataframe(df_returns_path, wavelet):
     '''
     Compute the DWT (Discrete Wavelet Tranform) of a dataset composed by multiple
-    time signals reduced by PCA.
+    time signals reduced by PCA. The action of this function is to export in csv
+    two dataframes: one composed by daily close prices of the most important companies
+    that PCA computed and one composed by the first three details coefficients and
+    the fourth approximation computed by DWT for each of the most important companies.
+
+    Two words on DWT:
     "Discrete  Wavelet  Transform  (DWT)  can decompose
     the  signal  in  both  timeand  frequency  domain  simultaneously.On  the  other
     hand,Fourier  Transform  decomposesthe signal  only  in  frequency  domain;
     information  related  to occurrence  of  frequency  is  not  captured  and  it
     eliminates  the  time  resolution"  (Ortega  & Khashanah,2014).
+
     Parameters
     ----------
     df_price_path : str
-        Path of the pandas dataframe of time signals
+        Path of the pandas dataframe of time signals.
     wavelet : str
         Which wavelet is used during the decomposition.
 
     Returns
     -------
-        dataframe : pandas.DataFrame
-            Pandas dataframe in which each element is composed by the three timestamp of the first 3 approximations
+        None
     '''
 
     df_returns1 = pd.read_csv('ReturnsData.csv')
@@ -139,5 +146,3 @@ def wavelet_dataframe(df_returns_path, wavelet):
     dataframe2.to_csv("MultidimReturnsData2.csv", index=False)
     dataframe3.to_csv("MultidimReturnsData3.csv", index=False)
     dataframe4.to_csv("MultidimReturnsData4.csv", index=False)
-
-    return df_returns1

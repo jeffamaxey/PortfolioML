@@ -8,24 +8,21 @@ import pandas as pd
 from portfolioML.data.preprocessing import wavelet_dataframe
 
 
-def get_returns(dataframe, m, export_returns_csv, no_missing=True):
+def get_returns(dataframe, export_returns_csv, m=1, no_missing=True):
     """
-    Get the day-by-day returns value of a company. The dataframe has got companies as attributes
-    and days as rows, the values are close prices of each days
+    Get the day-by-day returns values for a company. The dataframe has companies as attributes
+    and days as rows, the values are the close prices of each days.
 
     Parameters
     ----------
     dataframe: pandas dataframe
-        Input data frame
+        Input dataframe of prices
 
-    col: string
-        Name of company, for possible values check dataframe.columns
+    export_csv: bool
+        Export dataframe in csv.
 
-    m: int
-        m-period return
-
-    export_csv: bool(optional)
-        Export dataframe in csv. default=False
+    m: int (optional)
+        Period over which returns are calculated. The default is 1
 
     no_missing: bool(optional)
         drop companies with missing values. default=True
@@ -33,7 +30,7 @@ def get_returns(dataframe, m, export_returns_csv, no_missing=True):
     Returns
     -------
     df: pandas dataframe
-        Dataframe with m-returns
+        Dataframe of m-period returns
     """
     try:
         if m < 0:
