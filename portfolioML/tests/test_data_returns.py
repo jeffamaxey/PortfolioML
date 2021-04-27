@@ -24,13 +24,13 @@ class TestDataReturns(unittest.TestCase):
         m_list = range(1, 10)
         for m in m_list:
             self.assertAlmostEqual(get_returns(
-                dataframe, m, export_returns_csv=False).ALL[0], (dataframe.ALL[m] / dataframe.ALL[0]) - 1)
+                dataframe, m=m, export_returns_csv=False).ALL[0], (dataframe.ALL[m] / dataframe.ALL[0]) - 1)
 
     def test_get_returns(self):
         """
         Test if the dataframe created by get_returns is without missing values
         """
-        dataframe_no_nan = get_returns(dataframe, 1, export_returns_csv=False)
+        dataframe_no_nan = get_returns(dataframe, m=1, export_returns_csv=False)
         bool_list = dataframe_no_nan.isnull().any()
         self.assertTrue(bool_list.any() == False)
 
@@ -39,7 +39,7 @@ class TestDataReturns(unittest.TestCase):
         Test of the binary_targets function. Sample randomly from the data frame and check the condition that led
         to the binary classification
         """
-        dataframe_no_nan = get_returns(dataframe, 1, export_returns_csv=False)
+        dataframe_no_nan = get_returns(dataframe, m=1, export_returns_csv=False)
         binary_dataframe = binary_targets(
             dataframe_no_nan, export_binary_csv=False)
 
