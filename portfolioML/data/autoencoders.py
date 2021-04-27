@@ -17,31 +17,28 @@ from portfolioML.data.preprocessing import pca
 
 def autoencoder(df_returns, df_binary, period, bottneck):
     """
-    Creation of autoencoder
+    Creation of a csv file with features selected from autoencoder.
 
     Parameters
     ----------
-    df_returns: pandas dataframe
-        Input data frame
+    df_returns: TYPE = pandas dataframe.
+        Input data frame.
 
-    df_binary: pandas dataframe
-        Input data frame of binary target
+    df_binary: TYPE = pandas dataframe.
+        Input data frame of binary target.
 
-    period: int
-        Period return
+    period: TYPE = integer.
+        Study period.
 
-    bottneck: int
-        Number of nodes in the middle layer of the autoencoder
-    -------
+    bottneck: TYPE = integer.
+        Number of nodes in the middle layer of the autoencoder.
 
     Return
-    after: pandas dataframe
-        csv file with selected features from encoder
-
-    -------
+    ----------
+    after: TYPE = pandas dataframe
+        Csv file with selected features extract from encoder.
+    ----------
     """
-
-    smart_makedir(f'Autoencoder_for_period_{period}')
 
     x_train, y_train, x_test, y_test = all_data_LSTM(
         df_returns, df_binary, period)
@@ -88,7 +85,7 @@ def autoencoder(df_returns, df_binary, period, bottneck):
     after = np.array(after)
     df = pd.DataFrame(
         after, columns=[f'selected feature_{i}' for i in range(len(after[0]))])
-    df.to_csv('after_train.csv', index=False)
+    df.to_csv('encoder_train.csv', index=False)
 
     end = time.time()
     print(f'Total time: {end-start} seconds')
@@ -112,17 +109,17 @@ def autoencoder(df_returns, df_binary, period, bottneck):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Creation of encoder for data reduction')
+        description='Creation of encoder for data reduction and features selection.')
     requiredNamed = parser.add_argument_group('Required named arguments')
     requiredNamed.add_argument(
-        '-r', '--returns_file', type=str, help='Path to the returns data')
+        '-r', '--returns_file', type=str, help='Path to the returns data.')
     requiredNamed.add_argument(
-        '-b', '--binary_file', type=str, help='Path to the binary target data')
-    requiredNamed.add_argument('-p', '--period', type=int, help='Study period')
+        '-b', '--binary_file', type=str, help='Path to the binary target data.')
+    requiredNamed.add_argument('-p', '--period', type=int, help='Study period.')
     parser.add_argument('-bn', '--botneck', type=int, default=31,
-                        help='Number of nodes in the middle layer (default=31)')
+                        help='Number of nodes in the middle layer (default=31).')
     parser.add_argument("-log", "--log", default="error",
-                        help=("Provide logging level. Example --log debug, default=info"))
+                        help=("Provide logging level. Example --log debug, default=info."))
     args = parser.parse_args()
 
     levels = {'critical': logging.CRITICAL,
@@ -140,4 +137,3 @@ if __name__ == "__main__":
     botneck = args.botneck
 
     autoencoder(df_return, df_binary, per, botneck)
-    plt.show()

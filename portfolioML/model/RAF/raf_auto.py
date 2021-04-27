@@ -1,4 +1,4 @@
-'''Random Forest'''
+'''Random Forest with pcs and autoencoder'''
 import argparse
 import logging
 import sys
