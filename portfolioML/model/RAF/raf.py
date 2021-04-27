@@ -7,7 +7,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score,roc_curve
-from portfolioML.data.data_returns import pd.read_csv
 from portfolioML.model.split import all_data_DNN
 from portfolioML.makedir import smart_makedir, go_up
 from portfolioML.data.preprocessing import pca
@@ -47,8 +46,8 @@ def predictions_roc(n_estimators, max_depth, num_period, criterion):
     '''
 
     path_n = go_up(level_up=2)
-    path_p = path_n + f'/results/predictions/RAF/{args.name_model}/'
-    path_r = path_n + f'/results/ROC/RAF/{args.name_model}/'
+    path_p = path_n + f'/results/predictions/RAF/RAF_{args.name_model}/'
+    path_r = path_n + f'/results/ROC/RAF/RAF_{args.name_model}/'
 
     tpr_list = []
     aucs_list = []
@@ -79,11 +78,11 @@ def predictions_roc(n_estimators, max_depth, num_period, criterion):
         plt.savefig(path_r + f'ROC_CURVE.png')
 
         y_pred_companies = [y_proba[i:87+i] for i in range(0,len(y_proba)-87+1,87)]
-        dict_comp = {df_returns.columns[i]: y_pred_companies[i] for i in range(len(tick1))}
+        dict_comp = {df_returns.columns[i]: y_pred_companies[i] for i in range(len(df_returns.columns))}
         df_predictions = pd.DataFrame()
         for tick in df_returns.columns:
             df_predictions[tick] = dict_comp[tick][:,0]
-            df_predictions.to_csv(path_p + f'RAF_{args.name_model}_Predictions_{i}th_Period.csv')
+            df_predictions.to_csv(path_p + f'RAF_{args.name_model}_Predictions_{i}th_Period.csv', index=False)
 
     auc_mean = np.mean(np.array(aucs_list))
     auc_std = np.std(np.array(aucs_list))
@@ -107,7 +106,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='RandomForestClassifier')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
-    parser.add_argument('-num_period', type=int, default=10, help='Number of periods (default=10)')
+    parser.add_argument('-num_period', type=int, default=17, help='Number of periods (default=17)')
     parser.add_argument('-n_estimators', type=int, default=1000, help='Number of trees (default=1000)')
     parser.add_argument('-criterion', type=str, default='gini', help='Criterion (default=gini)')
     parser.add_argument('-max_depth', type=int, default=25, help='Trees\'s depth (default=25) ')
@@ -128,15 +127,9 @@ if __name__ == "__main__":
     df_returns = pd.read_csv(df_returns_path)
     df_binary = pd.read_csv(df_binary_path)
 
-    # Principal component analysis for new DataFrame with less companies
-    tick1 = pca(df_returns_path, 250)
-    df_ret = pd.read_csv(df_returns_path, index_col=0)
-    df_returns = df_ret[tick1]
-    df_binary = df_binary[tick1]
-
-    smart_makedir(f'/results/predictions/RAF/{args.name_model}/', level_up=2)
-    smart_makedir(f'/results/ROC/RAF/{args.name_model}/', level_up=2)
+    smart_makedir(f'/results/predictions/RAF/RAF_{args.name_model}/', level_up=2)
+    smart_makedir(f'/results/ROC/RAF/RAF_{args.name_model}/', level_up=2)
 
     predictions_roc(n_estimators=args.n_estimators, max_depth=args.max_depth, num_period=args.num_period, criterion=args.criterion)
-    with open(f"{args.name_model}.txt", 'a', encoding='utf-8') as file:
+    with open(f"RAF_{args.name_model}.txt", 'a', encoding='utf-8') as file:
         file.write(f'num_period={args.num_period}, n_estimators={args.n_estimators}, criterion={args.criterion},max_depth={args.max_depth}' + '\n')
