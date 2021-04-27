@@ -33,7 +33,6 @@ Contents:
 
 .. toctree::
    :maxdepth: 4
-   :caption: Contents:
 
     Guidelines
     source/modules
