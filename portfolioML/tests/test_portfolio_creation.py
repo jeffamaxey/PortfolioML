@@ -23,7 +23,7 @@ class TestDataReturns(unittest.TestCase):
         model_name = ['CNN_dense', 'RAF_model1', 'LSTM_Model3', 'DNN_paper']
         path = f'''/results/predictions_for_portfolio/
                         {algorithm[rand1]}/{model_name[rand1]}/Trading_days_period{rand}.csv'''
-        trading_days = pd.read_csv(_full_path(go_up(1) + f'/portfolioML/results/predictions_for_portfolio/{algorithm[rand1]}/{model_name[rand1]}/Trading_days_period{rand}.csv'))
+        trading_days = pd.read_csv(_full_path(go_up(1) + f'/PortfolioML/portfolioML/results/predictions_for_portfolio/{algorithm[rand1]}/{model_name[rand1]}/Trading_days_period{rand}.csv'))
         first_column = trading_days.columns[0]
         self.assertEqual(first_column, 'Date')
         self.assertIsInstance(trading_days[first_column][0], str)
