@@ -9,40 +9,38 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score,roc_curve
 from portfolioML.model.split import all_data_DNN
 from portfolioML.makedir import smart_makedir, go_up
-from portfolioML.data.preprocessing import pca
 if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore")
 
 
-def predictions_roc(n_estimators, max_depth, num_period, criterion):
+def predictions_and_roc(n_estimators, max_depth, num_period, criterion):
     '''
+    Create the csv files of forecasts and plot the roc curve
+    with mean and standard deviation of the area under the curve (auc).
+
     Parameters
     ----------
-    n_estimators : Int
-        DESCRIPTION. Number of threes in the random forest
-    num_period : TYPE, optional
-        DESCRIPTION. The default is 10.
-    -------
-    Plot roc curve with mean and standard deviation of the area under the curve (auc) of a
-    trained model.
+    n_estimators : TYPE = integer
+        DESCRIPTION. Number of threes in the random forest.
+
+    max_depth : TYPE = integer
+        DESCRIPTION. Depth of trees in the random forest.
+
+    num_period : TYPE = integer
+        DESCRIPTION. Number of period that are taken in order to compute plot and final values.
+
+    criterion : TYPE = str
+        DESCRIPTION. Criterion for splitting the nodes.
+    ----------
+
     Each model is trained over several study period so its name contain this information,
     for semplicity put this information in this way: '..._periond#' (for istance '_period0').
-    Nember of period running over several argumenti setting in 'periods' argument.
-    So before running thi function carefully checking of the folder is suggest to avoid
-    problems.
+    So before running this function,
+    carefully checking the existence of folder in order to avoid problems.
 
     Tecnical aspects: because of each model has got different tpr and fps, an interpoletion
     of this values is used in order to have the same leght for each model.
-
-    Parameters
-    ----------
-    model: string
-    File path of the model, it must have in the name 'periond' (for istance 'period0') to
-    take in mind the numer of perion over wich the model is trained
-
-    periods: integer
-    Numer of model that are taken in order to compute plot and final values
     '''
 
     path_n = go_up(level_up=2)
@@ -106,11 +104,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='RandomForestClassifier')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
-    parser.add_argument('-num_period', type=int, default=17, help='Number of periods (default=17)')
-    parser.add_argument('-n_estimators', type=int, default=1000, help='Number of trees (default=1000)')
-    parser.add_argument('-criterion', type=str, default='gini', help='Criterion (default=gini)')
-    parser.add_argument('-max_depth', type=int, default=25, help='Trees\'s depth (default=25) ')
-    parser.add_argument('name_model', type=str, help='Name_model')
+    requiredNamed = parser.add_argument_group('Required named arguments')
+    requiredNamed.add_argument('-n','--num_period', type=int, default=17, help='Number of periods you want to train (leave blanck for default=17)')
+    requiredNamed.add_argument('-ne','--n_estimators', type=int, default=1000, help='Number of trees (leave blanck for  default=1000)')
+    requiredNamed.add_argument('-md','--max_depth', type=int, default=25, help='Trees\'s depth (leave blanck for  default=25) ')
+    requiredNamed.add_argument('name_model', type=str, help='Name_model')
+    parser.add_argument('-c','--criterion', type=str, default='gini', help='Criterion (default=gini)')
     args = parser.parse_args()
 
     levels = {'critical': logging.CRITICAL,
@@ -130,6 +129,6 @@ if __name__ == "__main__":
     smart_makedir(f'/results/predictions/RAF/RAF_{args.name_model}/', level_up=2)
     smart_makedir(f'/results/ROC/RAF/RAF_{args.name_model}/', level_up=2)
 
-    predictions_roc(n_estimators=args.n_estimators, max_depth=args.max_depth, num_period=args.num_period, criterion=args.criterion)
+    predictions_and_roc(n_estimators=args.n_estimators, max_depth=args.max_depth, num_period=args.num_period, criterion=args.criterion)
     with open(f"RAF_{args.name_model}.txt", 'a', encoding='utf-8') as file:
         file.write(f'num_period={args.num_period}, n_estimators={args.n_estimators}, criterion={args.criterion},max_depth={args.max_depth}' + '\n')
