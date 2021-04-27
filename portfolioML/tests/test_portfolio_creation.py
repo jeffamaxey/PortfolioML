@@ -17,7 +17,7 @@ class TestDataReturns(unittest.TestCase):
         rand1 = random.randint(0, 3)
         algorithm = ['CNN', 'RAF', 'LSTM', 'DNN']
         model_name = ['CNN_dense', 'RAF_model1', 'LSTM_Model3', 'DNN_paper']
-        trading_days = pd.read_csv(go_up(1) + f'''/predictions_for_portfolio/
+        trading_days = pd.read_csv(f'''portfolioML/results/predictions_for_portfolio/
                         {algorithm[rand1]}/{model_name[rand1]}/Trading_days_period{rand}.csv''')
         first_column = trading_days.columns[0]
         self.assertEqual(first_column, 'Date')
