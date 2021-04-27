@@ -1,14 +1,19 @@
 """Unit test data_returns"""
 import os
-import unittest
-import pandas as pd
 import random
-from portfolioML.data.data_returns import get_returns, binary_targets
+import unittest
+
+import pandas as pd
+from portfolioML.data.data_returns import binary_targets, get_returns
+
 
 def _full_path(file_name):
     return os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
 
+
 dataframe = pd.read_csv(_full_path('PriceData.csv'))
+
+
 class TestDataReturns(unittest.TestCase):
     """Class test for data_returns.py"""
 
@@ -16,9 +21,10 @@ class TestDataReturns(unittest.TestCase):
         """
         Test correct result with some value m
         """
-        m_list = range(1,10)
+        m_list = range(1, 10)
         for m in m_list:
-            self.assertAlmostEqual(get_returns(dataframe,m,export_returns_csv=False).ALL[0],(dataframe.ALL[m]/dataframe.ALL[0])-1)
+            self.assertAlmostEqual(get_returns(
+                dataframe, m, export_returns_csv=False).ALL[0], (dataframe.ALL[m] / dataframe.ALL[0]) - 1)
 
     def test_get_returns(self):
         """
@@ -34,20 +40,22 @@ class TestDataReturns(unittest.TestCase):
         to the binary classification
         """
         dataframe_no_nan = get_returns(dataframe, 1, export_returns_csv=False)
-        binary_dataframe = binary_targets(dataframe_no_nan, export_binary_csv=False)
+        binary_dataframe = binary_targets(
+            dataframe_no_nan, export_binary_csv=False)
 
         for i in range(10):
-            row = random.randint(0,binary_dataframe.shape[0])
+            row = random.randint(0, binary_dataframe.shape[0])
             column = random.randint(1, binary_dataframe.shape[1])
 
             compare_list = list(dataframe_no_nan.iloc[row].values)
             compare_list.sort()
-            compare_value = compare_list[int(len(compare_list)/2)]
+            compare_value = compare_list[int(len(compare_list) / 2)]
 
-            random_column = binary_dataframe.iloc[:,column]
+            random_column = binary_dataframe.iloc[:, column]
             random_value = random_column[row]
 
-            self.assertTrue(random_value == 0 if random_value <= compare_value else random_value == 1)
+            self.assertTrue(random_value == 0 if random_value <=
+                            compare_value else random_value == 1)
 
 
 if __name__ == '__main__':

@@ -1,16 +1,21 @@
 """Unit test split.py"""
 import os
-import numpy as np
-import unittest
-import pandas as pd
 import random
-from portfolioML.model.split import get_sequences, get_train_set, split_Tperiod, all_data_LSTM
+import unittest
+
+import numpy as np
+import pandas as pd
+from portfolioML.model.split import (all_data_LSTM, get_sequences,
+                                     get_train_set, split_Tperiod)
+
 
 def _full_path(file_name):
     return os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
 
+
 df_return = pd.read_csv(_full_path('ReturnsData.csv'))
 df_binary = pd.read_csv(_full_path('ReturnsBinary.csv'))
+
 
 class TestDataReturns(unittest.TestCase):
 
@@ -28,8 +33,8 @@ class TestDataReturns(unittest.TestCase):
         column_idx = random.randint(1, df_return.shape[1])
         random_tick = df_binary.columns[column_idx]
         X, y = get_sequences(df_return[random_tick], df_binary[random_tick])
-        for i in range(1,10):
-            self.assertAlmostEqual(X[i][0], X[i-1][1])
+        for i in range(1, 10):
+            self.assertAlmostEqual(X[i][0], X[i - 1][1])
 
     def test_get_train_set(self):
         """
@@ -38,7 +43,7 @@ class TestDataReturns(unittest.TestCase):
         of get_trai_set when we use the reshape of numpy.
         """
 
-        #nstack
+        # nstack
         list1 = []
         for col in df_return.columns[:9]:
             x1, y1 = get_sequences(df_return[col], df_binary[col])
@@ -47,15 +52,16 @@ class TestDataReturns(unittest.TestCase):
         list1 = list((list1[i] for i in range(list1.shape[0])))
         list1 = np.vstack(list1)
 
-        #reshape
+        # reshape
         list2, y2 = get_train_set(df_return, df_binary)
-        self.assertTrue((list1 == list2[:9*6300]).all())
+        self.assertTrue((list1 == list2[:9 * 6300]).all())
 
     def test_all_data_LSTM(self):
         '''Test of all_data_LSTM function'''
-        len_train = np.arange(500,1000,100)
+        len_train = np.arange(500, 1000, 100)
         for train in len_train:
-            X_train, y_train, X_test, y_test = all_data_LSTM(df_return, df_binary, period=7, len_train=train)
+            X_train, y_train, X_test, y_test = all_data_LSTM(
+                df_return, df_binary, period=7, len_train=train)
             self.assertEqual(X_train.shape[0], y_train.shape[0])
             self.assertEqual(X_test.shape[0], y_test.shape[0])
 
