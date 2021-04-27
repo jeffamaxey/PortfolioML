@@ -7,4 +7,3 @@ keras
 matplotlib
 scipy
 sklearn
-pywt
