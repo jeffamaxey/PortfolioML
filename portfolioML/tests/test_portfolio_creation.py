@@ -5,15 +5,7 @@ import unittest
 
 import numpy as np
 import pandas as pd
-from portfolio.makedir import go_up
-from portfolioML.results import get_trading_values
-
-# def _full_path(file_name):
-#     return os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
-#
-#
-# df_return = pd.read_csv(_full_path('ReturnsData.csv'))
-# df_binary = pd.read_csv(_full_path('ReturnsBinary.csv'))
+from portfolioML.makedir import go_up
 
 
 class TestDataReturns(unittest.TestCase):
