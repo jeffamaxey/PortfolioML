@@ -1,12 +1,12 @@
-""" Prediction with DNN model """
+""" Several results of ANN models trained (LSTM, RAF, DNN, CNN) """
 import argparse
 import logging
 import os
-import tensorflow as tf
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 from keras.models import load_model
 from portfolioML.makedir import go_up, smart_makedir
 from portfolioML.model.split import (all_data_DNN, all_data_LSTM,
@@ -18,23 +18,22 @@ def plot_roc(algorithm, name_model, num_periods, wavelet):
     """
     Plot roc curve with mean and standard deviation of the area under the curve (auc) of a
     trained model.
-    Each model is trained over several study period so its name contain this information,
-    for semplicity put this information in this way: '..._periond#' (for istance '_period0').
-    Nember of period running over several argumenti setting in 'periods' argument.
-    So before running thi function carefully checking of the folder is suggest to avoid
-    problems.
+    Each model is trained over several study period. Its .h5 file name contains this information
+    that was put under this form: '<model_name>_periond<#>.h5' (for istance 'LSTM_Model3_period0.h5').
+    Before running this function please carefully check the folder portfolioML/model/<algorithm>/<model_name>
+    to avoid nuisance problems related to no file found.
 
-    Tecnical aspects: because of each model has got different tpr and fps, an interpoletion
-    of this values is used in ordet to have the same leght for each model.
+    Tecnical aspects: because of each model has different tpr and fpr, an interpolation
+    of this values is made in order to have the same lenght for each model.
 
     Parameters
     ----------
     model : string
-        File path of the model, it must have in the name 'periond' (for istance 'period0') to
-        take in mind the numer of perion over wich the model is trained
+        File path of the model, it must have in the name 'period' (for istance 'period0') to
+        keep in mind the number of period over which the model is trained.
 
-    periods : integer
-        Numer of model that are taken in order to compute plot and final values
+    num_periods : integer
+        Number of period that are taken in order to compute plot and final values.
     wavelet : bool
         Set true if you have used DWT during the model training.
 
@@ -220,11 +219,13 @@ if __name__ == "__main__":
             for gpu in gpus:
                 tf.config.experimental.set_memory_growth(gpu, True)
             logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-            logging.info(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+            logging.info(len(gpus), "Physical GPUs,",
+                         len(logical_gpus), "Logical GPUs")
         except RuntimeError as e:
             # Memory growth must be set before GPUs have been initialized
             logging.info(e)
 
-    plot_roc(args.algorithm, args.model_name, args.num_periods, args.pca_wavelet)
+    plot_roc(args.algorithm, args.model_name,
+             args.num_periods, args.pca_wavelet)
     predictions_csv(args.algorithm, args.model_name,
                     args.num_periods, args.pca_wavelet)

@@ -1,4 +1,4 @@
-""" Generate csv file """
+""" Generate a csv file of daily close prices of all companies that are and were in the S&P500 index """
 import argparse
 import logging
 
@@ -13,7 +13,7 @@ def get_ticker():
     Get tickers of companies in S&P500 over all time from Wikipedia page
     url = https://en.wikipedia.org/wiki/List_of_S%26P_500_companies#S&P_500_component_stocks
 
-    Return
+    Returns
     ------
     ticker: list
         list of tickers
@@ -74,9 +74,9 @@ def data_generator(start, end, data_source='yahoo', export_csv=True):
     for ticks in tickers:
         try:
             data_list[ticks] = web.DataReader(
-                ticks, data_source=data_source, start=start, end=end).Close
+                ticks, data_source= data_source, start=start, end=end).Close
             logging.info(f'Downloading data of {ticks}')
-        except:
+        except Exception:
             logging.info(f"There's no data for {ticks}")
     data = pd.DataFrame(data_list)
 
@@ -106,4 +106,3 @@ if __name__ == '__main__':
     data = data_generator(args.start, args.end)
 
     df_price = pd.read_csv("PriceData.csv")
-    d = wavelet_dataframe(df_price, 'haar')
