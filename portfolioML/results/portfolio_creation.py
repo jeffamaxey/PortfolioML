@@ -123,7 +123,7 @@ def portfolio_creation(algorithm, model_name, num_periods, k=10):
     return portfolio
 
 
-def forecast_returns(df_price, num_periods, k=10, money=1., monkey=False):
+def forecast_returns(df_price, num_periods, k=10, money=1000., monkey=False):
     '''
     The following is aimed to calculate the daily returns. We set a long position for the
     top k companies at each day and a short position for the bottom k ones. So, we
@@ -189,7 +189,7 @@ def forecast_returns(df_price, num_periods, k=10, money=1., monkey=False):
     # Accumulative returns
     accumulative_returns = []
     for day_returns in returns_rs:
-        money = money + ((1 / (2 * k)) * day_returns).sum()
+        money = money + ((money * 0.1 / (2 * k)) * day_returns).sum()
         accumulative_returns.append(money)
     accumulative_returns = np.array(accumulative_returns)
 

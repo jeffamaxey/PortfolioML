@@ -162,7 +162,7 @@ if __name__ == "__main__":
                   \n Number of periods: {args.num_periods}
                   \n Number of nodes: {args.nodes}
                   \n Optimizier: {args.optimizer}
-                  \n PCA + Wavelet: {args.pca_wavelet}''')
+                  \n PCA + Wavelet: {args.pca_wavelet} \n''')
             model.summary(print_fn=lambda x: file.write(x + '\n'))
 
         logging.info(f'============ End Period {i}th ===========')
