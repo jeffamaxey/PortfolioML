@@ -89,6 +89,7 @@ def portfolio_creation(algorithm, model_name, num_periods, k=10):
     -------
     portfolio : list
         List of pandas dataframes.
+
     '''
 
     get_trading_values(df_price, algorithm, model_name, num_periods)
