@@ -46,6 +46,7 @@ def autoencoder(df_returns, df_binary, period, bottneck):
     x_train, y_train, x_test, y_test = all_data_LSTM(
         df_returns, df_binary, period)
     x_train = np.reshape(x_train, (len(x_train), 1, 240))
+    print(len(x_train))
 
     input_img = Input(shape=(240,))
     encoded = Dense(150, activation='relu',
@@ -87,24 +88,24 @@ def autoencoder(df_returns, df_binary, period, bottneck):
     after = np.array(after)
     df = pd.DataFrame(
         after, columns=[f'selected feature_{i}' for i in range(len(after[0]))])
-    df.to_csv('after.csv')
+    df.to_csv('after_train.csv', index=False)
 
     end = time.time()
     print(f'Total time: {end-start} seconds')
-    dot_img_autoencod = f'Autoencoder_for_period_{period}/autoencoder_nocompress_for_period_{period}.png'
-    plot_model(autoencod, to_file=dot_img_autoencod, show_shapes=True)
-    dot_img_encoder = f'Autoencoder_for_period_{period}/encoder_nocompress_for_period_{period}.png'
-    plot_model(encoder, to_file=dot_img_encoder, show_shapes=True)
-    encoder.save(f'Autoencoder_for_period_{period}/encoder_{period}.h5')
+    # dot_img_autoencod = f'Autoencoder_for_period_{period}/autoencoder_nocompress_for_period_{period}.png'
+    # plot_model(autoencod, to_file=dot_img_autoencod, show_shapes=True)
+    # dot_img_encoder = f'Autoencoder_for_period_{period}/encoder_nocompress_for_period_{period}.png'
+    # plot_model(encoder, to_file=dot_img_encoder, show_shapes=True)
+    # encoder.save(f'Autoencoder_for_period_{period}/encoder_{period}.h5')
     # encoder = load_model('Autoencoder/encoder.h5')
 
-    plt.figure()
-    plt.bar(list(range(len(difference[0]))), difference[0])
-    plt.figure()
-    plt.plot(history.history['loss'], label='train')
+    # plt.figure()
+    # plt.bar(list(range(len(difference[0]))), difference[0])
+    # plt.figure()
+    # plt.plot(history.history['loss'], label='train')
     # plt.plot(history.history['val_loss'], label='test')
-    plt.legend()
-    plt.show()
+    # plt.legend()
+    # plt.show()
 
     return after
 
