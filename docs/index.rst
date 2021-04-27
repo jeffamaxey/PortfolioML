@@ -28,11 +28,14 @@ ISSN 0377-2217,
 https://doi.org/10.1016/j.ejor.2016.10.031.
 (https://www.sciencedirect.com/science/article/pii/S0377221716308657)
 
+Contents:
+---------
 
 .. toctree::
    :maxdepth: 4
    :caption: Contents:
 
+    Guidelines
     source/modules
     source/portfolioML
     source/portfolioML.data
