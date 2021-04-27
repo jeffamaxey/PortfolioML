@@ -88,7 +88,7 @@ def autoencoder(df_returns, df_binary, period, bottneck):
     after = np.array(after)
     df = pd.DataFrame(
         after, columns=[f'selected feature_{i}' for i in range(len(after[0]))])
-    df.to_csv('after_train.csv')
+    df.to_csv('after_train.csv', index=False)
 
     end = time.time()
     print(f'Total time: {end-start} seconds')
