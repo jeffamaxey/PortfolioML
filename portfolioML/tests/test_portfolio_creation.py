@@ -5,7 +5,7 @@ import unittest
 
 import numpy as np
 import pandas as pd
-from portfolio.makedir import go_up
+from portfolioML.makedir import go_up
 
 
 class TestDataReturns(unittest.TestCase):
