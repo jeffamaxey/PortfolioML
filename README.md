@@ -26,6 +26,7 @@ $ cd ../PortfolioML/
 $ pip install .
 ```
 ## Project structure
+```
 ├── docs
 ├── LICENSE
 ├── portfolioML
