@@ -36,14 +36,13 @@ class TestDataReturns(unittest.TestCase):
     def test_get_train_set(self):
         """
         Test of get_train_set fuction.
-        The check is maded compare the result of np.syack and the results
+        The check is maded compare the result of np.stack and the results
         of get_trai_set when we use the reshape of numpy.
         """
 
         #nstack
         list1 = []
-        list1
-        for col in df_return.columns[1:10]:
+        for col in df_return.columns[:9]:
             x1, y1 = get_sequences(df_return[col], df_binary[col])
             list1.append(x1)
         list1 = np.array(list1)
@@ -52,7 +51,6 @@ class TestDataReturns(unittest.TestCase):
 
         #reshape
         list2, y2 = get_train_set(df_return, df_binary)
-
         self.assertTrue((list1 == list2[:9*6300]).all())
 
     # def test_all_data_LSTM(self):
