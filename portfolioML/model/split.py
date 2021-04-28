@@ -261,30 +261,3 @@ def all_data_DNN(df_returns, df_binary, period, len_train=981):
     X_test = np.reshape(X_test, (X_test.shape[0], 31))
 
     return X_train, y_train, X_test, y_test
-
-
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(
-        description='Creation of input and output data for lstm classification problem')
-    parser.add_argument('returns_file', type=str,
-                        help='Path to the returns input data')
-    parser.add_argument('binary_file', type=str,
-                        help='Path to the binary target data')
-    parser.add_argument("-log", "--log", default="info",
-                        help=("Provide logging level. Example --log debug', default='info"))
-
-    args = parser.parse_args()
-
-    levels = {'critical': logging.CRITICAL,
-              'error': logging.ERROR,
-              'warning': logging.WARNING,
-              'info': logging.INFO,
-              'debug': logging.DEBUG}
-
-    logging.basicConfig(level=levels[args.log])
-
-    df_returns = pd.read_csv(args.returns_file)
-    df_binary = pd.read_csv(args.binary_file)
-
-    X_train, y_train = get_sequences(df_returns, df_binary)
