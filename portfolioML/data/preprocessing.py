@@ -174,7 +174,7 @@ def plot_wavelet(data, name, time_scale=3):
     plt.figure(figsize=[15,15])
     plt.subplot(time_scale+2,1,1)
     plt.plot(data, lw=0.9, c='mediumblue', label='original time-series')
-    plt.title("Discrete Wavelet Trasformation of Close " + name + " Data")
+    plt.title("Discrete_Wavelet_Trasformation_of_Close_" + name + "_Data")
     plt.xticks([])
     plt.legend()
 
