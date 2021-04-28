@@ -6,8 +6,8 @@ In order to improve and/or reduce the computational time needed, we implemented 
 methods of pre processing the time series used. These can be found in the portfolioML.data.preprocessing
 module.
 
-| Scikit-learn package sklearn.decomposition.PCA is used for PCA (https://pywavelets.readthedocs.io/en/latest/)
-| PyWavelets package is used for Discrete Wavelet Transform (https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html)
+| Scikit-learn package sklearn.decomposition.PCA is used for PCA (https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html)
+| PyWavelets package is used for Discrete Wavelet Transform (https://pywavelets.readthedocs.io/en/latest/)
 
 
 PCA - Principal Component Analysis
@@ -42,14 +42,10 @@ The following pictures rappresent respectively the DWT of price and returns,
 in particular they contains the three details coefficients and the approximation on the last time-scale.
 Data we have used are the first.
 
-.. image:: images/Discrete Wavelet Trasformation of Close Return Data.png
+.. image:: images/Discrete_Wavelet_Trasformation_of_Close_Return_Data.png
    :width: 400pt
 
-.. image:: images/Discrete Wavelet Trasformation of Close Price Data.png
+.. image:: images/Discrete_Wavelet_Trasformation_of_Close_Price_Data.png
    :width: 400pt
-
-.. code-block:: python
-
-   some smart code
 
 [1]_  Jothimani, Dhanya and Yadav, Surendra S. and Shankar, Ravi, Discrete Wavelet Transform-Based Prediction of Stock Index: A Study on National Stock Exchange Fifty Index (2015). Journal of Financial Management and Analysis, Vol. 28(2), 2015, Available at SSRN: https://ssrn.com/abstract=2769529
