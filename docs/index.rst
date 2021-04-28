@@ -39,6 +39,10 @@ Contents:
     source/portfolioML
     source/portfolioML.data
     source/portfolioML.model
+    source/portfolioML.model.LSTM
+    source/portfolioML.model.CNN
+    source/portfolioML.model.RAF
+    source/portfolioML.model.DNN
     source/portfolioML.results
 
 Indices and tables
