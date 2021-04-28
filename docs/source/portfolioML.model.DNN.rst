@@ -1,8 +1,6 @@
 portfolioML.model.DNN package
 =========================
 
-Submodules
-----------
 
 portfolioML.model.DNN.dnn module
 -------------------------------------------

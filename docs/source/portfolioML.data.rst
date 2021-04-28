@@ -1,8 +1,6 @@
 portfolioML.data package
 ========================
 
-Submodules
-----------
 
 portfolioML.data.autoencoder\_cnn module
 ----------------------------------------
@@ -40,14 +38,6 @@ portfolioML.data.preprocessing module
 -------------------------------------
 
 .. automodule:: portfolioML.data.preprocessing
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: portfolioML.data
    :members:
    :undoc-members:
    :show-inheritance:

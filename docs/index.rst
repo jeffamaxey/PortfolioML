@@ -34,8 +34,8 @@ Contents:
 .. toctree::
    :maxdepth: 4
 
-   guidelines
-   portfolioML
+   source/guidelines
+   source/portfolioML
 
 Indices and tables
 ==================

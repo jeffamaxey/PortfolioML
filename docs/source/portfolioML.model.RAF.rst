@@ -1,8 +1,6 @@
 portfolioML.model.RAF package
 =========================
 
-Submodules
-----------
 
 portfolioML.model.RAF.raf module
 -------------------------------------------

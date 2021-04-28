@@ -1,8 +1,6 @@
 portfolioML.results package
 =========================
 
-Submodules
-----------
 
 portfolioML.results.model_predict module
 -------------------------------------------
@@ -16,14 +14,6 @@ portfolioML.results.portfolio_creation module
 ------------------------------
 
 .. automodule:: portfolioML.results.portfolio_creation
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: portfolioML.results
    :members:
    :undoc-members:
    :show-inheritance:

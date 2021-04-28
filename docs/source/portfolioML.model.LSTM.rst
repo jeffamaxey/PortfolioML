@@ -1,8 +1,6 @@
 portfolioML.model.LSTM package
 =========================
 
-Submodules
-----------
 
 portfolioML.model.LSTM.lstm module
 -------------------------------------------

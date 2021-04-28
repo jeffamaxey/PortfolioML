@@ -1,8 +1,6 @@
 portfolioML.model.CNN package
 =========================
 
-Submodules
-----------
 
 portfolioML.model.CNN.cnn module
 -------------------------------------------
