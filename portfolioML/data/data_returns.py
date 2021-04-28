@@ -15,33 +15,33 @@ def get_returns(dataframe, export_returns_csv, m=1, no_missing=True):
 
     Parameters
     ----------
-    dataframe: pandas dataframe
-        Input dataframe of prices
+    dataframe : pandas.core.frame.DataFrame
+        Input dataframe of prices.
 
-    export_csv: bool
+    export_csv : bool
         Export dataframe in csv.
 
-    m: int (optional)
-        Period over which returns are calculated. The default is 1
+    m : int (optional)
+        Period over which returns are calculated. The default is 1.
 
-    no_missing: bool(optional)
-        drop companies with missing values. default=True
+    no_missing : bool(optional)
+        drop companies with missing values. The default is True.
 
     Returns
     -------
-    df: pandas dataframe
-        Dataframe of m-period returns
+    df : pandas.core.frame.DataFrame
+        Dataframe of m-period returns.
     """
     try:
         if m < 0:
             raise ValueError(
-                "Ops! Invalid input, you can't go backward in time. m must be positive.")
+                "Ops! Invalid input, you can't go backward in time: m must be positive.")
     except ValueError as ve:
         print(ve)
         exit()
 
     df = pd.DataFrame()
-    for col in dataframe.columns[1:]: #no data columns
+    for col in dataframe.columns[1:]:  # Not pick Data column
         today = dataframe[col]
         tomorrow = today[m:]
         df[col] = (np.array(tomorrow) / np.array(today)[:-m]) - 1
@@ -68,15 +68,18 @@ def binary_targets(dataframe, export_binary_csv, name='ReturnsBinary'):
 
     Parameters
     ----------
-    dataframe: pandas dataframe
-        Inpunt dataframe of returns
+    dataframe : pandas.core.frame.DataFrame
+        Input dataframe of returns.
 
-    export_binary_csv: bool
-        Export dataframe in csv. default=False
+    export_binary_csv : bool
+        Export dataframe in csv. The default is False.
+
+    name : str(optional)
+        Name of exported csv file.
 
     Returns
     -------
-    df: pandas dataframe
+    df: pandas.core.frame.DataFrame
         Output dataframe of binary returns
     """
     df = dataframe
@@ -86,7 +89,7 @@ def binary_targets(dataframe, export_binary_csv, name='ReturnsBinary'):
         compare_value = median(compare_list)
 
         df.iloc[time_idx] = dataframe.iloc[time_idx].apply(
-            lambda x:  0 if x <= compare_value else 1)
+            lambda x: 0 if x <= compare_value else 1)
 
     if export_binary_csv:
         df.to_csv(f'{name}.csv', index=False)
