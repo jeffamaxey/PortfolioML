@@ -36,7 +36,7 @@ details coefficients on that particulat scale [1]_ .
 .. image:: images/dwt.jpg
    :width: 400pt
 
-In our study, because of the objective is to forcast the returns data of the following day, 
+In our study, because of the objective is to forcast the returns data of the following day,
 we have applied the DWT to returns data over 3 time scales in order to keep only the "short-scale" information.
 The following pictures rappresent respectively the DWT of price and returns,
 in particular they contains the three details coefficients and the approximation on the last time-scale.
@@ -47,8 +47,4 @@ in particular they contains the three details coefficients and the approximation
 .. image:: images/Discrete\_Wavelet\_Trasformation\_of\_Close\_Price\_Data.png
    :width: 400pt
 
-.. code-block:: python
-
-   some smart code
-
-[1]_ Prova footnote
+[1]_  Jothimani, Dhanya and Yadav, Surendra S. and Shankar, Ravi, Discrete Wavelet Transform-Based Prediction of Stock Index: A Study on National Stock Exchange Fifty Index (2015). Journal of Financial Management and Analysis, Vol. 28(2), 2015, Available at SSRN: https://ssrn.com/abstract=2769529 
