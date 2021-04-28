@@ -27,10 +27,16 @@ space, we selected the features that most contribute to them.
 
 DWT - Discrete Wavelet Transform
 --------------------------------
-Some clever stuff on DWT
+Discrete Wavelet Tranform is a kind of time series decomposition that is able to extract
+information from both time and frequency domain simultaneously at different scales.
+Computationally speaking, it's implemented through a convolution of the signal with a low
+pass filter (D_LP) and a high pass filter (D_H), respectively outputs the so-called approximations and
+details coefficients on that particulat scale.
 
-.. image:: images/prova.jpg
+.. image:: images/dwt.jpg
    :width: 400pt
+
+
 
 
 .. code-block:: python
