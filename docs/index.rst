@@ -34,16 +34,16 @@ Contents:
 .. toctree::
    :maxdepth: 4
 
-    source/guidelines
-    source/modules
-    source/portfolioML
-    source/portfolioML.data
-    source/portfolioML.model
-    source/portfolioML.model.LSTM
-    source/portfolioML.model.CNN
-    source/portfolioML.model.RAF
-    source/portfolioML.model.DNN
-    source/portfolioML.results
+    /source/guidelines
+    /source/modules
+    /source/portfolioML
+    /source/portfolioML.data
+    /source/portfolioML.model
+    /source/portfolioML.model.LSTM
+    /source/portfolioML.model.CNN
+    /source/portfolioML.model.RAF
+    /source/portfolioML.model.DNN
+    /source/portfolioML.results
 
 Indices and tables
 ==================
