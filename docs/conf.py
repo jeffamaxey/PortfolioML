@@ -13,8 +13,6 @@
 import os
 import sys
 import sphinx_rtd_theme
-import seaborn
-import bs4
 package_name = 'PortfolioML'
 package_root = os.path.abspath('../')
 sys.path.insert(0, package_root)
