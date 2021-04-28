@@ -9,7 +9,13 @@ Subpackages
 
    portfolioML.data
    portfolioML.model
+   portfolioML.model.LSTM
+   portfolioML.model.DNN
+   portfolioML.model.RAF
+   portfolioML.model.CNN
+   portfolioML.results
    portfolioML.tests
+
 
 Submodules
 ----------
