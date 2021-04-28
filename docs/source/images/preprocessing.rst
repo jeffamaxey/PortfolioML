@@ -51,4 +51,4 @@ in particular they contains the three details coefficients and the approximation
 
    some smart code
 
-[1]_ Prova footnote
+[1]_  Jothimani, Dhanya and Yadav, Surendra S. and Shankar, Ravi, Discrete Wavelet Transform-Based Prediction of Stock Index: A Study on National Stock Exchange Fifty Index (2015). Journal of Financial Management and Analysis, Vol. 28(2), 2015, Available at SSRN: https://ssrn.com/abstract=2769529 
