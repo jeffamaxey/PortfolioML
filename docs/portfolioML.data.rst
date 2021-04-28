@@ -1,8 +1,6 @@
 portfolioML.data package
 ========================
 
-Submodules
-----------
 
 portfolioML.data.autoencoder\_cnn module
 ----------------------------------------

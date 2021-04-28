@@ -1,8 +1,6 @@
 portfolioML.results package
 =========================
 
-Submodules
-----------
 
 portfolioML.results.model_predict module
 -------------------------------------------

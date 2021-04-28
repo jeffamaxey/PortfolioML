@@ -32,12 +32,16 @@ Contents:
 ---------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
 
    guidelines
    portfolioML
    portfolioML.data
    portfolioML.model
+   portfolioML.model.LSTM
+   portfolioML.model.CNN
+   portfolioML.model.RAF
+   portfolioML.model.DNN
    portfolioML.results
 
 Indices and tables

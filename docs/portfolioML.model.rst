@@ -10,9 +10,6 @@
 portfolioML.model package
 =========================
 
-Submodules
-----------
-
 portfolioML.model.preprocessing\_ang module
 -------------------------------------------
 
