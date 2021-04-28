@@ -34,7 +34,7 @@ Contents:
 .. toctree::
    :maxdepth: 4
 
-    Guidelines
+    source/Guidelines
     source/modules
     source/portfolioML
     source/portfolioML.data
