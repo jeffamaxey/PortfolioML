@@ -37,7 +37,6 @@ def autoencoder(df_returns, df_binary, period, bottneck):
     ----------
     after: TYPE = pandas dataframe
         Csv file with selected features extract from encoder.
-    ----------
     """
 
     x_train, y_train, x_test, y_test = all_data_LSTM(
