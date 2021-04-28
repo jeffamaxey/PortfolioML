@@ -49,7 +49,7 @@ def approx_details_scale(data, wavelet, dec_level):
     for i in range(2, len(coeffs)):
         coeffs[i] = np.zeros_like(coeffs[i])
 
-    det = coeffs[1]
+    det = coeffs[1] 
 
     coeffs[1] = np.zeros_like(coeffs[1])
     approx = pywt.waverec(coeffs, wavelet)
@@ -151,7 +151,7 @@ def wavelet_dataframe(df_returns_path, wavelet):
 
 def plot_wavelet(data, name, time_scale=3):
     """
-    Plot original data and wavelet decoposition of input data. 
+    Plot original data and wavelet decoposition of input data.
     DWT is compute over selected time scale
 
     Parameters
@@ -196,20 +196,18 @@ def plot_wavelet(data, name, time_scale=3):
             plt.plot(det, lw=0.9, c='cornflowerblue', label=f"details coefficients on scale {scale}")
             plt.xticks([])
             plt.legend()
-    
+
     plt.savefig("Discrete Wavelet Trasformation of Close " + name + " Data")
-    
+
 
 if __name__ == "__main__":
     df_price = pd.read_csv('PriceData.csv')
     df_returns = pd.read_csv('ReturnsData.csv')
     Price = np.array(df_price['DIS'])
     Return = np.array(df_returns['DIS'])
- 
+
 
     plot_wavelet(Price, "Price", time_scale=3)
     plot_wavelet(Return, "Return", time_scale=3)
 
     plt.show()
-
-        
