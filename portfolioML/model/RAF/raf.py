@@ -54,12 +54,15 @@ def predictions_and_roc(n_estimators, max_depth, num_period, criterion):
 
     for i in range(0, num_period):
         x_train, y_train, x_test, y_test = all_data_DNN(df_returns, df_binary, i)
+        print(6)
         rf_ = RandomForestClassifier(n_estimators, criterion, max_depth, n_jobs=-1,
                                     min_samples_split=2, min_samples_leaf=1,
-                                    random_state=10, verbose=1)
+                                    verbose=1)
+        if autoencoder_features:
+            x_train = x_train_auto
+            x_test = x_test_auto
         rf_.fit(x_train, y_train)
         y_proba = rf_.predict_proba(x_test)
-
 
         fpr, tpr, thresholds = roc_curve(y_test, y_proba[:,1])
         interp_tpr = np.interp(interp_fpr, fpr, tpr)
@@ -105,10 +108,11 @@ if __name__ == "__main__":
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
     requiredNamed = parser.add_argument_group('Required named arguments')
-    requiredNamed.add_argument('-n','--num_period', type=int, default=17, help='Number of periods you want to train (leave blanck for default=17)')
-    requiredNamed.add_argument('-ne','--n_estimators', type=int, default=1000, help='Number of trees (leave blanck for  default=1000)')
-    requiredNamed.add_argument('-md','--max_depth', type=int, default=25, help='Trees\'s depth (leave blanck for  default=25) ')
+    requiredNamed.add_argument('-n','--num_period', type=int, default=1, help='Number of periods you want to train (leave blanck for default=17)')
+    requiredNamed.add_argument('-ne','--n_estimators', type=int, default=10, help='Number of trees (leave blanck for  default=1000)')
+    requiredNamed.add_argument('-md','--max_depth', type=int, default=5, help='Trees\'s depth (leave blanck for  default=25) ')
     requiredNamed.add_argument('name_model', type=str, help='Name_model')
+    parser.add_argument('-ae','--autoencoder', action="store_true", help='Features selected from autoencoder? (default=False)')
     parser.add_argument('-c','--criterion', type=str, default='gini', help='Criterion (default=gini)')
     args = parser.parse_args()
 
@@ -121,10 +125,27 @@ if __name__ == "__main__":
     logging.basicConfig(level= levels[args.log])
     pd.options.mode.chained_assignment = None
 
-    df_returns_path = go_up(2) + "/data/ReturnsData.csv"
-    df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
-    df_returns = pd.read_csv(df_returns_path)
-    df_binary = pd.read_csv(df_binary_path)
+    autoencoder_features = args.autoencoder
+
+    if autoencoder_features == True:
+        df_returns_path = go_up(2) + "/data/ReturnsDataPCA.csv"
+        df_binary_path = go_up(2) + "/data/ReturnsBinaryPCA.csv"
+        df_auto_train_path = go_up(2) + "/data/after_train.csv"
+        df_auto_test_path = go_up(2) + "/data/after_test.csv"
+        df_returns = pd.read_csv(df_returns_path)
+        df_binary = pd.read_csv(df_binary_path)
+
+        auto_train = pd.read_csv(df_auto_train_path)
+        auto_test = pd.read_csv(df_auto_test_path)
+
+        x_train_auto = np.array(auto_train)
+        x_test_auto = np.array(auto_test)
+    else:
+        df_returns_path = go_up(2) + "/data/ReturnsData.csv"
+        df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
+        df_returns = pd.read_csv(df_returns_path)
+        df_binary = pd.read_csv(df_binary_path)
+
 
     smart_makedir(f'/results/predictions/RAF/RAF_{args.name_model}/', level_up=2)
     smart_makedir(f'/results/ROC/RAF/RAF_{args.name_model}/', level_up=2)
