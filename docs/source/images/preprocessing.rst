@@ -40,6 +40,7 @@ In our study, because of the objective is to forcast the returns data of the fol
 we have applied the DWT to returns data over 3 time scales in order to keep only the "short-scale" information.
 The following pictures rappresent respectively the DWT of price and returns,
 in particular they contains the three details coefficients and the approximation on the last time-scale.
+Data we have used are the first.
 
 .. image:: images/Discrete Wavelet Trasformation of Close Return Data.png
    :width: 400pt
@@ -51,4 +52,4 @@ in particular they contains the three details coefficients and the approximation
 
    some smart code
 
-[1]_  Jothimani, Dhanya and Yadav, Surendra S. and Shankar, Ravi, Discrete Wavelet Transform-Based Prediction of Stock Index: A Study on National Stock Exchange Fifty Index (2015). Journal of Financial Management and Analysis, Vol. 28(2), 2015, Available at SSRN: https://ssrn.com/abstract=2769529 
+[1]_  Jothimani, Dhanya and Yadav, Surendra S. and Shankar, Ravi, Discrete Wavelet Transform-Based Prediction of Stock Index: A Study on National Stock Exchange Fifty Index (2015). Journal of Financial Management and Analysis, Vol. 28(2), 2015, Available at SSRN: https://ssrn.com/abstract=2769529
