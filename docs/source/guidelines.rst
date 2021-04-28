@@ -2,8 +2,15 @@
 
 Guidelines
 ===========
-Test for guidelines section
+There's a logic progression that should be used in order to obtain our results:
+1. Run ''portfolioML.data.data_generator'' to obtain the csv file of price data
+2. 
 
-.. code-block:: python
+.. note::
+   For every module, run at first
 
-   python portfolio_creation.py -h
+   .. code-block:: python
+
+      python <module_name> -h
+
+   to check the available options
