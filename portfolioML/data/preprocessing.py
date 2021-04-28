@@ -18,7 +18,8 @@ def approx_details_scale(data, wavelet, dec_level):
         Input time-series data.
 
     wavelet: string
-        Wavelet's name used for the decomposition. For all available wavelet see https://pywavelets.readthedocs.io/en/latest/ref/wavelets.html.
+        Wavelet's name used for the decomposition.
+        For all available wavelet see https://pywavelets.readthedocs.io/en/latest/ref/wavelets.html.
 
     dec_level: integer
         Level of time_scale on which compute the approximations and details.
@@ -34,12 +35,12 @@ def approx_details_scale(data, wavelet, dec_level):
     """
 
     max_level = pywt.dwt_max_level(len(data), wavelet)
-    # logging.info(f'max_level:{max_level}')
 
     try:
         if dec_level > max_level + 1:
-            raise ValueError
-    except Exception:
+            raise ValueError('Decomposition level choosen is bigger that the maximal allowed one')
+    except Exception as ex:
+        logging.error(ex)
         dec_level = max_level + 1
 
     coeffs = pywt.wavedec(data, wavelet, level=dec_level)
