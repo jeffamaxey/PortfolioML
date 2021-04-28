@@ -15,7 +15,7 @@ def get_ticker():
 
     Returns
     ------
-    ticker: list
+    ticker : list
         list of tickers
     """
     website_url = requests.get(
@@ -50,22 +50,22 @@ def data_generator(start, end, data_source='yahoo', export_csv=True):
 
     Parameters
     ----------
-    start: str
+    start : str
         Start time. Its format must be yyyy-mm-dd
 
-    end: str
+    end : str
         End time. Its format must be yyyy-mm-dd
 
-    data_source: str(optional)
+    data_source : str(optional)
         The data source ("iex", "fred", "ff"). Default = 'yahoo'
 
-    export_csv: bool(optional)
+    export_csv : bool(optional)
         Choose whether to export to csv. Default = True
 
 
     Returns
     -------
-    data: pandas dataframe
+    data : pandas.core.frame.DataFrame
         Pandas dataframe of historical close daily price
     '''
 
@@ -74,7 +74,7 @@ def data_generator(start, end, data_source='yahoo', export_csv=True):
     for ticks in tickers:
         try:
             data_list[ticks] = web.DataReader(
-                ticks, data_source= data_source, start=start, end=end).Close
+                ticks, data_source=data_source, start=start, end=end).Close
             logging.info(f'Downloading data of {ticks}')
         except Exception:
             logging.info(f"There's no data for {ticks}")
