@@ -1,7 +1,7 @@
 .. _preprocessing:
 
 Pre Processing
-===========
+==============
 In order to improve and/or reduce the computational time needed, we implemented two
 methods of pre processing the time series used. These can be found in the portfolioML.data.preprocessing
 module.
