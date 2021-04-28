@@ -24,11 +24,3 @@ portfolioML.makedir module
    :members:
    :undoc-members:
    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: portfolioML
-   :members:
-   :undoc-members:
-   :show-inheritance:
