@@ -29,6 +29,9 @@ DWT - Discrete Wavelet Transform
 --------------------------------
 Some clever stuff on DWT
 
+.. image:: prova.jpg
+   :width: 40pt
+
 
 .. code-block:: python
 
