@@ -35,6 +35,7 @@ Contents:
    :maxdepth: 4
 
    source/guidelines
+   source/preprocessing
    source/portfolioML
 
 Indices and tables
