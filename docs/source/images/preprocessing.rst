@@ -38,7 +38,7 @@ details coefficients on that particulat scale [1]_ .
 
 In our study, because of the objective is to forcast the returns data of the following day, 
 we have applied the DWT to returns data over 3 time scales in order to keep only the "short-scale" information.
-Thefollowing picture rappresent respectively the DWT of price and returns,
+The following pictures rappresent respectively the DWT of price and returns,
 in particular they contains the three details coefficients and the approximation on the last time-scale.
 
 .. image:: images/Discrete Wavelet Trasformation of Close Return Data.png
@@ -46,11 +46,6 @@ in particular they contains the three details coefficients and the approximation
 
 .. image:: images/Discrete Wavelet Trasformation of Close Price Data.png
    :width: 400pt
-
-
-filter the "long-scale" components and
-take into account only the the componets of signal that 
-
 
 .. code-block:: python
 
