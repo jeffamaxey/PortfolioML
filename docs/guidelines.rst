@@ -1,3 +1,5 @@
+.. _guidelines:
+
 Guidelines
 ===========
 Test for guidelines section
