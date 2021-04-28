@@ -41,10 +41,10 @@ we have applied the DWT to returns data over 3 time scales in order to keep only
 The following pictures rappresent respectively the DWT of price and returns,
 in particular they contains the three details coefficients and the approximation on the last time-scale.
 
-.. image:: images/Discrete Wavelet Trasformation of Close Return Data.png
+.. image:: images/Discrete\_Wavelet\_Trasformation\_of\_Close\_Return\_Data.png
    :width: 400pt
 
-.. image:: images/Discrete Wavelet Trasformation of Close Price Data.png
+.. image:: images/Discrete\_Wavelet\_Trasformation\_of\_Close\_Price\_Data.png
    :width: 400pt
 
 .. code-block:: python
