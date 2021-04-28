@@ -41,11 +41,3 @@ portfolioML.data.preprocessing module
    :members:
    :undoc-members:
    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: portfolioML.data
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -17,11 +17,3 @@ portfolioML.results.portfolio_creation module
    :members:
    :undoc-members:
    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: portfolioML.results
-   :members:
-   :undoc-members:
-   :show-inheritance:
