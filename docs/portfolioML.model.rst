@@ -1,3 +1,12 @@
+
+.. toctree::
+   :maxdepth: 2
+
+   portfolioML.model.LSTM
+   portfolioML.model.CNN
+   portfolioML.model.RAF
+   portfolioML.model.DNN
+
 portfolioML.model package
 =========================
 
