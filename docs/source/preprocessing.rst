@@ -4,8 +4,8 @@ Pre Processing
 ==============
 In order to improve and/or reduce the computational time needed, we implemented two
 methods of pre processing the time series used. These can be found in the portfolioML.data.preprocessing
-module.
-Scikit-learn package sklearn.decomposition.PCA is used for PCA (https://pywavelets.readthedocs.io/en/latest/)
+module. \n
+Scikit-learn package sklearn.decomposition.PCA is used for PCA (https://pywavelets.readthedocs.io/en/latest/) \n
 PyWavelets package is used for Discrete Wavelet Transform (https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html)
 
 
