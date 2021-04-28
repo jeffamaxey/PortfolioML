@@ -27,7 +27,7 @@ space, we selected the features that most contribute to them.
 
 DWT - Discrete Wavelet Transform
 --------------------------------
-Discrete Wavelet Tranform is a kind of time series decomposition that is able to extract
+Discrete Wavelet Tranform (DWT) is a kind of time series decomposition that is able to extract
 information from both time and frequency domain simultaneously at different scales.
 Computationally speaking, it's implemented through a convolution of the signal with a low
 pass filter (D_LP) and a high pass filter (D_H), respectively outputs the so-called approximations and
@@ -36,8 +36,16 @@ details coefficients on that particulat scale [1]_ .
 .. image:: images/dwt.jpg
    :width: 400pt
 
+In our study, because of the objective is to forcast the returns data of the following day, 
+we have applied the DWT to returns data over 3 time scales in order to keep only the "short-scale" information.
+The following pictures rappresent respectively the DWT of price and returns,
+in particular they contains the three details coefficients and the approximation on the last time-scale.
 
+.. image:: images/Discrete Wavelet Trasformation of Close Return Data.png
+   :width: 400pt
 
+.. image:: images/Discrete Wavelet Trasformation of Close Price Data.png
+   :width: 400pt
 
 .. code-block:: python
 
