@@ -17,9 +17,6 @@ Subpackages
    portfolioML.tests
 
 
-Submodules
-----------
-
 portfolioML.makedir module
 --------------------------
 
