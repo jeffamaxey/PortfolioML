@@ -29,7 +29,7 @@ DWT - Discrete Wavelet Transform
 --------------------------------
 Some clever stuff on DWT
 
-.. image:: prova.jpg
+.. image:: images/prova.jpg
    :width: 400pt
 
 
