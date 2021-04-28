@@ -17,6 +17,7 @@ through a projection onto a less-dimensional space composed by the so-called pri
 components, i.e. the eigenvectors of the covariance matrix of the data.
 
 Our implementation articulates as follow:
+
 | Starting from a 365-dimensional space (equal to the number of companies we tracked from
 the available data of the S&P500 index in our entire period of study), we choosed to keep
 the first 250 components that correspond to the eigenvectors of the covariance matrix
