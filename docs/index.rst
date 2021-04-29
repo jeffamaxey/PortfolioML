@@ -5,8 +5,12 @@
 
 Welcome to PortfolioML's documentation!
 =======================================
+PortfolioML was born as part of an university exam at Università di Pisa for the
+"Computhing Methods and Experimental Physics and Data Analysis" course.
+Authors: Angelo Lasala, Daniele Maria Di Nosse, Raffaele Paradiso.
+
 This package contains functions used to forecast stock market returns on a fraction of the S&P500 index.
-The procedure used is mainly focused on the following two articles:
+The procedure used is mainly focused on the following two articles and one book:
 
 Thomas Fischer, Christopher Krauss,
 Deep learning with long short-term memory networks for financial market predictions,
@@ -27,6 +31,12 @@ Pages 689-702,
 ISSN 0377-2217,
 https://doi.org/10.1016/j.ejor.2016.10.031.
 (https://www.sciencedirect.com/science/article/pii/S0377221716308657)
+
+Jason Brownlee,
+Deep Learning for Time Series Forecasting: Predict the Future with MLPs, CNNs and LSTMs in Python,
+Machine Learning Mastery,
+2018,
+(https://machinelearningmastery.com/deep-learning-for-time-series-forecasting/)
 
 Contents:
 ---------

@@ -2,6 +2,8 @@
 
 PortfolioML
 ===================
+Here are listed all the subpackages that can be found in PortfolioML.
+Check at first the Guidelines section to know how to handle with them.
 
 Subpackages
 -----------
