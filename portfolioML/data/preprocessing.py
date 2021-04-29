@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import pywt
 from sklearn.decomposition import PCA
-import matplotlib.pyplot as plt
 
 
 def approx_details_scale(data, wavelet, dec_level):
@@ -39,7 +38,8 @@ def approx_details_scale(data, wavelet, dec_level):
 
     try:
         if dec_level > max_level + 1:
-            raise ValueError('Decomposition level choosen is bigger that the maximal allowed one')
+            raise ValueError(
+                'Decomposition level choosen is bigger that the maximal allowed one')
     except Exception as ex:
         logging.error(ex)
         dec_level = max_level + 1
@@ -49,7 +49,7 @@ def approx_details_scale(data, wavelet, dec_level):
     for i in range(2, len(coeffs)):
         coeffs[i] = np.zeros_like(coeffs[i])
 
-    det = coeffs[1] 
+    det = coeffs[1]
 
     coeffs[1] = np.zeros_like(coeffs[1])
     approx = pywt.waverec(coeffs, wavelet)
@@ -148,66 +148,3 @@ def wavelet_dataframe(df_returns_path, wavelet):
     dataframe2.to_csv("MultidimReturnsData2.csv", index=False)
     dataframe3.to_csv("MultidimReturnsData3.csv", index=False)
     dataframe4.to_csv("MultidimReturnsData4.csv", index=False)
-
-def plot_wavelet(data, name, time_scale=3):
-    """
-    Plot original data and wavelet decoposition of input data.
-    DWT is compute over selected time scale
-
-    Parameters
-    ----------
-    data : numpy array
-        Array of input time-series data
-
-    name : string
-        Figure name
-
-    time_scale : integer(optional)
-        Time scales over wich compute the DWT. Default=3
-    """
-    df_price = pd.read_csv('PriceData.csv')
-
-    days = df_price['Date']
-    x_label_position = np.arange(0, len(days), 150)
-    x_label_day = [days[i] for i in x_label_position]
-
-    plt.figure(figsize=[15,15])
-    plt.subplot(time_scale+2,1,1)
-    plt.plot(data, lw=0.9, c='mediumblue', label='original time-series')
-    plt.title("Discrete_Wavelet_Trasformation_of_Close_" + name + "_Data")
-    plt.xticks([])
-    plt.legend()
-
-    for scale in range(1,time_scale+1):
-        app, det = approx_details_scale(data, 'haar', scale)
-
-        if scale == time_scale:
-            plt.subplot(time_scale+2,1,scale+1)
-            plt.plot(det, lw=0.9, c='cornflowerblue', label=f"details coefficients on scale {scale}")
-            plt.xticks([])
-            plt.legend()
-
-            plt.subplot(time_scale+2,1,scale+2)
-            plt.plot(app, lw=0.9, c='cornflowerblue', label=f"approximation on scale {scale}")
-            plt.xticks(x_label_position, x_label_day, rotation=60)
-            plt.legend()
-        else:
-            plt.subplot(time_scale+2,1,scale+1)
-            plt.plot(det, lw=0.9, c='cornflowerblue', label=f"details coefficients on scale {scale}")
-            plt.xticks([])
-            plt.legend()
-
-    plt.savefig("Discrete Wavelet Trasformation of Close " + name + " Data")
-
-
-if __name__ == "__main__":
-    df_price = pd.read_csv('PriceData.csv')
-    df_returns = pd.read_csv('ReturnsData.csv')
-    Price = np.array(df_price['DIS'])
-    Return = np.array(df_returns['DIS'])
-
-
-    plot_wavelet(Price, "Price", time_scale=3)
-    plot_wavelet(Return, "Return", time_scale=3)
-
-    plt.show()
