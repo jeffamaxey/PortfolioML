@@ -77,6 +77,7 @@ There's a logic progression that should be used in order to obtain our results:
     folder.
 
 .. code-block:: bash
+
    ├── docs
    ├── LICENSE
    ├── portfolioML
