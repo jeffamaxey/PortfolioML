@@ -77,6 +77,8 @@ There's a logic progression that should be used in order to obtain our results:
     folder.
 
 The following is represented the tree structure of the folder and the main files
+
+
 .. code-block:: bash
 
    ├── docs
