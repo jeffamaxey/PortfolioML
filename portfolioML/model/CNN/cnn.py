@@ -31,18 +31,18 @@ class MinPooling1D(MaxPooling1D):
 def CNN_model(filters, dim, kernel_size=(20), strides=5, activation='tanh', min_pooling=False, plt_figure=False):
     """
     CNN model with selected number of filters for the convolutional layers for classification
-    task about time-series of data. Beacous of the problem one convolutional layes is enough
+    task applied to time-series of data. One convolutional layes is enough fot his problem.
 
     The basic structure is:
 
-    - Inputs: shape=(240,1). The shape reflect the number of close value for each istance (240)
+    - Inputs: shape=(240,1). The shape reflects the number of close values for each instance (240)
     and the number of features (1)
 
     - Dropout: drop(0.1)
 
     - Convolution: Conv1D(filters, kernel_size=kernel_size, strides=strides, activation='tanh')(drop)
-    The choise of parameters follows the "nature" of the task, the kernel_size is about one mouth
-    of trading days (20) and the strides is one week (5).
+    The choice of parameters follows the "nature" of the task, the kernel_size is almost one month
+    of trading days (20) and the stride is one week (5).
 
     - Pooling Layers:
             -- MaxPooling: MaxPooling1D(pool_size=5, strides=1, padding='valid')(conv)
@@ -50,38 +50,38 @@ def CNN_model(filters, dim, kernel_size=(20), strides=5, activation='tanh', min_
 
             -- If min_pooling = True
                 - MinPooling: MinPooling1D(pool_size=5, strides=1, padding='valid').pooling(conv)
-                find the min value in a pool_size of 5.
+                Find the min value in a pool_size of 5.
 
                 - Merge: Concatenate()([min_pool, max_pool])
-                Merge two pooling layers that have the same input to create a multiheaded structure
+                Merge two pooling layers that have the same input to create a multiheaded structure.
 
     - Dropout: drop(0.1)
 
     - Dense: Dense(25, activation= 'tanh')(flatten)
-    Compute all the feature and the information of the previous steps
+    Compute all the features and the information from the previous steps.
 
     - Output: Dense(1, activation='sigmoid'), the output is interpretated as the probability that
-    the input is grater than the cross-section median.
+    the input is grater than the cross-sectional median.
 
     Parameters
     ----------
     filters: integer
         The dimensionality of the output space (the number of output filters in the convolution).
-        Referances: https://keras.io/api/layers/convolution_layers/convolution1d/
+        Reference: https://keras.io/api/layers/convolution_layers/convolution1d/
 
     kernel_size: tuple of one integers (optional)
         Specifying the length of the 1D convolution window. Default = (20)
-        Referances: https://keras.io/api/layers/convolution_layers/convolution1d/
+        Reference: https://keras.io/api/layers/convolution_layers/convolution1d/
 
     strides: integer
-        specifying the stride length of the convolution. Default = 5
+        Specify the stride length of the convolution. Default = 5
         Specifying any stride value != 1 is incompatible with specifying any dilation_rate value != 1.
-        Referances: https://keras.io/api/layers/convolution_layers/convolution1d/
+        Reference: https://keras.io/api/layers/convolution_layers/convolution1d/
 
     activation: function to use (optional)
         If you don't specify anything, no activation is applied (see keras.activations).
         Default = 'tanh'
-        Referances: https://keras.io/api/layers/convolution_layers/convolution1d/
+        Reference: https://keras.io/api/layers/convolution_layers/convolution1d/
 
 
     Results
