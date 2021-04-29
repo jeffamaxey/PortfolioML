@@ -31,16 +31,18 @@ $ pip install .
 ├── LICENSE
 ├── portfolioML
 │   ├── data
-│   │   ├── preprocessing.py
+│   │   ├── after_test.csv
+│   │   ├── after_train.csv
 │   │   ├── autoencoder_cnn.py
 │   │   ├── autoencoders.py
 │   │   ├── data_generator.py
 │   │   ├── data_returns.py
-│   │   ├── after_test.csv
+│   │   ├── data_visualization.py
 │   │   ├── MultidimReturnsData1.csv
 │   │   ├── MultidimReturnsData2.csv
 │   │   ├── MultidimReturnsData3.csv
 │   │   ├── MultidimReturnsData4.csv
+│   │   ├── preprocessing.py
 │   │   ├── PriceData.csv
 │   │   ├── ReturnsBinary.csv
 │   │   ├── ReturnsBinaryPCA.csv
@@ -49,21 +51,49 @@ $ pip install .
 │   ├── makedir.py
 │   ├── model
 │   │   ├── CNN
+│   │   │   ├── CNN_dense
+│   │   │   ├── CNN_dense+
+│   │   │   ├── CNN_dense2_plus
+│   │   │   ├── CNN_dense_pca_wave
+│   │   │   ├── CNN_minpool
+│   │   │   └── cnn.py
 │   │   ├── DNN
+│   │   │   ├── DNN_mymod2
+│   │   │   ├── DNN_mymod2_pca
+│   │   │   ├── DNN_mymod4
+│   │   │   ├── DNN_paper
+│   │   │   ├── DNN_paper_auto
+│   │   │   ├── DNN_paper_pca
+│   │   │   └── dnn.py
 │   │   ├── LSTM
+│   │   │   ├── LSTM_Model1
+│   │   │   ├── LSTM_Model2
+│   │   │   ├── LSTM_Model4
+│   │   │   └── lstm.py
+│   │   ├── preprocessing_ang.py
 │   │   ├── RAF
+│   │   │   └── raf.py
 │   │   └── split.py
 │   ├── results
 │   │   ├── model_predict.py
 │   │   ├── portfolio_creation.py
 │   │   ├── predictions
+│   │   │   ├── CNN
+│   │   │   ├── DNN
+│   │   │   ├── LSTM
+│   │   │   └── RAF
 │   │   ├── predictions_for_portfolio
+│   │   │   ├── CNN
+│   │   │   ├── DNN
+│   │   │   ├── LSTM
+│   │   │   └── RAF
 │   │   ├── ROC
+│   │   │   ├── CNN
+│   │   │   ├── DNN
+│   │   │   ├── LSTM
+│   │   │   └── RAF
 │   └── tests
-│       ├── test_data_returns.py
-│       └── test_split.py
 ├── README.md
 ├── requirements.txt
 └── setup.py
 ```
-
