@@ -3,7 +3,6 @@ import os
 import random
 import unittest
 
-import numpy as np
 import pandas as pd
 from portfolioML.makedir import go_up
 

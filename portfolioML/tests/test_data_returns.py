@@ -5,13 +5,15 @@ import unittest
 
 import pandas as pd
 from portfolioML.data.data_returns import binary_targets, get_returns
+from portfolioML.makedir import go_up
 
 
 def _full_path(file_name):
     return os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
 
 
-dataframe = pd.read_csv(_full_path('PriceData.csv'))
+dataframe = pd.read_csv(_full_path(
+    go_up(1) + f'/PortfolioML/portfolioML/data/PriceData.csv'))
 
 
 class TestDataReturns(unittest.TestCase):
@@ -30,7 +32,8 @@ class TestDataReturns(unittest.TestCase):
         """
         Test if the dataframe created by get_returns is without missing values
         """
-        dataframe_no_nan = get_returns(dataframe, m=1, export_returns_csv=False)
+        dataframe_no_nan = get_returns(
+            dataframe, m=1, export_returns_csv=False)
         bool_list = dataframe_no_nan.isnull().any()
         self.assertTrue(bool_list.any() == False)
 
@@ -39,7 +42,8 @@ class TestDataReturns(unittest.TestCase):
         Test of the binary_targets function. Sample randomly from the data frame and check the condition that led
         to the binary classification
         """
-        dataframe_no_nan = get_returns(dataframe, m=1, export_returns_csv=False)
+        dataframe_no_nan = get_returns(
+            dataframe, m=1, export_returns_csv=False)
         binary_dataframe = binary_targets(
             dataframe_no_nan, export_binary_csv=False)
 
