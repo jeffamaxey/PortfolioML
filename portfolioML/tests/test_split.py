@@ -5,6 +5,7 @@ import unittest
 
 import numpy as np
 import pandas as pd
+from portfolioML.makedir import go_up
 from portfolioML.model.split import (all_data_LSTM, get_sequences,
                                      get_train_set, split_Tperiod)
 
@@ -13,8 +14,11 @@ def _full_path(file_name):
     return os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
 
 
-df_return = pd.read_csv(_full_path('ReturnsData.csv'))
-df_binary = pd.read_csv(_full_path('ReturnsBinary.csv'))
+df_return = pd.read_csv(_full_path(
+    go_up(1) + f'/PortfolioML/portfolioML/data/ReturnsData.csv'))
+
+df_binary = pd.read_csv(_full_path(
+    go_up(1) + f'/PortfolioML/portfolioML/data/ReturnsBinary.csv'))
 
 
 class TestDataReturns(unittest.TestCase):
