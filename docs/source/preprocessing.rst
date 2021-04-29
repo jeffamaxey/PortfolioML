@@ -37,7 +37,7 @@ details coefficients on that particulat scale [1]_ .
 .. image:: images/dwt.jpg
    :width: 300pt
 
-In our study, because of the objective is to forcast the returns data of the following day,
+In our study, since the objective is to forcast the returns data of the following day,
 we have applied the DWT to returns data over 3 time scales in order to keep only the "short-scale" information.
 The following pictures rappresent respectively the DWT of price and returns (the one we have used),
 in particular they contains the three details coefficients and the approximation on the last time-scale.
