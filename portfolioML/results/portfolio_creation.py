@@ -276,13 +276,13 @@ if __name__ == '__main__':
                                action='append', help='Select the particular model trained')
     parser.add_argument("--num_periods", '-p', type=int,
                         help="Number of period over which returns have to be calculated ")
-    parser.add_argument("--money", '-€', type=int, default=1,
+    parser.add_argument("--money", '-€', type=int, default=1000,
                         help="How much you want to invest")
     parser.add_argument("--top_bottom", '-tp', type=int, default=10,
                         help="Number of top (long pos) and bottom (short pos)")
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
-    parser.add_argument("--monkeys_num", type=int, default=10,
+    parser.add_argument("--monkeys_num", type=int, default=500,
                         help="How many monkeys do you want?")
     args = parser.parse_args()
 
