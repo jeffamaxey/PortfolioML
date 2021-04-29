@@ -61,6 +61,13 @@ There's a logic progression that should be used in order to obtain our results:
       python portfolio_creation.py --algorithm=<algorithm1> --algorithm=<algorithm2> --model_name=<model_name1> --model_name=<model_name2> --num_periods=<num_periods>
 
    where you can put as much algorithm (LSTM,CNN,DNN,RAF) as you want but the order must match with model_name.
+   For example, if you want to obtain the accumulative and distribution returns of CNN and RAF respect to the particular
+   models CNN_dense and RAF_auto over all the 17 periods, run the following
+
+   .. code-block:: python
+
+      python portfolio_creation.py --algorithm=CNN --algorithm=RAF --model_name=CNN_dense --model_name=RAF_auto --num_periods=17
+
 
 
 

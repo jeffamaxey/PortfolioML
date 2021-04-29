@@ -12,7 +12,7 @@ Authors: Angelo Lasala, Daniele Maria Di Nosse, Raffaele Paradiso.
 This package contains functions used to forecast stock market returns on a fraction of the S&P500 index.
 The procedure used is mainly focused on the following two articles and one book:
 
-Thomas Fischer, Christopher Krauss,
+* Thomas Fischer, Christopher Krauss,
 Deep learning with long short-term memory networks for financial market predictions,
 European Journal of Operational Research,
 Volume 270, Issue 2,
@@ -20,9 +20,9 @@ Volume 270, Issue 2,
 Pages 654-669,
 ISSN 0377-2217,
 https://doi.org/10.1016/j.ejor.2017.11.054.
-(https://www.sciencedirect.com/science/article/pii/S0377221717310652)
+(https://www.sciencedirect.com/science/article/pii/S0377221717310652).
 
-Christopher Krauss, Xuan Anh Do, Nicolas Huck,
+* Christopher Krauss, Xuan Anh Do, Nicolas Huck,
 Deep neural networks, gradient-boosted trees, random forests: Statistical arbitrage on the S&P 500,
 European Journal of Operational Research,
 Volume 259, Issue 2,
@@ -30,13 +30,13 @@ Volume 259, Issue 2,
 Pages 689-702,
 ISSN 0377-2217,
 https://doi.org/10.1016/j.ejor.2016.10.031.
-(https://www.sciencedirect.com/science/article/pii/S0377221716308657)
+(https://www.sciencedirect.com/science/article/pii/S0377221716308657).
 
-Jason Brownlee,
+* Jason Brownlee,
 Deep Learning for Time Series Forecasting: Predict the Future with MLPs, CNNs and LSTMs in Python,
 Machine Learning Mastery,
 2018,
-(https://machinelearningmastery.com/deep-learning-for-time-series-forecasting/)
+(https://machinelearningmastery.com/deep-learning-for-time-series-forecasting/).
 
 Contents:
 ---------
