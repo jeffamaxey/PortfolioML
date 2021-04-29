@@ -9,11 +9,12 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.layers import LSTM, Dense, Dropout, Input
 from keras.models import Sequential, load_model
 from keras.optimizers import Adam, RMSprop
+from keras.utils.vis_utils import plot_model
 from portfolioML.makedir import go_up, smart_makedir
 from portfolioML.model.split import all_data_LSTM, all_multidata_LSTM
 
 
-def LSTM_model(nodes, optimizer, dim, drop_out=0.2):
+def LSTM_model(nodes, optimizer, dim, drop_out=0.2, plot_figure=True):
     '''
     Architeture for the LSTM algorithm
 
@@ -28,6 +29,8 @@ def LSTM_model(nodes, optimizer, dim, drop_out=0.2):
         Number of features
     drop_out : float, optional
         Value of the dropout in all the dropout layers. The default is 0.2.
+    plot_figure : bool
+        Choose whether or not to plot the architeture of the model.
 
     Returns
     -------
@@ -59,6 +62,10 @@ def LSTM_model(nodes, optimizer, dim, drop_out=0.2):
 
     model.compile(loss='binary_crossentropy',
                   optimizer=opt, metrics=['accuracy'])
+
+    if plot_figure:
+        plot_model(model, to_file=f'LSTM:{nodes}_{optimizer}_{drop_out}.png',
+                   show_shapes=True, show_layer_names=True)
     return model
 
 
