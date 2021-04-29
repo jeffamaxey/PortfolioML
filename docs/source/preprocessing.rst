@@ -45,6 +45,7 @@ in particular they contains the three details coefficients and the approximation
 .. image:: images/dwtreturn.png
    :width: 400pt
 
+Respect to the one above, the following make clearer what DWT does on data.
 
 .. image:: images/dwtprice.png
    :width: 400pt
