@@ -76,6 +76,7 @@ There's a logic progression that should be used in order to obtain our results:
     create folders and files starting from their position. Keep in mind to run them from their
     folder.
 
+The following is represented the tree structure of the folder and the main files
 .. code-block:: bash
 
    ├── docs
