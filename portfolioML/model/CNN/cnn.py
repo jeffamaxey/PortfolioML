@@ -121,7 +121,7 @@ if __name__ == "__main__":
     parser.add_argument("filters", type=int, help="filters of convolutional layers")
     parser.add_argument('model_name', type=str, help='Choose the name of the model')
     parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
-    parser.add_argument("-kernel_size", type=tuple, default=(20), help="kernel_size, for more details see documentation")
+    parser.add_argument("-kernel_size", type=int, default=20, help="kernel_size, for more details see documentation")
     parser.add_argument("-strides", type=int, default=5, help="strides, for more details see documentation")
     parser.add_argument("-activation", type=str, default='tanh', help="activation, for more details see documentation")
     parser.add_argument("-min_pooling", action='store_true', help="If true the structure is multiheaded")
@@ -174,7 +174,9 @@ if __name__ == "__main__":
             X_train, y_train, X_test, y_test = all_data_LSTM(
                 df_returns, df_binary, per)
 
-        model = CNN_model(args.filters, min_pooling=args.min_pooling, plt_figure=args.plt_figure, dim=X_train.shape[2])
+        model = CNN_model(args.filters, dim=X_train.shape[2], kernel_size=tuple((args.kernel_size,)), 
+                        strides=args.strides, activation=args.activation,
+                        min_pooling=args.min_pooling, plt_figure=args.plt_figure )
        
         es = EarlyStopping(monitor='val_loss', patience=40, restore_best_weights=True)
         mc = ModelCheckpoint(f'{args.model_name}/{args.model_name}_period{per}.h5', monitor='val_loss', mode='min', verbose=0)
