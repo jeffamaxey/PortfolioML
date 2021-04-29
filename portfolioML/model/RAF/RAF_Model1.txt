@@ -1,1 +1,7 @@
-num_period=17, n_estimators=1000, criterion=gini,max_depth=25
+Number of periods: 17
+
+Number of estimators: 1000
+
+Criterion: gini
+
+Maximum depth of trees: 25

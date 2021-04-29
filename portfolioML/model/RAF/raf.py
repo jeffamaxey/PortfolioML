@@ -1,4 +1,4 @@
-'''Random Forest'''
+'''Random Forest Classifier'''
 import argparse
 import logging
 import sys
@@ -19,6 +19,17 @@ def predictions_and_roc(n_estimators, max_depth, num_period, criterion):
     Create the csv files of forecasts and plot the roc curve
     with mean and standard deviation of the area under the curve (auc).
 
+        To classify the binary target, the random forest classifier fits a large number
+        of decision tree on varius samples of the dataset and then make the classification.
+        The variable n_estimators is the number of decision trees in the random forest.
+        Every decision tree has a choosen maximum depth controlled by the variable max_depth.
+        The function to measure the quality of a split is given by the variable criterion.
+        The deafult criterion is the “gini” index for the measure of Gini impurity at each split
+        Note: this parameter is tree-specific.
+
+        For more information, visit:
+        https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
+
     Parameters
     ----------
     n_estimators : TYPE = integer
@@ -35,9 +46,8 @@ def predictions_and_roc(n_estimators, max_depth, num_period, criterion):
     ----------
 
     Each model is trained over several study period so its name contain this information,
-    for semplicity put this information in this way: '..._periond#' (for istance '_period0').
-    So before running this function,
-    carefully checking the existence of folder in order to avoid problems.
+    So before running this function, carefully checking the existence of the folder,
+    in order to avoid problems and lost the previous forecast.
 
     Tecnical aspects: because of each model has got different tpr and fps, an interpoletion
     of this values is used in order to have the same leght for each model.
@@ -53,8 +63,9 @@ def predictions_and_roc(n_estimators, max_depth, num_period, criterion):
     plt.figure()
 
     for i in range(0, num_period):
+        logging.info('============ Start Period %ith ===========', i)
+
         x_train, y_train, x_test, y_test = all_data_DNN(df_returns, df_binary, i)
-        print(6)
         rf_ = RandomForestClassifier(n_estimators, criterion, max_depth, n_jobs=-1,
                                     min_samples_split=2, min_samples_leaf=1,
                                     verbose=1)
@@ -62,12 +73,12 @@ def predictions_and_roc(n_estimators, max_depth, num_period, criterion):
             x_train = x_train_auto
             x_test = x_test_auto
         rf_.fit(x_train, y_train)
-        y_proba = rf_.predict_proba(x_test)
+        y_proba = rf_.predict_proba(x_test)[:,1]
 
-        fpr, tpr, thresholds = roc_curve(y_test, y_proba[:,1])
+        fpr, tpr, thresholds = roc_curve(y_test, y_proba)
         interp_tpr = np.interp(interp_fpr, fpr, tpr)
         tpr_list.append(interp_tpr)
-        roc_auc = roc_auc_score(y_test, y_proba[:,1])
+        roc_auc = roc_auc_score(y_test, y_proba)
         aucs_list.append(roc_auc)
 
         plt.plot(fpr, tpr, label=f'per{i} (area = %0.4f)' % (roc_auc))
@@ -75,15 +86,19 @@ def predictions_and_roc(n_estimators, max_depth, num_period, criterion):
         plt.xlabel('False Positive Rate',)
         plt.ylabel('True Positive Rate')
         plt.legend(loc="lower right", fontsize=12, frameon=False)
-        plt.title(f'ROC CURVE')
-        plt.savefig(path_r + f'ROC_CURVE.png')
+        plt.title('ROC CURVE')
+        plt.savefig(path_r + 'ROC_CURVE.png')
 
         y_pred_companies = [y_proba[i:87+i] for i in range(0,len(y_proba)-87+1,87)]
-        dict_comp = {df_returns.columns[i]: y_pred_companies[i] for i in range(len(df_returns.columns))}
+        dict_comp = {df_returns.columns[i]: \
+                    y_pred_companies[i] for i in range(len(df_returns.columns))}
         df_predictions = pd.DataFrame()
         for tick in df_returns.columns:
-            df_predictions[tick] = dict_comp[tick][:,0]
-            df_predictions.to_csv(path_p + f'RAF_{args.name_model}_Predictions_{i}th_Period.csv', index=False)
+            df_predictions[tick] = dict_comp[tick]
+            df_predictions.to_csv(path_p + f'RAF_{args.name_model}_Predictions_{i}th_Period.csv', \
+                                    index=False)
+
+        logging.info('============= End Period %ith ============', i)
 
     auc_mean = np.mean(np.array(aucs_list))
     auc_std = np.std(np.array(aucs_list))
@@ -100,20 +115,25 @@ def predictions_and_roc(n_estimators, max_depth, num_period, criterion):
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     plt.legend(loc="lower right", fontsize=12, frameon=False)
-    plt.title(f'ROC Curve - mean +|- std')
-    plt.savefig(path_r + f'ROC Curve - mean +|- std')
+    plt.title('ROC Curve - mean +|- std')
+    plt.savefig(path_r + 'ROC Curve - mean +|- std')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='RandomForestClassifier')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
     requiredNamed = parser.add_argument_group('Required named arguments')
-    requiredNamed.add_argument('-n','--num_period', type=int, default=1, help='Number of periods you want to train (leave blanck for default=17)')
-    requiredNamed.add_argument('-ne','--n_estimators', type=int, default=10, help='Number of trees (leave blanck for  default=1000)')
-    requiredNamed.add_argument('-md','--max_depth', type=int, default=5, help='Trees\'s depth (leave blanck for  default=25) ')
+    requiredNamed.add_argument('-n','--num_period', type=int, default=17,
+                        help='Number of periods you want to train (leave blanck for default=17)')
+    requiredNamed.add_argument('-ne','--n_estimators', type=int, default=1000,
+                        help='Number of trees (leave blanck for  default=1000)')
+    requiredNamed.add_argument('-md','--max_depth', type=int, default=25,
+                        help='Trees\'s depth (leave blanck for  default=25) ')
     requiredNamed.add_argument('name_model', type=str, help='Name_model')
-    parser.add_argument('-ae','--autoencoder', action="store_true", help='Features selected from autoencoder? (default=False)')
-    parser.add_argument('-c','--criterion', type=str, default='gini', help='Criterion (default=gini)')
+    parser.add_argument('-ae','--autoencoder', action="store_true",
+                        help='Features selected from autoencoder? (default=False)')
+    parser.add_argument('-c','--criterion', type=str, default='gini',
+                        help='Criterion (default=gini)')
     args = parser.parse_args()
 
     levels = {'critical': logging.CRITICAL,
@@ -127,7 +147,7 @@ if __name__ == "__main__":
 
     autoencoder_features = args.autoencoder
 
-    if autoencoder_features == True:
+    if autoencoder_features:
         df_returns_path = go_up(2) + "/data/ReturnsDataPCA.csv"
         df_binary_path = go_up(2) + "/data/ReturnsBinaryPCA.csv"
         df_auto_train_path = go_up(2) + "/data/after_train.csv"
@@ -146,10 +166,15 @@ if __name__ == "__main__":
         df_returns = pd.read_csv(df_returns_path)
         df_binary = pd.read_csv(df_binary_path)
 
-
     smart_makedir(f'/results/predictions/RAF/RAF_{args.name_model}/', level_up=2)
     smart_makedir(f'/results/ROC/RAF/RAF_{args.name_model}/', level_up=2)
 
-    predictions_and_roc(n_estimators=args.n_estimators, max_depth=args.max_depth, num_period=args.num_period, criterion=args.criterion)
+    predictions_and_roc(n_estimators=args.n_estimators, max_depth=args.max_depth, \
+                        num_period=args.num_period, criterion=args.criterion)
+
     with open(f"RAF_{args.name_model}.txt", 'a', encoding='utf-8') as file:
-        file.write(f'num_period={args.num_period}, n_estimators={args.n_estimators}, criterion={args.criterion},max_depth={args.max_depth}' + '\n')
+        file.write(
+            f'''\n Number of periods: {args.num_period}
+                \n Number of estimators: {args.n_estimators}
+                \n Criterion: {args.criterion}
+                \n Maximum depth of trees: {args.max_depth}''')
