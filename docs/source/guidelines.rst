@@ -1,7 +1,10 @@
 .. _guidelines:
 
-Initial Setup
+Guidelines
 =============
+
+Initial Setup
+-------------
 To run this project, clone the repository
 
 .. code-block:: bash
@@ -22,8 +25,8 @@ And then install with:
    $ cd ../PortfolioML/
    $ pip install .
 
-Guidelines
-===========
+How to use the package
+----------------------
 .. note::
    For every module, run at first
 
