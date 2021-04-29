@@ -32,7 +32,7 @@ Discrete Wavelet Tranform (DWT) is a kind of time series decomposition that is a
 information from both time and frequency domain simultaneously at different scales.
 Computationally speaking, it's implemented through a convolution of the signal with a low
 pass filter (D_LP) and a high pass filter (D_H), respectively outputs the so-called approximations and
-details coefficients on that particulat scale [1]_ .
+details coefficients on that particular scale [1]_ .
 
 .. image:: images/dwt.jpg
    :width: 300pt
