@@ -64,7 +64,7 @@ There's a logic progression that should be used in order to obtain our results:
    For example, if you want to obtain the accumulative and distribution returns of CNN and RAF respect to the particular
    models CNN_dense and RAF_auto over all the 17 periods, run the following
 
-   .. code-block:: python
+   .. code-block:: bash
 
       python portfolio_creation.py --algorithm=CNN --algorithm=RAF --model_name=CNN_dense --model_name=RAF_auto --num_periods=17
 
@@ -76,74 +76,73 @@ There's a logic progression that should be used in order to obtain our results:
     create folders and files starting from their position. Keep in mind to run them from their
     folder.
 
-```
-├── docs
-├── LICENSE
-├── portfolioML
-│   ├── data
-│   │   ├── after_test.csv
-│   │   ├── after_train.csv
-│   │   ├── autoencoder_cnn.py
-│   │   ├── autoencoders.py
-│   │   ├── data_generator.py
-│   │   ├── data_returns.py
-│   │   ├── data_visualization.py
-│   │   ├── MultidimReturnsData1.csv
-│   │   ├── MultidimReturnsData2.csv
-│   │   ├── MultidimReturnsData3.csv
-│   │   ├── MultidimReturnsData4.csv
-│   │   ├── preprocessing.py
-│   │   ├── PriceData.csv
-│   │   ├── ReturnsBinary.csv
-│   │   ├── ReturnsBinaryPCA.csv
-│   │   ├── ReturnsData.csv
-│   │   └── ReturnsDataPCA.csv
-│   ├── makedir.py
-│   ├── model
-│   │   ├── CNN
-│   │   │   ├── CNN_dense
-│   │   │   ├── CNN_dense+
-│   │   │   ├── CNN_dense2_plus
-│   │   │   ├── CNN_dense_pca_wave
-│   │   │   ├── CNN_minpool
-│   │   │   └── cnn.py
-│   │   ├── DNN
-│   │   │   ├── DNN_mymod2
-│   │   │   ├── DNN_mymod2_pca
-│   │   │   ├── DNN_mymod4
-│   │   │   ├── DNN_paper
-│   │   │   ├── DNN_paper_auto
-│   │   │   ├── DNN_paper_pca
-│   │   │   └── dnn.py
-│   │   ├── LSTM
-│   │   │   ├── LSTM_Model1
-│   │   │   ├── LSTM_Model2
-│   │   │   ├── LSTM_Model4
-│   │   │   └── lstm.py
-│   │   ├── preprocessing_ang.py
-│   │   ├── RAF
-│   │   │   └── raf.py
-│   │   └── split.py
-│   ├── results
-│   │   ├── model_predict.py
-│   │   ├── portfolio_creation.py
-│   │   ├── predictions
-│   │   │   ├── CNN
-│   │   │   ├── DNN
-│   │   │   ├── LSTM
-│   │   │   └── RAF
-│   │   ├── predictions_for_portfolio
-│   │   │   ├── CNN
-│   │   │   ├── DNN
-│   │   │   ├── LSTM
-│   │   │   └── RAF
-│   │   ├── ROC
-│   │   │   ├── CNN
-│   │   │   ├── DNN
-│   │   │   ├── LSTM
-│   │   │   └── RAF
-│   └── tests
-├── README.md
-├── requirements.txt
-└── setup.py
-```
+.. code-block:: bash
+   ├── docs
+   ├── LICENSE
+   ├── portfolioML
+   │   ├── data
+   │   │   ├── after_test.csv
+   │   │   ├── after_train.csv
+   │   │   ├── autoencoder_cnn.py
+   │   │   ├── autoencoders.py
+   │   │   ├── data_generator.py
+   │   │   ├── data_returns.py
+   │   │   ├── data_visualization.py
+   │   │   ├── MultidimReturnsData1.csv
+   │   │   ├── MultidimReturnsData2.csv
+   │   │   ├── MultidimReturnsData3.csv
+   │   │   ├── MultidimReturnsData4.csv
+   │   │   ├── preprocessing.py
+   │   │   ├── PriceData.csv
+   │   │   ├── ReturnsBinary.csv
+   │   │   ├── ReturnsBinaryPCA.csv
+   │   │   ├── ReturnsData.csv
+   │   │   └── ReturnsDataPCA.csv
+   │   ├── makedir.py
+   │   ├── model
+   │   │   ├── CNN
+   │   │   │   ├── CNN_dense
+   │   │   │   ├── CNN_dense+
+   │   │   │   ├── CNN_dense2_plus
+   │   │   │   ├── CNN_dense_pca_wave
+   │   │   │   ├── CNN_minpool
+   │   │   │   └── cnn.py
+   │   │   ├── DNN
+   │   │   │   ├── DNN_mymod2
+   │   │   │   ├── DNN_mymod2_pca
+   │   │   │   ├── DNN_mymod4
+   │   │   │   ├── DNN_paper
+   │   │   │   ├── DNN_paper_auto
+   │   │   │   ├── DNN_paper_pca
+   │   │   │   └── dnn.py
+   │   │   ├── LSTM
+   │   │   │   ├── LSTM_Model1
+   │   │   │   ├── LSTM_Model2
+   │   │   │   ├── LSTM_Model4
+   │   │   │   └── lstm.py
+   │   │   ├── preprocessing_ang.py
+   │   │   ├── RAF
+   │   │   │   └── raf.py
+   │   │   └── split.py
+   │   ├── results
+   │   │   ├── model_predict.py
+   │   │   ├── portfolio_creation.py
+   │   │   ├── predictions
+   │   │   │   ├── CNN
+   │   │   │   ├── DNN
+   │   │   │   ├── LSTM
+   │   │   │   └── RAF
+   │   │   ├── predictions_for_portfolio
+   │   │   │   ├── CNN
+   │   │   │   ├── DNN
+   │   │   │   ├── LSTM
+   │   │   │   └── RAF
+   │   │   ├── ROC
+   │   │   │   ├── CNN
+   │   │   │   ├── DNN
+   │   │   │   ├── LSTM
+   │   │   │   └── RAF
+   │   └── tests
+   ├── README.md
+   ├── requirements.txt
+   └── setup.py
