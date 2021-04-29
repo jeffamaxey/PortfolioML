@@ -10,7 +10,6 @@ from keras.models import Sequential
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from portfolioML.model.split import all_data_DNN
 from portfolioML.makedir import smart_makedir, go_up
-from portfolioML.data.preprocessing import pca
 
 def DNN_model(nodes_args, hidden=None , activation='tanh', loss='binary_crossentropy', optimizer='adam'):
     """
@@ -85,7 +84,7 @@ if __name__ == "__main__":
     parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
-    parser.add_argument('-prin_comp_anal', action='store_true', help="""Use the most important companies obtained by a PCA 
+    parser.add_argument('-prin_comp_anal', action='store_true', help="""Use the most important companies obtained by a PCA
                                                                decomposition on the first 250 PCs, default=False""")
 
 
@@ -109,7 +108,7 @@ if __name__ == "__main__":
         df_returns_path = go_up(2) + "/data/ReturnsData.csv"
         df_returns = pd.read_csv(df_returns_path)
         df_binary = pd.read_csv(df_binary_path)
-            
+
 
     smart_makedir(args.model_name)
     # losses = smart_makedir(args.model_name + "/losses")
