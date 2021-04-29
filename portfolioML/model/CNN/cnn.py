@@ -3,15 +3,16 @@ import argparse
 import logging
 import os
 
-import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-from keras.layers import Input, Dense, Dropout, Conv1D, MaxPooling1D, Flatten, Concatenate
-from keras.models import Model
+import pandas as pd
 from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.layers import (Concatenate, Conv1D, Dense, Dropout, Flatten, Input,
+                          MaxPooling1D)
+from keras.models import Model
 from keras.utils.vis_utils import plot_model
+from portfolioML.makedir import go_up, smart_makedir
 from portfolioML.model.split import all_data_LSTM, all_multidata_LSTM
-from portfolioML.makedir import smart_makedir, go_up
+
 
 class MinPooling1D(MaxPooling1D):
     """
@@ -19,7 +20,8 @@ class MinPooling1D(MaxPooling1D):
     """
 
     def __init__(self, pool_size=2, strides=None, padding='valid', data_format='channels_last', **kwargs):
-        super(MinPooling1D, self).__init__(pool_size, strides, padding, data_format, **kwargs)
+        super(MinPooling1D, self).__init__(
+            pool_size, strides, padding, data_format, **kwargs)
 
     def pooling(self, x):
         """
@@ -83,52 +85,67 @@ def CNN_model(filters, dim, kernel_size=(20), strides=5, activation='tanh', min_
         Default = 'tanh'
         Referances: https://keras.io/api/layers/convolution_layers/convolution1d/
 
+    plot_figure : bool
+        Choose whether or not to plot the architeture of the model
+
 
     Results
     -------
     model: tensorflow.python.keras.engine.sequential.Sequential
         tensorflow model with selected hidden layers
     """
-    inputs = Input(shape=(240,dim))
+    inputs = Input(shape=(240, dim))
     drop = Dropout(0.1)(inputs)
 
-    conv = Conv1D(filters, kernel_size=kernel_size, strides=strides, activation=activation)(drop)
+    conv = Conv1D(filters, kernel_size=kernel_size,
+                  strides=strides, activation=activation)(drop)
     max_pool = MaxPooling1D(pool_size=5, strides=1, padding='valid')(conv)
     if min_pooling:
-        min_pool = MinPooling1D(pool_size=5, strides=1, padding='valid').pooling(conv)
+        min_pool = MinPooling1D(pool_size=5, strides=1,
+                                padding='valid').pooling(conv)
         merge = Concatenate()([min_pool, max_pool])
         drop = Dropout(0.4)(merge)
-    else: drop = Dropout(0.4)(max_pool)
+    else:
+        drop = Dropout(0.4)(max_pool)
 
     flatten = Flatten()(drop)
 
-    dense = Dense(25, activation= 'tanh')(flatten)
+    dense = Dense(25, activation='tanh')(flatten)
     outputs = Dense(1, activation='sigmoid')(dense)
 
     model = Model(inputs=inputs, outputs=outputs)
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.compile(loss='binary_crossentropy',
+                  optimizer='adam', metrics=['accuracy'])
 
     if plt_figure:
         plot_model(model, to_file=f'CNN:fil{filters}_kernel{kernel_size}_strides{strides}_min{min_pooling}.png',
-                    show_shapes=True, show_layer_names=True)
+                   show_shapes=True, show_layer_names=True)
 
     logging.info(model.summary())
     return model
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Make CNN model for classification task to predict class label 0 or 1')
-    parser.add_argument("filters", type=int, help="filters of convolutional layers")
-    parser.add_argument('model_name', type=str, help='Choose the name of the model')
-    parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
-    parser.add_argument("-kernel_size", type=int, default=20, help="kernel_size, for more details see documentation")
-    parser.add_argument("-strides", type=int, default=5, help="strides, for more details see documentation")
-    parser.add_argument("-activation", type=str, default='tanh', help="activation, for more details see documentation")
-    parser.add_argument("-min_pooling", action='store_true', help="If true the structure is multiheaded")
-    parser.add_argument("-plt_figure", action='store_true', help="If true create png file of the model")
+    parser = argparse.ArgumentParser(
+        description='Make CNN model for classification task to predict class label 0 or 1')
+    parser.add_argument("filters", type=int,
+                        help="filters of convolutional layers")
+    parser.add_argument('model_name', type=str,
+                        help='Choose the name of the model')
+    parser.add_argument('num_periods', type=int,
+                        help='Number of periods you want to train')
+    parser.add_argument("-kernel_size", type=int, default=20,
+                        help="kernel_size, for more details see documentation")
+    parser.add_argument("-strides", type=int, default=5,
+                        help="strides, for more details see documentation")
+    parser.add_argument("-activation", type=str, default='tanh',
+                        help="activation, for more details see documentation")
+    parser.add_argument("-min_pooling", action='store_true',
+                        help="If true the structure is multiheaded")
+    parser.add_argument("-plt_figure", action='store_true',
+                        help="If true create png file of the model")
     parser.add_argument('-p', '--pca_wavelet', action='store_true',
                         help='Use the most important companies obtained by a PCA decomposition on the first 250 PCs and then DWT. Default: False')
-
 
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
@@ -141,12 +158,12 @@ if __name__ == "__main__":
               'info': logging.INFO,
               'debug': logging.DEBUG}
 
-    logging.basicConfig(level= levels[args.log])
+    logging.basicConfig(level=levels[args.log])
 
     # Get data paths
     df_multidimret_path = go_up(2) + "/data/MultidimReturnsData"
 
-    #Read the data
+    # Read the data
     if args.pca_wavelet:
         logging.info("==== PCA Reduction and Wavelet Decomposition ====")
         df_multiret = [pd.read_csv(df_multidimret_path + "1.csv"),
@@ -157,7 +174,6 @@ if __name__ == "__main__":
     else:
         df_returns = pd.read_csv(go_up(2) + "/data/ReturnsData.csv")
         df_binary = pd.read_csv(go_up(2) + "/data/ReturnsBinary.csv")
-
 
     smart_makedir(args.model_name)
     smart_makedir(args.model_name + "/accuracies_losses")
@@ -174,17 +190,21 @@ if __name__ == "__main__":
             X_train, y_train, X_test, y_test = all_data_LSTM(
                 df_returns, df_binary, per)
 
-        model = CNN_model(args.filters, dim=X_train.shape[2], kernel_size=tuple((args.kernel_size,)), 
-                        strides=args.strides, activation=args.activation,
-                        min_pooling=args.min_pooling, plt_figure=args.plt_figure )
-       
-        es = EarlyStopping(monitor='val_loss', patience=40, restore_best_weights=True)
-        mc = ModelCheckpoint(f'{args.model_name}/{args.model_name}_period{per}.h5', monitor='val_loss', mode='min', verbose=0)
-        history = model.fit(X_train ,y_train, callbacks=[es,mc],validation_split=0.2, batch_size=512, epochs=400, verbose=1)
+        model = CNN_model(args.filters, dim=X_train.shape[2], kernel_size=tuple((args.kernel_size,)),
+                          strides=args.strides, activation=args.activation,
+                          min_pooling=args.min_pooling, plt_figure=args.plt_figure)
 
-        #Elbow curve
-        plt.figure(f'{args.model_name} and Accuracy Period {per}', figsize=[20.0,10.0])
-        plt.subplot(1,2,1)
+        es = EarlyStopping(monitor='val_loss', patience=40,
+                           restore_best_weights=True)
+        mc = ModelCheckpoint(f'{args.model_name}/{args.model_name}_period{per}.h5',
+                             monitor='val_loss', mode='min', verbose=0)
+        history = model.fit(X_train, y_train, callbacks=[
+                            es, mc], validation_split=0.2, batch_size=512, epochs=400, verbose=1)
+
+        # Elbow curve
+        plt.figure(f'{args.model_name} and Accuracy Period {per}',
+                   figsize=[20.0, 10.0])
+        plt.subplot(1, 2, 1)
         plt.plot(history.history['loss'], label='train_loss')
         plt.plot(history.history['val_loss'], label='val_loss')
         plt.xlabel('Epochs')
@@ -192,17 +212,19 @@ if __name__ == "__main__":
         plt.grid()
         plt.legend()
 
-        plt.subplot(1,2,2)
+        plt.subplot(1, 2, 2)
         plt.plot(history.history['accuracy'], label='accuracy')
         plt.plot(history.history['val_accuracy'], label='val_accuracy')
         plt.xlabel('Epochs')
         plt.title('Training and Validation Accuracies vs Epochs')
         plt.grid()
         plt.legend()
-        plt.savefig(os.getcwd() + f'/{args.model_name}/accuracies_losses/accuracies_{per}.png')
+        plt.savefig(
+            os.getcwd() + f'/{args.model_name}/accuracies_losses/accuracies_{per}.png')
 
     plt.show()
 
     with open(f"{args.model_name}/{args.model_name}_specifics.txt", 'w', encoding='utf-8') as file:
-        file.write(f'\n Model Name: {args.model_name} \n Number of periods: {args.num_periods} \n Number of filters in conv layers: {args.filters} \n \n')
+        file.write(
+            f'\n Model Name: {args.model_name} \n Number of periods: {args.num_periods} \n Number of filters in conv layers: {args.filters} \n \n')
         model.summary(print_fn=lambda x: file.write(x + '\n'))
