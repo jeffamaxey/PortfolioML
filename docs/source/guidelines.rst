@@ -1,5 +1,27 @@
 .. _guidelines:
 
+Initial Setup
+=============
+To run this project, clone the repository
+
+.. code-block:: bash
+
+   $ git clone https://github.com/DanieleMDiNosse/PortfolioML.git
+
+If you use conda, you can create a new conda environment with:
+
+.. code-block:: bash
+
+   $ conda create -n <name_environment>
+   $ conda activate <name_environment>
+
+And then install with:
+
+.. code-block:: bash
+
+   $ cd ../PortfolioML/
+   $ pip install .
+
 Guidelines
 ===========
 .. note::
@@ -27,7 +49,7 @@ There's a logic progression that should be used in order to obtain our results:
    creates all the portfolios on that days based on long-top-k and short-bottom-k companies and
    saves some images related to returns distribution and accumulative returns compared with results
    of a randomness test.
-   
+
 .. note::
    For ``portfolioML.results.portfolio_creation`` the correct syntax to run it is
 
