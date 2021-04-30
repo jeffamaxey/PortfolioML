@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from portfolioML.data.preprocessing import approx_details_scale
+from portfolioML.makedir import go_up
 
 sys.path.append(os.path.dirname(os.path.abspath("..")))
 
@@ -98,7 +99,7 @@ def plot_wavelet(df_price, data, name, time_scale=3):
             plt.xticks([])
             plt.legend()
 
-    plt.savefig("Discrete Wavelet Trasformation of Close " + name + " Data")
+    plt.savefig("Discrete_Wavelet_Trasformation_of_Close_" + name + "_Data")
 
 
 if __name__ == "__main__":
@@ -137,6 +138,7 @@ if __name__ == "__main__":
     plt.title("Close price of several Companies")
     plt.ylabel("Close price")
     plt.xlabel("Days")
+    plt.savefig("Five_price_data.png")
 
     # Create feature
     data_feature = stock_features_df(
@@ -159,6 +161,7 @@ if __name__ == "__main__":
     # Draw the heatmap with the mask and correct aspect ratio
     sns.heatmap(corr, mask=mask, cmap=cmap, vmax=0.5, center=0,
                 square=True, linewidths=0.00005)
+    f.savefig("Correlation_matrix.png")
 
     df_price = pd.read_csv('PriceData.csv')
     df_returns = pd.read_csv('ReturnsData.csv')
