@@ -58,7 +58,7 @@ class TestDataReturns(unittest.TestCase):
 
         # reshape
         list2, y2 = get_train_set(df_return, df_binary)
-        self.assertTrue((list1 == list2[:9 * 6300]).all())
+        self.assertTrue((list1 == list2[:9 * 6300]))
 
     def test_all_data_LSTM(self):
         '''Test of all_data_LSTM function'''
