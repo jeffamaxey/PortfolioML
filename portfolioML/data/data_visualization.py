@@ -128,7 +128,7 @@ if __name__ == "__main__":
     x_label_position = np.arange(0, len(days), 150)
     x_label_day = [days[i] for i in x_label_position]
 
-    plt.figure(figsize=[13, 15])
+    plt.figure(figsize=[15,15])
     for i in np.random.randint(1, 365, 5):
         comp = df_price.columns[i]
         plt.plot(df_price[comp], lw=0.8, label=f"{comp}")
