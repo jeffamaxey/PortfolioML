@@ -127,7 +127,7 @@ if __name__ == "__main__":
                         help='Number of periods you want to train (leave blanck for default=17)')
     requiredNamed.add_argument('-ne','--n_estimators', type=int, default=1000,
                         help='Number of trees (leave blanck for  default=1000)')
-    requiredNamed.add_argument('-md','--max_depth', type=int, default=20,
+    requiredNamed.add_argument('-md','--max_depth', type=int, default=25,
                         help='Trees\'s depth (leave blanck for  default=25) ')
     requiredNamed.add_argument('name_model', type=str, help='Name_model')
     parser.add_argument('-ae','--autoencoder', action="store_true",
