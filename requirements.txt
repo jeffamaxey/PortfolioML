@@ -8,6 +8,8 @@ scipy==1.6.2
 PyWavelets==1.1.1
 seaborn==0.11.1
 beautifulsoup4==4.9.3
-tensorflow
+pydot==1.4.2
+graphviz==0.16
+tensorflow==2.2.0
 sklearn
 sphinx_rtd_theme
