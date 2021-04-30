@@ -268,7 +268,9 @@ def monkey_trading(df_price, monkeys_num, num_periods, k=10, money=1.):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Creation of portfolios based on selected model predictions and plot basic statistical')
+        description='''Creation of portfolios based on selected model predictions
+         and plot basic statistical. See the second note at https://portfolioml.readthedocs.io/en/latest/source/guidelines.html
+        for more information.''')
     requiredNamed = parser.add_argument_group('Required named arguments')
     requiredNamed.add_argument(
         '--algorithm', '-a', type=str, action='append', help='CNN, LSTM , DNN and/or RAF')
