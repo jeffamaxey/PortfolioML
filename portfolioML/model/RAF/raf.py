@@ -2,13 +2,15 @@
 import argparse
 import logging
 import sys
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import roc_auc_score,roc_curve
+from portfolioML.makedir import go_up, smart_makedir
 from portfolioML.model.split import all_data_DNN
-from portfolioML.makedir import smart_makedir, go_up
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import roc_auc_score, roc_curve
+
 if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore")
@@ -65,15 +67,16 @@ def predictions_and_roc(n_estimators, max_depth, num_period, criterion):
     for i in range(0, num_period):
         logging.info('============ Start Period %ith ===========', i)
 
-        x_train, y_train, x_test, y_test = all_data_DNN(df_returns, df_binary, i)
+        x_train, y_train, x_test, y_test = all_data_DNN(
+            df_returns, df_binary, i)
         rf_ = RandomForestClassifier(n_estimators, criterion, max_depth, n_jobs=-1,
-                                    min_samples_split=2, min_samples_leaf=1,
-                                    verbose=1)
+                                     min_samples_split=2, min_samples_leaf=1,
+                                     verbose=1)
         if autoencoder_features:
             x_train = x_train_auto
             x_test = x_test_auto
         rf_.fit(x_train, y_train)
-        y_proba = rf_.predict_proba(x_test)[:,1]
+        y_proba = rf_.predict_proba(x_test)[:, 1]
 
         fpr, tpr, thresholds = roc_curve(y_test, y_proba)
         interp_tpr = np.interp(interp_fpr, fpr, tpr)
@@ -89,14 +92,15 @@ def predictions_and_roc(n_estimators, max_depth, num_period, criterion):
         plt.title('ROC CURVE')
         plt.savefig(path_r + 'ROC_CURVE.png')
 
-        y_pred_companies = [y_proba[i:87+i] for i in range(0,len(y_proba)-87+1,87)]
-        dict_comp = {df_returns.columns[i]: \
-                    y_pred_companies[i] for i in range(len(df_returns.columns))}
+        y_pred_companies = [y_proba[i:87 + i]
+                            for i in range(0, len(y_proba) - 87 + 1, 87)]
+        dict_comp = {df_returns.columns[i]:
+                     y_pred_companies[i] for i in range(len(df_returns.columns))}
         df_predictions = pd.DataFrame()
         for tick in df_returns.columns:
             df_predictions[tick] = dict_comp[tick]
-            df_predictions.to_csv(path_p + f'RAF_{args.name_model}_Predictions_{i}th_Period.csv', \
-                                    index=False)
+            df_predictions.to_csv(path_p + f'RAF_{args.name_model}_Predictions_{i}th_Period.csv',
+                                  index=False)
 
         logging.info('============= End Period %ith ============', i)
 
@@ -106,33 +110,34 @@ def predictions_and_roc(n_estimators, max_depth, num_period, criterion):
 
     plt.figure()
     plt.plot(interp_fpr, tpr_mean, color='b',
-            label=fr'Mean ROC (AUC = {auc_mean:.4f} $\pm$ {auc_std:.4f})', lw=1, alpha=.8)
+             label=fr'Mean ROC (AUC = {auc_mean:.4f} $\pm$ {auc_std:.4f})', lw=1, alpha=.8)
     tpr_std = np.std(tpr_list, axis=0)
     tprs_upper = np.minimum(tpr_mean + tpr_std, 1)
     tprs_lower = np.maximum(tpr_mean - tpr_std, 0)
     plt.fill_between(interp_fpr, tprs_lower, tprs_upper, color='blue', alpha=.2,
-                    label=r'$\pm$ 1 std. dev.')
+                     label=r'$\pm$ 1 std. dev.')
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     plt.legend(loc="lower right", fontsize=12, frameon=False)
     plt.title('ROC Curve - mean +|- std')
     plt.savefig(path_r + 'ROC Curve - mean +|- std')
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='RandomForestClassifier')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
     requiredNamed = parser.add_argument_group('Required named arguments')
-    requiredNamed.add_argument('-n','--num_period', type=int, default=17,
-                        help='Number of periods you want to train (leave blanck for default=17)')
-    requiredNamed.add_argument('-ne','--n_estimators', type=int, default=1000,
-                        help='Number of trees (leave blanck for  default=1000)')
-    requiredNamed.add_argument('-md','--max_depth', type=int, default=25,
-                        help='Trees\'s depth (leave blanck for  default=25) ')
+    requiredNamed.add_argument('-n', '--num_period', type=int, default=17,
+                               help='Number of periods you want to train (leave blanck for default=17)')
+    requiredNamed.add_argument('-ne', '--n_estimators', type=int, default=1000,
+                               help='Number of trees (leave blanck for  default=1000)')
+    requiredNamed.add_argument('-md', '--max_depth', type=int, default=25,
+                               help='Trees\'s depth (leave blanck for  default=25) ')
     requiredNamed.add_argument('name_model', type=str, help='Name_model')
-    parser.add_argument('-ae','--autoencoder', action="store_true",
+    parser.add_argument('-ae', '--autoencoder', action="store_true",
                         help='Features selected from autoencoder? (default=False)')
-    parser.add_argument('-c','--criterion', type=str, default='gini',
+    parser.add_argument('-c', '--criterion', type=str, default='gini',
                         help='Criterion (default=gini)')
     args = parser.parse_args()
 
@@ -142,7 +147,7 @@ if __name__ == "__main__":
               'info': logging.INFO,
               'debug': logging.DEBUG}
 
-    logging.basicConfig(level= levels[args.log])
+    logging.basicConfig(level=levels[args.log])
     pd.options.mode.chained_assignment = None
 
     autoencoder_features = args.autoencoder
@@ -166,10 +171,11 @@ if __name__ == "__main__":
         df_returns = pd.read_csv(df_returns_path)
         df_binary = pd.read_csv(df_binary_path)
 
-    smart_makedir(f'/results/predictions/RAF/RAF_{args.name_model}/', level_up=2)
+    smart_makedir(
+        f'/results/predictions/RAF/RAF_{args.name_model}/', level_up=2)
     smart_makedir(f'/results/ROC/RAF/RAF_{args.name_model}/', level_up=2)
 
-    predictions_and_roc(n_estimators=args.n_estimators, max_depth=args.max_depth, \
+    predictions_and_roc(n_estimators=args.n_estimators, max_depth=args.max_depth,
                         num_period=args.num_period, criterion=args.criterion)
 
     with open(f"RAF_{args.name_model}.txt", 'a', encoding='utf-8') as file:
