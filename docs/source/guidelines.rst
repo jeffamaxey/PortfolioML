@@ -66,7 +66,7 @@ There's a logic progression that should be used in order to obtain our results:
 
    .. code-block:: bash
 
-      python portfolio_creation.py --algorithm=CNN --algorithm=RAF --model_name=CNN_dense --model_name=RAF_auto --num_periods=17
+      python portfolio_creation.py --algorithm=CNN --algorithm=RAF --model_name=CNN_dense --model_name=RAF_Model1 --num_periods=17
 
 
 
