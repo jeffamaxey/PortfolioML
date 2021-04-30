@@ -2,16 +2,19 @@
 import argparse
 import logging
 import os
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from keras.layers import Input, Dense, Dropout
-from keras.models import Sequential
 from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.layers import Dense, Dropout, Input
+from keras.models import Sequential
+from keras.utils.vis_utils import plot_model
+from portfolioML.makedir import go_up, smart_makedir
 from portfolioML.model.split import all_data_DNN
-from portfolioML.makedir import smart_makedir, go_up
 
-def DNN_model(nodes_args, hidden=None , activation='tanh', loss='binary_crossentropy', optimizer='adam'):
+
+def DNN_model(nodes_args, hidden=None, activation='tanh', loss='binary_crossentropy', optimizer='adam', plot_figure=True):
     """
     DNN model with selected number of hidden layer for classification task.
     For more details about the model see the reference
@@ -33,7 +36,7 @@ def DNN_model(nodes_args, hidden=None , activation='tanh', loss='binary_crossent
     nodes_args: list of integer
         Number of nodes for each layers.
     hidden: integer(optional), default = None
-        Number of hidden layers, the actual values of the nodes are fixed in descrescent way
+        Number of hidden layers, the actual values of the nodes are fixed in a descrescent fashion
         from 3 to 5 through the np.linspace function (np.linspace(31,5,hidden)).
         Follow some useful example:
         - 3: [31,18,5]
@@ -62,7 +65,7 @@ def DNN_model(nodes_args, hidden=None , activation='tanh', loss='binary_crossent
 
     if hidden is not None:
         logging.info("Nember of layers is determined by argument hidden")
-        nodes = [int(i) for i in np.linspace(31,5,hidden)]
+        nodes = [int(i) for i in np.linspace(31, 5, hidden)]
     else:
         nodes = nodes_args
 
@@ -74,19 +77,26 @@ def DNN_model(nodes_args, hidden=None , activation='tanh', loss='binary_crossent
 
     model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
     logging.info(model.summary())
+
+    if plot_figure:
+        plot_model(model, to_file=f'DNN: {nodes_args}_{optimizer}.png',
+                   show_shapes=True, show_layer_names=True)
     return model
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Make DNN for classification task to prediction class label 0 or 1')
+    parser = argparse.ArgumentParser(
+        description='Make DNN for classification task to prediction class label 0 or 1')
     parser.add_argument("nodes", type=int, nargs='+',
                         help='Number of nodes in each layers of DNN, see documentation')
-    parser.add_argument('model_name', type=str, help='Choose the name of the model')
-    parser.add_argument('num_periods', type=int, help='Number of periods you want to train')
+    parser.add_argument('model_name', type=str,
+                        help='Choose the name of the model')
+    parser.add_argument('num_periods', type=int,
+                        help='Number of periods you want to train')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
     parser.add_argument('-prin_comp_anal', action='store_true', help="""Use the most important companies obtained by a PCA
                                                                decomposition on the first 250 PCs, default=False""")
-
 
     args = parser.parse_args()
 
@@ -96,11 +106,12 @@ if __name__ == "__main__":
               'info': logging.INFO,
               'debug': logging.DEBUG}
 
-    logging.basicConfig(level= levels[args.log])
+    logging.basicConfig(level=levels[args.log])
 
-    #Read the data
+    # Read the data
     if args.prin_comp_anal:
-        logging.info("Using the most important companies obtained from a PCA decomposition")
+        logging.info(
+            "Using the most important companies obtained from a PCA decomposition")
         df_returns = pd.read_csv(go_up(2) + "/data/ReturnsDataPCA.csv")
         df_binary = pd.read_csv(go_up(2) + "/data/ReturnsBinaryPCA.csv")
     else:
@@ -109,23 +120,26 @@ if __name__ == "__main__":
         df_returns = pd.read_csv(df_returns_path)
         df_binary = pd.read_csv(df_binary_path)
 
-
     smart_makedir(args.model_name)
     # losses = smart_makedir(args.model_name + "/losses")
     smart_makedir(args.model_name + "/accuracies_losses")
 
     for per in range(args.num_periods):
         model = DNN_model(args.nodes, optimizer='adam')
-        #Splitting data for each period
-        X_train, y_train, X_test, y_test = all_data_DNN(df_returns, df_binary, per)
-        #Trainng
-        es = EarlyStopping(monitor='val_loss', patience=30, restore_best_weights=True)
-        mc = ModelCheckpoint(f'{args.model_name}/{args.model_name}_period{per}.h5', monitor='val_loss', mode='min', verbose=0)
-        history = model.fit(X_train ,y_train, callbacks=[es,mc],validation_split=0.2, batch_size=256, epochs=400, verbose=1)
+        # Splitting data for each period
+        X_train, y_train, X_test, y_test = all_data_DNN(
+            df_returns, df_binary, per)
+        # Trainng
+        es = EarlyStopping(monitor='val_loss', patience=30,
+                           restore_best_weights=True)
+        mc = ModelCheckpoint(f'{args.model_name}/{args.model_name}_period{per}.h5',
+                             monitor='val_loss', mode='min', verbose=0)
+        history = model.fit(X_train, y_train, callbacks=[
+                            es, mc], validation_split=0.2, batch_size=256, epochs=400, verbose=1)
 
-        #Elbow curve
-        plt.figure(f'Loss and Accuracy Period {per}', figsize=[20.0,10.0])
-        plt.subplot(1,2,1)
+        # Elbow curve
+        plt.figure(f'Loss and Accuracy Period {per}', figsize=[20.0, 10.0])
+        plt.subplot(1, 2, 1)
         plt.plot(history.history['loss'], label='train_loss')
         plt.plot(history.history['val_loss'], label='val_loss')
         plt.xlabel('Epochs')
@@ -133,17 +147,19 @@ if __name__ == "__main__":
         plt.grid()
         plt.legend()
 
-        plt.subplot(1,2,2)
+        plt.subplot(1, 2, 2)
         plt.plot(history.history['accuracy'], label='accuracy')
         plt.plot(history.history['val_accuracy'], label='val_accuracy')
         plt.xlabel('Epochs')
         plt.title('Training and Validation Accuracies vs Epochs')
         plt.grid()
         plt.legend()
-        plt.savefig(os.getcwd() + f'/{args.model_name}/accuracies_losses/accuracies_{per}.png')
+        plt.savefig(
+            os.getcwd() + f'/{args.model_name}/accuracies_losses/accuracies_{per}.png')
 
     with open(f"{args.model_name}/{args.model_name}_specifics.txt", 'w', encoding='utf-8') as file:
-        file.write(f'\n Model Name: {args.model_name} \n Number of periods: {args.num_periods} \n Number of nodes: {args.nodes} \n \n')
+        file.write(
+            f'\n Model Name: {args.model_name} \n Number of periods: {args.num_periods} \n Number of nodes: {args.nodes} \n \n')
         model.summary(print_fn=lambda x: file.write(x + '\n'))
 
     plt.show()
