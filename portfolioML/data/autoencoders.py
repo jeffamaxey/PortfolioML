@@ -68,7 +68,7 @@ def autoencoder(df_returns, df_binary, period, bottneck, save=True, plot=False):
 
     start = time.time()
     after = []
-    for i in range(5,6):
+    for i in range(len(x_train)):
         encoder = Model(input_img, bottleneck)
         encoder.compile(optimizer='adam', loss='mse')
         autoencod = Model(input_img, decoded)
