@@ -19,7 +19,7 @@ class TestDataReturns(unittest.TestCase):
         rand = random.randint(0, 9)
         rand1 = random.randint(0, 3)
         algorithm = ['CNN', 'RAF', 'LSTM', 'DNN']
-        model_name = ['CNN_dense', 'RAF_model1', 'LSTM_Model3', 'DNN_paper']
+        model_name = ['CNN_dense', 'RAF_Model1', 'LSTM_Model3', 'DNN_paper']
         path = f'''/results/predictions_for_portfolio/
                         {algorithm[rand1]}/{model_name[rand1]}/Trading_days_period{rand}.csv'''
         trading_days = pd.read_csv(_full_path(go_up(1) + f'/PortfolioML/portfolioML/results/predictions_for_portfolio/{algorithm[rand1]}/{model_name[rand1]}/Trading_days_period{rand}.csv'))
