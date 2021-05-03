@@ -1,5 +1,6 @@
 """Pre-processing dataframe"""
 import argparse
+import sys
 import logging
 from statistics import median
 
@@ -10,7 +11,7 @@ from portfolioML.data.preprocessing import wavelet_dataframe
 
 def get_returns(dataframe, export_returns_csv, m=1, no_missing=True):
     """
-    Get the day-by-day returns values for a company. The dataframe has companies as attributes
+    Get day-by-day returns values for a company. The dataframe has companies as attributes
     and days as rows, the values are the close prices of each days.
 
     Parameters
@@ -38,7 +39,7 @@ def get_returns(dataframe, export_returns_csv, m=1, no_missing=True):
                 "Ops! Invalid input, you can't go backward in time: m must be positive.")
     except ValueError as ve:
         print(ve)
-        exit()
+        sys.exit()
 
     df = pd.DataFrame()
     for col in dataframe.columns[1:]:  # Not pick Data column
@@ -85,7 +86,6 @@ def binary_targets(dataframe, export_binary_csv, name='ReturnsBinary'):
     df = dataframe
     for time_idx in range(dataframe.shape[0]):
         compare_list = list(dataframe.iloc[time_idx].values)
-        compare_list.sort()
         compare_value = median(compare_list)
 
         df.iloc[time_idx] = dataframe.iloc[time_idx].apply(

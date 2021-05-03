@@ -11,12 +11,13 @@ import seaborn as sns
 from portfolioML.data.preprocessing import approx_details_scale
 from portfolioML.makedir import go_up
 
-sys.path.append(os.path.dirname(os.path.abspath("..")))
+# sys.path.append(os.path.dirname(os.path.abspath("..")))
 
 
 def stock_features_df(dataframe, time_feature_steps=5):
     """
-    Given a dataset of returns(prices) it returns the feature each time_feature_steps.
+    DEPRECATED.
+    Given a dataset of returns(prices) it returns the feature at each time_feature_steps.
     the featare are now only the mean values of returns(prices) each time_feature_steps
 
     Parameters
@@ -47,8 +48,8 @@ def stock_features_df(dataframe, time_feature_steps=5):
 
 def plot_wavelet(df_price, data, name, time_scale=3):
     """
-    Plot original data and wavelet decoposition of input data.
-    DWT is compute over selected time scale
+    Plot original data and wavelet decomposition of input data.
+    DWT is compute over selected time scale.
 
     Parameters
     ----------
@@ -62,7 +63,7 @@ def plot_wavelet(df_price, data, name, time_scale=3):
         Figure name
 
     time_scale : integer(optional)
-        Time scales over wich compute the DWT. Default=3
+        Time scales over wich compute the DWT. Default = 3
     """
     df_price = pd.read_csv('PriceData.csv')
 
@@ -71,7 +72,7 @@ def plot_wavelet(df_price, data, name, time_scale=3):
     x_label_day = [days[i] for i in x_label_position]
 
     plt.figure(figsize=[15, 15])
-    plt.subplot(time_scale + 2, 1, 1)
+    plt.subplot(time_scale + 2, 1, 1)  # num of subplots = time_scale plots + approximation + original data
     plt.plot(data, lw=0.9, c='mediumblue', label='original time-series')
     plt.title("Discrete_Wavelet_Trasformation_of_Close_" + name + "_Data")
     plt.xticks([])
@@ -120,7 +121,8 @@ if __name__ == "__main__":
     logging.basicConfig(level=levels[args.log])
 
     # Read the data
-    df_price = pd.read_csv(go_up(1) + "/data/PriceData.csv")
+    df_price = pd.read_csv('PriceData.csv')
+    df_returns = pd.read_csv('ReturnsData.csv')
     df_price = df_price.dropna(axis=1)
 
     # Data Visualization
@@ -128,7 +130,7 @@ if __name__ == "__main__":
     x_label_position = np.arange(0, len(days), 150)
     x_label_day = [days[i] for i in x_label_position]
 
-    plt.figure(figsize=[15,15])
+    plt.figure(figsize=[15, 15])
     for i in np.random.randint(1, 365, 5):
         comp = df_price.columns[i]
         plt.plot(df_price[comp], lw=0.8, label=f"{comp}")
@@ -140,31 +142,10 @@ if __name__ == "__main__":
     plt.xlabel("Days")
     plt.savefig("Five_price_data.png")
 
-    # Create feature
-    data_feature = stock_features_df(
-        df_price[1:], time_feature_steps=args.time_feature_steps)
-    print(data_feature.head())
-
-    # Correlazioni semplici
-    corr = data_feature.transpose().corr()
-
-    # Generate a mask for the upper triangle
-    mask = np.triu(np.ones_like(corr, dtype=bool))
-
-    # Set up the matplotlib figure
-    f, ax = plt.subplots(figsize=(11, 9))
-    ax.set_title("Correlation Matrix")
-
-    # Generate a custom diverging colormap
-    cmap = sns.diverging_palette(230, 15, as_cmap=True)
-
-    # Draw the heatmap with the mask and correct aspect ratio
-    sns.heatmap(corr, mask=mask, cmap=cmap, vmax=0.5, center=0,
-                square=True, linewidths=0.00005)
-    f.savefig("Correlation_matrix.png")
-
     df_price = pd.read_csv('PriceData.csv')
     df_returns = pd.read_csv('ReturnsData.csv')
+
+    # Wavelet decomposition of a single company
     Price = np.array(df_price['DIS'])
     Return = np.array(df_returns['DIS'])
 
