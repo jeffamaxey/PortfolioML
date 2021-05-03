@@ -54,7 +54,7 @@ def autoencoder(df_returns, df_binary, period, bottneck, save=True, plot=False):
     x_train, y_train, x_test, y_test = all_data_LSTM(
         df_returns, df_binary, period)
     x_train = np.reshape(x_train, (len(x_train), 1, 240))
-    print(len(x_train))
+    x_test = np.reshape(x_test, (len(x_test), 1, 240))
 
     input_img = Input(shape=(240,), name='Input')
     encoded = Dense(150, activation='relu',
@@ -158,6 +158,7 @@ if __name__ == "__main__":
         encoder = load_model(f'Autoencoder/autoencoder_period_{per}/encoder_train.h5')
         x_train, y_train, x_test, y_test = all_data_LSTM(df_ret, df_bin, per)
         x_train = np.reshape(x_train, (len(x_train), 1, 240))
+        x_test = np.reshape(x_test, (len(x_test), 1, 240))
         after = []
         for i in range(len(x_train)):
             afterbot = encoder.predict(x_train[i])
@@ -165,7 +166,7 @@ if __name__ == "__main__":
         after = np.array(after)
         df = pd.DataFrame(
         after, columns=[f'selected feature_{i}' for i in range(len(after[0]))])
-        df.to_csv('encoder_train123.csv', index=False)
+        df.to_csv('encoder_train.csv', index=False)
 
     if created:
         autoencoder(df_ret, df_bin, per, botneck)
