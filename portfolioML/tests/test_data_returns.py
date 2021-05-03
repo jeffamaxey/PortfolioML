@@ -33,7 +33,7 @@ class TestDataReturns(unittest.TestCase):
         Test if the dataframe created by get_returns is without missing values
         """
         dataframe_no_nan = get_returns(
-            dataframe, m=1, export_returns_csv=False)
+            dataframe, export_returns_csv=False, m=1)
         bool_list = dataframe_no_nan.isnull().any()
         self.assertTrue(bool_list.any() == False)
 
@@ -43,13 +43,13 @@ class TestDataReturns(unittest.TestCase):
         to the binary classification
         """
         dataframe_no_nan = get_returns(
-            dataframe, m=1, export_returns_csv=False)
+            dataframe, export_returns_csv=False, m=1)
         binary_dataframe = binary_targets(
             dataframe_no_nan, export_binary_csv=False)
 
-        for i in range(10):
+        for i in range(20):
             row = random.randint(0, binary_dataframe.shape[0])
-            column = random.randint(1, binary_dataframe.shape[1])
+            column = random.randint(0, binary_dataframe.shape[1] - 1)
 
             compare_list = list(dataframe_no_nan.iloc[row].values)
             compare_list.sort()
