@@ -1,7 +1,4 @@
 """Split time-series in traning and test (trading) sets for classification via ANN """
-import argparse
-import logging
-
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
@@ -17,10 +14,10 @@ def split_Tperiod(df_returns, df_binary, len_period=1308, len_test=327):
 
     Parameters
     ----------
-    df_returns: pandas dataframe
+    df_returns: pandas.core.frame.DataFrame
         Pandas dataframe of returns.
 
-    df_binary: pandas dataframe
+    df_binary: pandas.core.frame.DataFrame
         Pandas dataframe of binary targets.
 
     len_period: integer(optional)
@@ -31,7 +28,7 @@ def split_Tperiod(df_returns, df_binary, len_period=1308, len_test=327):
 
     Returns
     -------
-    periods: list of pandas dataframe
+    periods: list of pandas.core.frame.DataFrame
         List of pandas dataframe of all periods of lenght len_period.
     """
 
@@ -52,10 +49,10 @@ def get_sequences(returns, targets, n_steps=240):
 
     Parameters
     ----------
-    returns: pandas dataframe
+    returns: pandas.core.frame.DataFrame
         pandas dataframe of time-series data of returns to split.
 
-    targets: pandas dataframe
+    targets: pandas.core.frame.DataFrame
         pandas dataframe of time-series data of target to split. It must have the same length of returns.
 
     n_steps: integer(optional)
@@ -69,11 +66,9 @@ def get_sequences(returns, targets, n_steps=240):
     y: list
         Array of the input target, its shape is (len(sequences)-n_steps, 1).
     """
-    try:
-        returns = returns.to_numpy()
-        targets = targets.to_numpy()
-    except AttributeError:
-        pass
+
+    returns = returns.to_numpy()
+    targets = targets.to_numpy()
 
     X = [returns[i:i + n_steps] for i in range(len(returns) - n_steps)]
     y = [targets[i + n_steps] for i in range(len(targets) - n_steps)]
@@ -83,16 +78,17 @@ def get_sequences(returns, targets, n_steps=240):
 
 def get_train_set(df_returns1, df_binary1):
     """
-    Return the train set for the LSTM.
+    Return the non normalized train and test set for the LSTM.
     The function computes respectively the X_train and the y_train for classification
-    task, stacking sequences of different companies one over the other.
+    task, stacking sequences of different companies one over the other. Use all_data_LSTM
+    to generate data to fed into LSTM or CNN.
 
     Parameters
     ----------
-    df_returns1: pandas dataframe, numpy array
+    df_returns1: pandas.core.frame.DataFrame, numpy array
         Dataframe of returns.
 
-    df_binary1: pandas dataframe, numpy array
+    df_binary1: pandas.core.frame.DataFrame, numpy array
         Datframe of binary target associated to data returns. It has the same shape of df_returns.
 
     Returns
@@ -135,9 +131,9 @@ def all_data_LSTM(df_returns, df_binary, period, len_train=981):
 
     Parameters
     ----------
-    df_returns : pandas dataframe
+    df_returns : pandas.core.frame.DataFrame
         Pandas dataframe of returns.
-    df_binary : pandas dataframe
+    df_binary : pandas.core.frame.DataFrame
         Pandas dataframe of returns.
     period : int
         Period over which you want to create the input for the LSTM.
@@ -176,7 +172,7 @@ def all_data_LSTM(df_returns, df_binary, period, len_train=981):
     X_test, y_test = get_train_set(X_test, y_test)
     X_test, y_test = np.array(X_test), np.array(y_test)
 
-    X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))
+    X_train = np.reshape(X_train, (X_train.shape[0], X_train.shape[1], 1))  # (num_sequences, 240, 1)
     X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
 
     return X_train, y_train, X_test, y_test
@@ -192,7 +188,7 @@ def all_multidata_LSTM(df_multidim_list, df_binary, period):
     df_multidim_list : list
         List of the multidimensional dataframe. Note, they are 4 and only 4 and
         correspond to ones generated through DWT.
-    df_binary : pandas dataframe
+    df_binary : pandas.core.frame.DataFrame
         Pandas dataframe of returns.
     period : int
         Period over which you want to generate the data.
@@ -214,10 +210,11 @@ def all_multidata_LSTM(df_multidim_list, df_binary, period):
         df_multireturns3, df_binary, period)
     X_train4, y_train, X_test4, y_test = all_data_LSTM(
         df_multireturns4, df_binary, period)
+
     X_train = np.stack((X_train1, X_train2, X_train3, X_train4),
-                       axis=-1).reshape(X_train1.shape[0], 240, 4)
+                       axis=-1).reshape(X_train1.shape[0], X_train1.shape[1], 4)
     X_test = np.stack((X_test1, X_test2, X_test3, X_test4), axis=-1
-                      ).reshape(X_test1.shape[0], 240, 4)
+                      ).reshape(X_test1.shape[0], X_train1.shape[1], 4)
     return X_train, y_train, X_test, y_test
 
 
@@ -226,12 +223,13 @@ def all_data_DNN(df_returns, df_binary, period, len_train=981):
     Create the right input data for DNN starting from the right data for LSTM.
     This function selects only n values (features) exctrated from the 240 values
     in the LSTM input data.
-
+    The nearest 20 returns (almost one trading month) to the trading day plus
+    more past values that are selected with a separation of 20 days.​
     Parameters
     ----------
-    df_returns : pandas dataframe
+    df_returns : pandas.core.frame.DataFrame
         Pandas dataframe of returns.
-    df_binary : pandas dataframe
+    df_binary : pandas.core.frame.DataFrame
         Pandas dataframe of returns.
     period : int
         Period over which you want to create the input for the LSTM.
@@ -253,7 +251,7 @@ def all_data_DNN(df_returns, df_binary, period, len_train=981):
     X_train, y_train, X_test, y_test = all_data_LSTM(
         df_returns, df_binary, period)
 
-    m = list(range(0, 240, 20)) + list(range(221, 240))
+    m = list(range(0, X_train.shape[1], 20)) + list(range(221, X_train.shape[1]))
     X_train = X_train[:, m, :]
     X_train = np.reshape(X_train, (X_train.shape[0], 31))
 

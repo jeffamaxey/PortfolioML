@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from tensorflow.keras import regularizers
 from tensorflow.keras.layers import Input, Dense
-from tensorflow.keras.models import Model, load_model, save_model
+from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.utils import plot_model
 from portfolioML.model.split import all_data_LSTM
 from portfolioML.makedir import smart_makedir
@@ -55,10 +55,8 @@ def autoencoder(df_returns, df_binary, period, bottneck, save=True, plot=False):
     x_test = np.reshape(x_test, (len(x_test), 1, 240))
 
     input_img = Input(shape=(240,), name='Input')
-    encoded = Dense(150, activation='relu',
-                    activity_regularizer=regularizers.l1(10e-5), name='dense1')(input_img)
-    encoded = Dense(80, activation='relu',
-                    activity_regularizer=regularizers.l1(10e-5), name='dense2')(encoded)
+    encoded = Dense(150, activation='relu', name='dense1')(input_img)
+    encoded = Dense(80, activation='relu', name='dense2')(encoded)
     bottleneck = Dense(bottneck, name='MiddleLayer')(encoded)
     decoder = Dense(80, activation='relu', name='dense3')(bottleneck)
     decoded = Dense(150, activation='relu', name='dense4')(decoder)
@@ -109,7 +107,7 @@ def autoencoder(df_returns, df_binary, period, bottneck, save=True, plot=False):
             if train:
                 plt.savefig(f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_train/autoencoder_rec_train.png')
 
-    
+
     after = np.array(after)
     df = pd.DataFrame(
         after, columns=[f'selected feature_{i}' for i in range(len(after[0]))])
@@ -137,7 +135,7 @@ def autoencoder(df_returns, df_binary, period, bottneck, save=True, plot=False):
             plot_model(autoencod, to_file=dot_img_auto, show_shapes=True)
             autoencod.save(f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_train/autoencoder_train.h5')
             encoder.save(f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_train/encoder_train.h5')
-    
+
     plt.show()
 
 

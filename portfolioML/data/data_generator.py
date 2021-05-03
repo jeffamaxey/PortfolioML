@@ -104,5 +104,3 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=levels[args.log])
     data = data_generator(args.start, args.end)
-
-    df_price = pd.read_csv("PriceData.csv")

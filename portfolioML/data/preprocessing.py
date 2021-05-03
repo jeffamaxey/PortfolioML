@@ -138,8 +138,7 @@ def wavelet_dataframe(df_returns_path, wavelet):
         a1, d1 = approx_details_scale(df_returns1[tick], wavelet, 1)
         a2, d2 = approx_details_scale(df_returns1[tick], wavelet, 2)
         a3, d3 = approx_details_scale(df_returns1[tick], wavelet, 3)
-        a4, d4 = approx_details_scale(df_returns1[tick], wavelet, 4)
-        dic1[tick], dic2[tick], dic3[tick], dic4[tick] = d1, d2, d3, a4
+        dic1[tick], dic2[tick], dic3[tick], dic4[tick] = d1, d2, d3, a3
     dataframe1 = pd.DataFrame(dic1)
     dataframe2 = pd.DataFrame(dic2)
     dataframe3 = pd.DataFrame(dic3)

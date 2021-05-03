@@ -26,7 +26,7 @@ def LSTM_model(nodes, optimizer, dim, drop_out=0.2, plot_figure=True):
     optimizer : str
         Optimizier between RMS_prop or Adam.
     dim : int
-        Number of features
+        Number of features.
     drop_out : float, optional
         Value of the dropout in all the dropout layers. The default is 0.2.
     plot_figure : bool
