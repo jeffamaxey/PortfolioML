@@ -105,9 +105,9 @@ def autoencoder(df_returns, df_binary, period, bottneck, save=True, plot=False):
             plt.xlabel('Features')
             plt.legend()
             if test:
-                plt.savefig('autoencoder_rec_test.png')
+                plt.savefig(f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_test/autoencoder_rec_test.png')
             if train:
-                plt.savefig('autoencoder_rec_train.png')
+                plt.savefig(f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_train/autoencoder_rec_train.png')
 
     
     after = np.array(after)
