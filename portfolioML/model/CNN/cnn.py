@@ -14,22 +14,6 @@ from portfolioML.makedir import go_up, smart_makedir
 from portfolioML.model.split import all_data_LSTM, all_multidata_LSTM
 
 
-class MinPooling1D(MaxPooling1D):
-    """
-    Class for minimun pooling
-    """
-
-    def __init__(self, pool_size=2, strides=None, padding='valid', data_format='channels_last', **kwargs):
-        super(MinPooling1D, self).__init__(
-            pool_size, strides, padding, data_format, **kwargs)
-
-    def pooling(self, x):
-        """
-        Compute minimun pooling
-        """
-        return -MaxPooling1D(self.pool_size, self.strides, self.padding, self.data_format)(-x)
-
-
 def CNN_model(filters, dim, kernel_size=(20), strides=5, activation='tanh', min_pooling=False, plt_figure=False):
     """
     CNN model with selected number of filters for the convolutional layers for classification
@@ -99,10 +83,9 @@ def CNN_model(filters, dim, kernel_size=(20), strides=5, activation='tanh', min_
 
     conv = Conv1D(filters, kernel_size=kernel_size,
                   strides=strides, activation=activation)(drop)
-    max_pool = MaxPooling1D(pool_size=5, strides=1, padding='valid')(conv)
+    max_pool = MaxPooling1D(pool_size=5, strides=1)(conv)
     if min_pooling:
-        min_pool = MinPooling1D(pool_size=5, strides=1,
-                                padding='valid').pooling(conv)
+        min_pool = -MaxPooling1D(pool_size=5, strides=1)(-conv)  # MinPooling
         merge = Concatenate()([min_pool, max_pool])
         drop = Dropout(0.4)(merge)
     else:
@@ -135,11 +118,11 @@ if __name__ == "__main__":
     parser.add_argument('num_periods', type=int,
                         help='Number of periods you want to train')
     parser.add_argument("-kernel_size", type=int, default=20,
-                        help="kernel_size, for more details see documentation")
+                        help="kernel_size, for more details see documentation of CNN_model")
     parser.add_argument("-strides", type=int, default=5,
-                        help="strides, for more details see documentation")
+                        help="strides, for more details see documentation of CNN_model")
     parser.add_argument("-activation", type=str, default='tanh',
-                        help="activation, for more details see documentation")
+                        help="activation, for more details see documentation of CNN_model")
     parser.add_argument("-min_pooling", action='store_true',
                         help="If true the structure is multiheaded")
     parser.add_argument("-plt_figure", action='store_true',
@@ -226,5 +209,5 @@ if __name__ == "__main__":
 
     with open(f"{args.model_name}/{args.model_name}_specifics.txt", 'w', encoding='utf-8') as file:
         file.write(
-            f'\n Model Name: {args.model_name} \n Number of periods: {args.num_periods} \n Number of filters in conv layers: {args.filters} \n \n')
+            f'\n Model Name: {args.model_name} \n Number of periods: {args.num_periods} \n Number of filters in conv layers: {args.filters} \n PCA + Wavelet: {args.pca_wavelet} \n')
         model.summary(print_fn=lambda x: file.write(x + '\n'))

@@ -64,7 +64,7 @@ def DNN_model(nodes_args, hidden=None, activation='tanh', loss='binary_crossentr
     model.add(Dropout(0.1))
 
     if hidden is not None:
-        logging.info("Nember of layers is determined by argument hidden")
+        logging.info("Number of layers is determined by argument hidden")
         nodes = [int(i) for i in np.linspace(31, 5, hidden)]
     else:
         nodes = nodes_args
@@ -95,8 +95,8 @@ if __name__ == "__main__":
                         help='Number of periods you want to train')
     parser.add_argument("-log", "--log", default="info",
                         help=("Provide logging level. Example --log debug', default='info"))
-    parser.add_argument('-prin_comp_anal', action='store_true', help="""Use the most important companies obtained by a PCA
-                                                               decomposition on the first 250 PCs, default=False""")
+    parser.add_argument('-pca_auto', action='store_true', help="""Use companies obtained by a PCA
+                                                               and Feature selected by Autoencoder, default=False""")
 
     args = parser.parse_args()
 
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=levels[args.log])
 
     # Read the data
-    if args.prin_comp_anal:
+    if args.pca_auto:
         logging.info(
             "Using the most important companies obtained from a PCA decomposition")
         df_returns = pd.read_csv(go_up(2) + "/data/ReturnsDataPCA.csv")
@@ -129,6 +129,11 @@ if __name__ == "__main__":
         # Splitting data for each period
         X_train, y_train, X_test, y_test = all_data_DNN(
             df_returns, df_binary, per)
+        if args.pca_auto:
+            df_auto_train_path = go_up(2) + "/data/after_train.csv"
+            df_auto_test_path = go_up(2) + "/data/after_test.csv"
+            X_train = np.array(pd.read_csv(df_auto_train_path))
+            X_test = np.array(pd.read_csv(df_auto_test_path))
         # Trainng
         es = EarlyStopping(monitor='val_loss', patience=30,
                            restore_best_weights=True)

@@ -7,15 +7,16 @@ It was not worth it to implement for every periods of study (17 periods).
 import argparse
 import logging
 import time
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from tensorflow.keras import regularizers
-from tensorflow.keras.layers import Input, Dense
+from portfolioML.makedir import smart_makedir
+from portfolioML.model.split import all_data_LSTM
+from tensorflow.keras.layers import Dense, Input
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.utils import plot_model
-from portfolioML.model.split import all_data_LSTM
-from portfolioML.makedir import smart_makedir
+
 
 def autoencoder(df_returns, df_binary, period, bottneck, save=True, plot=False):
     """
@@ -64,10 +65,12 @@ def autoencoder(df_returns, df_binary, period, bottneck, save=True, plot=False):
 
     if test:
         a = x_test
-        smart_makedir(f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_test')
+        smart_makedir(
+            f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_test')
     if train:
         a = x_train
-        smart_makedir(f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_train')
+        smart_makedir(
+            f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_train')
 
     start = time.time()
     after = []
@@ -77,7 +80,8 @@ def autoencoder(df_returns, df_binary, period, bottneck, save=True, plot=False):
         autoencod = Model(input_img, decoded)
         autoencod.compile(optimizer='adam', loss='mse')
 
-        history = autoencod.fit(a[i], a[i], epochs=40, batch_size=2, shuffle=False)
+        history = autoencod.fit(a[i], a[i], epochs=40,
+                                batch_size=2, shuffle=False)
         autoencod.summary()
         reconstructed_data = autoencod.predict(a[i])
         afterbot = encoder.predict(a[i])
@@ -92,33 +96,37 @@ def autoencoder(df_returns, df_binary, period, bottneck, save=True, plot=False):
             plt.xlabel('Features')
             plt.title('Original sequence')
             plt.subplot(132)
-            plt.bar(list(range(len(afterbot[0]))), afterbot[0], color='cornflowerblue', alpha=0.8)
+            plt.bar(
+                list(range(len(afterbot[0]))), afterbot[0], color='cornflowerblue', alpha=0.8)
             plt.title('Encoded sequence')
             plt.xlabel('Features')
             plt.subplot(133)
-            plt.bar(list(range(len(reconstructed_data[0]))), reconstructed_data[0],\
-                                    color='forestgreen', label='reconstructed')
-            plt.bar(list(range(len(difference[0]))),difference[0], color='crimson', label='differences')
+            plt.bar(list(range(len(reconstructed_data[0]))), reconstructed_data[0],
+                    color='forestgreen', label='reconstructed')
+            plt.bar(list(
+                range(len(difference[0]))), difference[0], color='crimson', label='differences')
             plt.title('Reconstructed sequence')
             plt.xlabel('Features')
             plt.legend()
             if test:
-                plt.savefig(f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_test/autoencoder_rec_test.png')
+                plt.savefig(
+                    f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_test/autoencoder_rec_test.png')
             if train:
-                plt.savefig(f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_train/autoencoder_rec_train.png')
-
+                plt.savefig(
+                    f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_train/autoencoder_rec_train.png')
 
     after = np.array(after)
     df = pd.DataFrame(
         after, columns=[f'selected feature_{i}' for i in range(len(after[0]))])
     if test:
-        df.to_csv(f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_test/encoder_test.csv', index=False)
+        df.to_csv(
+            f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_test/encoder_test.csv', index=False)
     if train:
-        df.to_csv(f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_train/encoder_train.csv', index=False)
+        df.to_csv(
+            f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_train/encoder_train.csv', index=False)
 
     end = time.time()
     print(f'Total time: {end-start} seconds')
-
 
     if save:
         if test:
@@ -126,33 +134,37 @@ def autoencoder(df_returns, df_binary, period, bottneck, save=True, plot=False):
             plot_model(encoder, to_file=dot_img_auto, show_shapes=True)
             dot_img_auto = f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_test/autoencoder_model_test.png'
             plot_model(autoencod, to_file=dot_img_auto, show_shapes=True)
-            autoencod.save(f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_test/autoencoder_test.h5')
-            encoder.save(f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_test/encoder_test.h5')
+            autoencod.save(
+                f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_test/autoencoder_test.h5')
+            encoder.save(
+                f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_test/encoder_test.h5')
         if train:
             dot_img_enco = f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_train/encoder_model_train.png'
             plot_model(encoder, to_file=dot_img_enco, show_shapes=True)
             dot_img_auto = f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_train/autoencoder_model_train.png'
             plot_model(autoencod, to_file=dot_img_auto, show_shapes=True)
-            autoencod.save(f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_train/autoencoder_train.h5')
-            encoder.save(f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_train/encoder_train.h5')
+            autoencod.save(
+                f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_train/autoencoder_train.h5')
+            encoder.save(
+                f'Autoencoder/autoencoder_period_{period}/autoencoder_period_{period}_train/encoder_train.h5')
 
     plt.show()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-                    description='Creation of encoder for data reduction and features selection.')
+        description='Creation of encoder for data reduction and features selection.')
     requiredNamed = parser.add_argument_group('Required named arguments')
     requiredNamed.add_argument('-p', '--period', type=int,
-                        help='Study period.')
+                               help='Study period.')
     requiredNamed.add_argument('-l', '--load', action='store_true',
-                        help='Type -l to load the encoder.')
+                               help='Type -l to load the encoder.')
     requiredNamed.add_argument('-tr', '--trainl', action='store_true',
-                        help='Type -tr to create or load the encoder for train.')
+                               help='Type -tr to create or load the encoder for train.')
     requiredNamed.add_argument('-te', '--testl', action='store_true',
-                        help='Type -te to create or load the encoder for test.')
+                               help='Type -te to create or load the encoder for test.')
     requiredNamed.add_argument('-c', '--create', action='store_true',
-                        help='Type -c to create the encoder.')
+                               help='Type -c to create the encoder.')
     parser.add_argument('-bn', '--botneck', type=int, default=31,
                         help='Number of nodes in the middle layer (default=31).')
     parser.add_argument("-log", "--log", default="error",
@@ -185,10 +197,12 @@ if __name__ == "__main__":
         x_test = np.reshape(x_test, (len(x_test), 1, 240))
         if test:
             a = x_test
-            encoder = load_model(f'Autoencoder/autoencoder_period_{per}/autoencoder_period_{per}_test/encoder_test.h5')
+            encoder = load_model(
+                f'Autoencoder/autoencoder_period_{per}/autoencoder_period_{per}_test/encoder_test.h5')
         if train:
             a = x_train
-            encoder = load_model(f'Autoencoder/autoencoder_period_{per}/autoencoder_period_{per}_train/encoder_train.h5')
+            encoder = load_model(
+                f'Autoencoder/autoencoder_period_{per}/autoencoder_period_{per}_train/encoder_train.h5')
         after = []
         for i in range(len(a)):
             afterbot = encoder.predict(a[i])

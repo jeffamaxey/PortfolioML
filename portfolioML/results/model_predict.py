@@ -44,7 +44,6 @@ def plot_roc(algorithm, name_model, num_periods, wavelet):
 
     logging.info('----- I am creating ROC curve png files -----')
 
-    parent_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
     tpr_list = []
     aucs_list = []
     interp_fpr = np.linspace(0, 1, 10000)
@@ -83,7 +82,7 @@ def plot_roc(algorithm, name_model, num_periods, wavelet):
 
         fpr, tpr, thresholds = roc_curve(y_test, probas[:, 0])
 
-        interp_tpr = np.interp(interp_fpr, fpr, tpr)
+        interp_tpr = np.interp(interp_fpr, fpr, tpr)  # because of different len of tpr fpr
         tpr_list.append(interp_tpr)
 
         roc_auc = roc_auc_score(y_test, probas[:, 0], average=None)
@@ -130,8 +129,8 @@ def predictions_csv(algorithm, model_name, num_periods, wavelet):
         Algorithm used (LSTM, DNN, RAF or CNN)
     model_name : str
         Name of the model (e.g. for LSTM check folder names in portfolio/model/LSTM/)
-    num_periods : TYPE, optional
-        DESCRIPTION. The default is 10.
+    num_periods : int
+        Number of period that are taken in order to compute plot and final values. The default is 10.
     wavelet : bool
         Set true if you have used DWT during the model training.
 

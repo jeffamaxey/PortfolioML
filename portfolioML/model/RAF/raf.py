@@ -16,7 +16,7 @@ if not sys.warnoptions:
     warnings.simplefilter("ignore")
 
 
-def predictions_and_roc(n_estimators, max_depth, num_period, criterion):
+def predictions_and_roc(df_returns, df_binary, n_estimators, max_depth, num_period, criterion, autoencoder=False):
     '''
     Create the csv files of forecasts and plot the roc curve
     with mean and standard deviation of the area under the curve (auc).
@@ -34,17 +34,17 @@ def predictions_and_roc(n_estimators, max_depth, num_period, criterion):
 
     Parameters
     ----------
-    n_estimators : TYPE = integer
-        DESCRIPTION. Number of threes in the random forest.
+    n_estimators : integer
+        Number of threes in the random forest.
 
-    max_depth : TYPE = integer
-        DESCRIPTION. Depth of trees in the random forest.
+    max_depth : integer
+        Depth of trees in the random forest.
 
-    num_period : TYPE = integer
-        DESCRIPTION. Number of period that are taken in order to compute plot and final values.
+    num_period : integer
+        Number of period that are taken in order to compute plot and final values.
 
-    criterion : TYPE = str
-        DESCRIPTION. Criterion for splitting the nodes.
+    criterion : str
+        Criterion for splitting the nodes.
     ----------
 
     Each model is trained over several study period so its name contain this information,
@@ -54,6 +54,13 @@ def predictions_and_roc(n_estimators, max_depth, num_period, criterion):
     Tecnical aspects: because of each model has got different tpr and fps, an interpoletion
     of this values is used in order to have the same leght for each model.
     '''
+    if autoencoder:
+        df_auto_train_path = go_up(2) + "/data/after_train.csv"
+        df_auto_test_path = go_up(2) + "/data/after_test.csv"
+        auto_train = pd.read_csv(df_auto_train_path)
+        auto_test = pd.read_csv(df_auto_test_path)
+        x_train_auto = np.array(auto_train)
+        x_test_auto = np.array(auto_test)
 
     path_n = go_up(level_up=2)
     path_p = path_n + f'/results/predictions/RAF/RAF_{args.name_model}/'
@@ -155,16 +162,9 @@ if __name__ == "__main__":
     if autoencoder_features:
         df_returns_path = go_up(2) + "/data/ReturnsDataPCA.csv"
         df_binary_path = go_up(2) + "/data/ReturnsBinaryPCA.csv"
-        df_auto_train_path = go_up(2) + "/data/after_train.csv"
-        df_auto_test_path = go_up(2) + "/data/after_test.csv"
         df_returns = pd.read_csv(df_returns_path)
         df_binary = pd.read_csv(df_binary_path)
 
-        auto_train = pd.read_csv(df_auto_train_path)
-        auto_test = pd.read_csv(df_auto_test_path)
-
-        x_train_auto = np.array(auto_train)
-        x_test_auto = np.array(auto_test)
     else:
         df_returns_path = go_up(2) + "/data/ReturnsData.csv"
         df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
@@ -175,12 +175,13 @@ if __name__ == "__main__":
         f'/results/predictions/RAF/RAF_{args.name_model}/', level_up=2)
     smart_makedir(f'/results/ROC/RAF/RAF_{args.name_model}/', level_up=2)
 
-    predictions_and_roc(n_estimators=args.n_estimators, max_depth=args.max_depth,
-                        num_period=args.num_period, criterion=args.criterion)
+    predictions_and_roc(df_returns, df_binary, n_estimators=args.n_estimators, max_depth=args.max_depth,
+                        num_period=args.num_period, criterion=args.criterion, autoencoder=autoencoder_features)
 
     with open(f"RAF_{args.name_model}.txt", 'a', encoding='utf-8') as file:
         file.write(
             f'''\n Number of periods: {args.num_period}
                 \n Number of estimators: {args.n_estimators}
                 \n Criterion: {args.criterion}
-                \n Maximum depth of trees: {args.max_depth}''')
+                \n Maximum depth of trees: {args.max_depth}
+                \n Autoencoder: {args.autoencoder}''')

@@ -16,7 +16,7 @@ from portfolioML.model.split import all_data_LSTM, all_multidata_LSTM
 
 def LSTM_model(nodes, optimizer, dim, drop_out=0.2, plot_figure=True):
     '''
-    Architeture for the LSTM algorithm
+    Architeture for the LSTM algorithm.
 
     Parameters
     ----------
