@@ -9,7 +9,8 @@ import pandas as pd
 from portfolioML.makedir import go_up, smart_makedir
 from portfolioML.model.split import all_data_DNN
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import roc_auc_score, roc_curve
+from sklearn.metrics import roc_auc_score, roc_curve, classification_report, confusion_matrix, accuracy_score
+from sklearn.model_selection import train_test_split
 
 if not sys.warnoptions:
     import warnings
@@ -71,6 +72,7 @@ def predictions_and_roc(df_returns, df_binary, n_estimators, max_depth, num_peri
     interp_fpr = np.linspace(0, 1, 10000)
     plt.figure()
 
+    accuracy = []
     for i in range(0, num_period):
         logging.info('============ Start Period %ith ===========', i)
 
@@ -82,8 +84,13 @@ def predictions_and_roc(df_returns, df_binary, n_estimators, max_depth, num_peri
         if autoencoder_features:
             x_train = x_train_auto
             x_test = x_test_auto
-        rf_.fit(x_train, y_train)
-        y_proba = rf_.predict_proba(x_test)[:, 1]
+        # creation train and validation set
+        X_train, X_val, Y_train, Y_val = train_test_split(x_train, y_train, test_size=0.2, shuffle=False)
+        rf_.fit(X_train, Y_train)
+
+        y_proba = rf_.predict(X_val) # prediction on validation set
+        accuracy.append(accuracy_score(Y_val, y_proba)) # accuracies on validation set 
+        y_proba = rf_.predict(x_test) #prediction on test set
 
         fpr, tpr, thresholds = roc_curve(y_test, y_proba)
         interp_tpr = np.interp(interp_fpr, fpr, tpr)
@@ -111,9 +118,21 @@ def predictions_and_roc(df_returns, df_binary, n_estimators, max_depth, num_peri
 
         logging.info('============= End Period %ith ============', i)
 
+    acc = np.array(accuracy)
     auc_mean = np.mean(np.array(aucs_list))
     auc_std = np.std(np.array(aucs_list))
     tpr_mean = np.mean(tpr_list, axis=0)
+
+    plt.figure()
+    plt.bar(np.arange(1, args.num_period + 1), acc)
+    plt.xticks(np.arange(1,args.num_period + 1))
+    plt.title('Accuracy vs Periods')
+    plt.xlabel('Periods')
+    plt.ylabel('Accuracies')
+    plt.savefig(f'accuracy_for_RAF_{args.name_model}')
+
+    mean_acc = np.mean(accuracy)
+    logging.info(f'Mean accuracy: {mean_acc} over {args.num_period} periods')
 
     plt.figure()
     plt.plot(interp_fpr, tpr_mean, color='b',
@@ -129,6 +148,7 @@ def predictions_and_roc(df_returns, df_binary, n_estimators, max_depth, num_peri
     plt.title('ROC Curve - mean +|- std')
     plt.savefig(path_r + 'ROC Curve - mean +|- std')
 
+    plt.show()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='RandomForestClassifier')
