@@ -130,6 +130,8 @@ if __name__ == "__main__":
         X_train, y_train, X_test, y_test = all_data_DNN(
             df_returns, df_binary, per)
         if args.pca_auto:
+            logging.info(
+            "Using companies obtained from a PCA decomposition and features from Autoencoder")
             df_auto_train_path = go_up(2) + "/data/after_train.csv"
             df_auto_test_path = go_up(2) + "/data/after_test.csv"
             X_train = np.array(pd.read_csv(df_auto_train_path))
