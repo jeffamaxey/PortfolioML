@@ -43,11 +43,7 @@ def LSTM_model(nodes, optimizer, dim, drop_out=0.2, plot_figure=True):
     model.add(Input(shape=(240, dim)))
     model.add(Dropout(drop_out))
 
-    if len(nodes) > 1:
-        ret_seq = True
-    else:
-        ret_seq = False
-
+    ret_seq = len(nodes) > 1
     for nod in nodes:
         model.add(LSTM(nod, return_sequences=ret_seq))
         model.add(Dropout(drop_out))
@@ -160,7 +156,8 @@ if __name__ == "__main__":
         plt.grid()
         plt.legend()
         plt.savefig(
-            os.getcwd() + f'/{args.model_name}/accuracies_losses/accuracies_{i}.png')
+            f'{os.getcwd()}/{args.model_name}/accuracies_losses/accuracies_{i}.png'
+        )
 
         with open(f"{args.model_name}/{args.model_name}_specifics.txt", 'w', encoding='utf-8') as file:
             file.write(

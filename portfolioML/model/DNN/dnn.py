@@ -162,7 +162,8 @@ if __name__ == "__main__":
         plt.grid()
         plt.legend()
         plt.savefig(
-            os.getcwd() + f'/{args.model_name}/accuracies_losses/accuracies_{per}.png')
+            f'{os.getcwd()}/{args.model_name}/accuracies_losses/accuracies_{per}.png'
+        )
 
     with open(f"{args.model_name}/{args.model_name}_specifics.txt", 'w', encoding='utf-8') as file:
         file.write(

@@ -14,11 +14,13 @@ def _full_path(file_name):
     return os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
 
 
-df_return = pd.read_csv(_full_path(
-    go_up(1) + f'/PortfolioML/portfolioML/data/ReturnsData.csv'))
+df_return = pd.read_csv(
+    _full_path(go_up(1) + '/PortfolioML/portfolioML/data/ReturnsData.csv')
+)
 
-df_binary = pd.read_csv(_full_path(
-    go_up(1) + f'/PortfolioML/portfolioML/data/ReturnsBinary.csv'))
+df_binary = pd.read_csv(
+    _full_path(go_up(1) + '/PortfolioML/portfolioML/data/ReturnsBinary.csv')
+)
 
 
 class TestDataReturns(unittest.TestCase):
@@ -53,7 +55,7 @@ class TestDataReturns(unittest.TestCase):
             x1, y1 = get_sequences(df_return[col], df_binary[col])
             list1.append(x1)
         list1 = np.array(list1)
-        list1 = list((list1[i] for i in range(list1.shape[0])))
+        list1 = [list1[i] for i in range(list1.shape[0])]
         list1 = np.vstack(list1)
 
         # reshape

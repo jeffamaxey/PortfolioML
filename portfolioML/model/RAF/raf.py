@@ -182,14 +182,11 @@ if __name__ == "__main__":
     if autoencoder_features:
         df_returns_path = go_up(2) + "/data/ReturnsDataPCA.csv"
         df_binary_path = go_up(2) + "/data/ReturnsBinaryPCA.csv"
-        df_returns = pd.read_csv(df_returns_path)
-        df_binary = pd.read_csv(df_binary_path)
-
     else:
         df_returns_path = go_up(2) + "/data/ReturnsData.csv"
         df_binary_path = go_up(2) + "/data/ReturnsBinary.csv"
-        df_returns = pd.read_csv(df_returns_path)
-        df_binary = pd.read_csv(df_binary_path)
+    df_returns = pd.read_csv(df_returns_path)
+    df_binary = pd.read_csv(df_binary_path)
 
     smart_makedir(
         f'/results/predictions/RAF/RAF_{args.name_model}/', level_up=2)
