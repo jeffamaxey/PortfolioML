@@ -93,7 +93,7 @@ def portfolio_creation(algorithm, model_name, num_periods, k=10):
     '''
 
     get_trading_values(df_price, algorithm, model_name, num_periods)
-    path = os.getcwd() + f'/predictions_for_portfolio/{algorithm}/{model_name}'
+    path = f'{os.getcwd()}/predictions_for_portfolio/{algorithm}/{model_name}'
     portfolio = []
     for j in range(num_periods):
         trading_days = pd.read_csv(
@@ -239,7 +239,7 @@ def monkey_trading(df_price, monkeys_num, num_periods, k=10, money=1.):
     # Monkey statistic
     returns_dr = []
     accumulative_dr = []
-    for i in range(0, monkeys_num):
+    for _ in range(0, monkeys_num):
         returns, acc_returns_m = forecast_returns(
             df_price, num_periods=num_periods, k=k, money=money, monkey=True)
         returns = np.reshape(
@@ -299,11 +299,9 @@ if __name__ == '__main__':
     df_price = pd.read_csv(go_up(1) + "/data/PriceData.csv")
     df_price = df_price.dropna(axis=1)
 
-    i = 0
-    for alg, mod in zip(args.algorithm, args.model_name):
+    for i, (alg, mod) in enumerate(zip(args.algorithm, args.model_name), start=1):
         logging.info(f"---------- Model {mod} ----------")
-        i += 1
-        path = os.getcwd() + f'/predictions_for_portfolio/{alg}/{mod}'
+        path = f'{os.getcwd()}/predictions_for_portfolio/{alg}/{mod}'
 
         # Portfolios Generator
         portfolio = portfolio_creation(alg, mod, args.num_periods)

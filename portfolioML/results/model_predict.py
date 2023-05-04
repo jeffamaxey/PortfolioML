@@ -50,7 +50,7 @@ def plot_roc(algorithm, name_model, num_periods, wavelet):
 
     smart_makedir(f'/ROC/{algorithm}/{name_model}/')
 
-    path = os.getcwd() + f'/ROC/{algorithm}/{name_model}/'
+    path = f'{os.getcwd()}/ROC/{algorithm}/{name_model}/'
     df_multiret_path = go_up(1) + "/data/MultidimReturnsData"
 
     df_returns = pd.read_csv(go_up(1) + "/data/ReturnsData.csv")
@@ -64,13 +64,13 @@ def plot_roc(algorithm, name_model, num_periods, wavelet):
     for i in range(0, num_periods):
         logging.info(f'Creating ROC for period {i}')
         # Splitting data set for each period
-        if ((algorithm == 'LSTM') or (algorithm == 'CNN')) and (wavelet == False):
+        if algorithm in ['LSTM', 'CNN'] and wavelet == False:
             X_train, y_train, X_test, y_test = all_data_LSTM(
                 df_returns, df_binary, i)
         if (algorithm == 'DNN'):
             X_train, y_train, X_test, y_test = all_data_DNN(
                 df_returns, df_binary, i)
-        if ((algorithm == 'LSTM') or (algorithm == 'CNN')) and (wavelet == True):
+        if algorithm in ['LSTM', 'CNN'] and wavelet == True:
             X_train, y_train, X_test, y_test = all_multidata_LSTM(
                 df_multiret, df_binary, i)
 
@@ -161,13 +161,13 @@ def predictions_csv(algorithm, model_name, num_periods, wavelet):
             go_up(1) + f'/model/{algorithm}/{model_name}/{model_name}_period{i}.h5')
         logging.info(f'Creating predictions csv file for period {i}')
         # Splitting data set for each period
-        if ((algorithm == 'LSTM') or (algorithm == 'CNN')) and (wavelet == False):
+        if algorithm in ['LSTM', 'CNN'] and wavelet == False:
             X_train, y_train, X_test, y_test = all_data_LSTM(
                 df_returns, df_binary, i)
         if (algorithm == 'DNN'):
             X_train, y_train, X_test, y_test = all_data_DNN(
                 df_returns, df_binary, i)
-        if ((algorithm == 'LSTM') or (algorithm == 'CNN')) and (wavelet == True):
+        if algorithm in ['LSTM', 'CNN'] and wavelet == True:
             X_train, y_train, X_test, y_test = all_multidata_LSTM(
                 df_multiret, df_binary, i)
 
@@ -207,9 +207,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=levels[args.log])
     pd.options.mode.chained_assignment = None
 
-    # Restrict memory allocation on GPU
-    gpus = tf.config.experimental.list_physical_devices('GPU')
-    if gpus:
+    if gpus := tf.config.experimental.list_physical_devices('GPU'):
         try:
             # Restrict TensorFlow to only use the fourth GPU
             tf.config.experimental.set_visible_devices(gpus[0], 'GPU')

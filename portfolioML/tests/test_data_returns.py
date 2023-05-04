@@ -12,8 +12,9 @@ def _full_path(file_name):
     return os.path.join(os.path.abspath(os.path.dirname(__file__)), file_name)
 
 
-dataframe = pd.read_csv(_full_path(
-    go_up(1) + f'/PortfolioML/portfolioML/data/PriceData.csv'))
+dataframe = pd.read_csv(
+    _full_path(go_up(1) + '/PortfolioML/portfolioML/data/PriceData.csv')
+)
 
 
 class TestDataReturns(unittest.TestCase):
@@ -47,13 +48,12 @@ class TestDataReturns(unittest.TestCase):
         binary_dataframe = binary_targets(
             dataframe_no_nan, export_binary_csv=False)
 
-        for i in range(20):
+        for _ in range(20):
             row = random.randint(0, binary_dataframe.shape[0])
             column = random.randint(0, binary_dataframe.shape[1] - 1)
 
-            compare_list = list(dataframe_no_nan.iloc[row].values)
-            compare_list.sort()
-            compare_value = compare_list[int(len(compare_list) / 2)]
+            compare_list = sorted(dataframe_no_nan.iloc[row].values)
+            compare_value = compare_list[len(compare_list) // 2]
 
             random_column = binary_dataframe.iloc[:, column]
             random_value = random_column[row]

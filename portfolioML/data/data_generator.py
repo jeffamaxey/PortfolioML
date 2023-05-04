@@ -23,7 +23,7 @@ def get_ticker():
     soup = BeautifulSoup(website_url, 'lxml')
 
     idd_list = ['constituents', 'changes']
-    df_list = list()
+    df_list = []
     for idd in idd_list:
         My_table = soup.find(
             'table', {'class': 'wikitable sortable', 'id': idd})
@@ -39,9 +39,7 @@ def get_ticker():
     added = list(df_list[1].Added_Ticker)
     removed = list(df_list[1].Removed_Ticker)
 
-    ticker = list(set(constituents + added + removed))
-
-    return ticker
+    return list(set(constituents + added + removed))
 
 
 def data_generator(start, end, data_source='yahoo', export_csv=True):

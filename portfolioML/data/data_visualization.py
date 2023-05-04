@@ -92,14 +92,12 @@ def plot_wavelet(df_price, data, name, time_scale=3):
             plt.plot(app, lw=0.9, c='cornflowerblue',
                      label=f"approximation on scale {scale}")
             plt.xticks(x_label_position, x_label_day, rotation=60)
-            plt.legend()
         else:
             plt.subplot(time_scale + 2, 1, scale + 1)
             plt.plot(det, lw=0.9, c='cornflowerblue',
                      label=f"details coefficients on scale {scale}")
             plt.xticks([])
-            plt.legend()
-
+        plt.legend()
     plt.savefig("Discrete_Wavelet_Trasformation_of_Close_" + name + "_Data")
 
 

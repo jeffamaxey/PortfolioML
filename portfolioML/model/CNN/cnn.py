@@ -173,9 +173,15 @@ if __name__ == "__main__":
             X_train, y_train, X_test, y_test = all_data_LSTM(
                 df_returns, df_binary, per)
 
-        model = CNN_model(args.filters, dim=X_train.shape[2], kernel_size=tuple((args.kernel_size,)),
-                          strides=args.strides, activation=args.activation,
-                          min_pooling=args.min_pooling, plt_figure=args.plt_figure)
+        model = CNN_model(
+            args.filters,
+            dim=X_train.shape[2],
+            kernel_size=(args.kernel_size,),
+            strides=args.strides,
+            activation=args.activation,
+            min_pooling=args.min_pooling,
+            plt_figure=args.plt_figure,
+        )
 
         es = EarlyStopping(monitor='val_loss', patience=40,
                            restore_best_weights=True)
@@ -203,7 +209,8 @@ if __name__ == "__main__":
         plt.grid()
         plt.legend()
         plt.savefig(
-            os.getcwd() + f'/{args.model_name}/accuracies_losses/accuracies_{per}.png')
+            f'{os.getcwd()}/{args.model_name}/accuracies_losses/accuracies_{per}.png'
+        )
 
     plt.show()
 
